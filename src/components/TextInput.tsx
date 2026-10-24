@@ -10,8 +10,8 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { Eye, EyeOff } from 'lucide-react-native';
 import { colors } from '../utils/colors';
-import { EyeIcon } from './AuthIcons';
 
 export interface TextInputProps extends RNTextInputProps {
   label?: string;
@@ -112,7 +112,11 @@ export const TextInput = forwardRef<React.ElementRef<typeof RNTextInput>, TextIn
               activeOpacity={0.7}
               disabled={disabled}
             >
-              <EyeIcon visible={showPassword} color={colors.textSecondary} />
+              {showPassword ? (
+                <Eye size={20} color={colors.textSecondary} strokeWidth={2} />
+              ) : (
+                <EyeOff size={20} color={colors.textSecondary} strokeWidth={2} />
+              )}
             </TouchableOpacity>
           ) : rightIcon ? (
             <View style={styles.rightIconContainer}>{rightIcon}</View>

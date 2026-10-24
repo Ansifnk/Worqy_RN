@@ -14,27 +14,51 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigations/AppNav';
 import { colors } from '../../utils/colors';
 import {
-  MailIcon,
-  PhoneIcon,
-  LockIcon,
-  BackChevronIcon,
-  DecorativeSparkle,
-  GoogleSocialIcon,
-  AppleSocialIcon,
-  FacebookSocialIcon,
-} from '../../components/AuthIcons';
+  User,
+  Mail,
+  Lock,
+  ChevronLeft,
+  Sparkle,
+} from 'lucide-react-native';
 import TextInput from '../../components/TextInput';
 import Button from '../../components/Button';
+import { useAppContext } from '../../context/AppContext';
+
+// Direct Social Icons
+const GoogleSocialIcon: React.FC = () => (
+  <View style={styles.socialIconContainer}>
+    <Text style={styles.googleLetter}>G</Text>
+  </View>
+);
+
+const AppleSocialIcon: React.FC = () => (
+  <View style={styles.socialIconContainer}>
+    <View style={styles.appleStem} />
+    <View style={styles.appleBody} />
+  </View>
+);
+
+const FacebookSocialIcon: React.FC = () => (
+  <View style={styles.socialIconContainer}>
+    <Text style={styles.facebookLetter}>f</Text>
+  </View>
+);
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
 
 const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { setUser } = useAppContext();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSignUp = () => {
+    setUser({
+      id: Date.now().toString(),
+      name: name.trim() || 'User',
+      email: email.trim(),
+    });
     // In demo flow, proceed to main app
     navigation.replace('Main');
   };
@@ -73,7 +97,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               activeOpacity={0.7}
             >
-              <BackChevronIcon color={colors.text} />
+              <ChevronLeft size={22} color={colors.text} strokeWidth={2.4} />
             </TouchableOpacity>
           </View>
 
@@ -81,20 +105,16 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.headerBlock}>
             <View style={styles.titleRow}>
               {/* Left small decorative accent */}
-              <DecorativeSparkle
-                size={16}
-                color={colors.accent}
-                style={styles.leftSparkle}
-              />
+              <View style={styles.leftSparkle}>
+                <Sparkle size={16} color={colors.accent} strokeWidth={2} />
+              </View>
 
               <Text style={styles.title}>Create Account</Text>
 
               {/* Right larger decorative accent */}
-              <DecorativeSparkle
-                size={22}
-                color={colors.primary}
-                style={styles.rightSparkle}
-              />
+              <View style={styles.rightSparkle}>
+                <Sparkle size={22} color={colors.primary} strokeWidth={2} />
+              </View>
             </View>
 
             <Text style={styles.subtitle}>Find your ideal workspace</Text>
@@ -102,6 +122,16 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Form Fields */}
           <View style={styles.formContainer}>
+            {/* Full Name Field */}
+            <TextInput
+              label="Full Name"
+              placeholder="John Doe"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              leftIcon={<User size={20} color={colors.textSecondary} strokeWidth={2} />}
+            />
+
             {/* Email Field */}
             <TextInput
               label="Email"
@@ -110,17 +140,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
-              leftIcon={<MailIcon color={colors.textSecondary} />}
-            />
-
-            {/* Mobile Number Field */}
-            <TextInput
-              label="Mobile Number"
-              placeholder="+1 (555) 000-0000"
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-              leftIcon={<PhoneIcon color={colors.textSecondary} />}
+              leftIcon={<Mail size={20} color={colors.textSecondary} strokeWidth={2} />}
             />
 
             {/* Password Field */}
@@ -131,7 +151,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               onChangeText={setPassword}
               autoCapitalize="none"
               isPassword
-              leftIcon={<LockIcon color={colors.textSecondary} />}
+              leftIcon={<Lock size={20} color={colors.textSecondary} strokeWidth={2} />}
               rightAccessory={
                 password.length > 0 ? (
                   <View style={styles.strengthBadge}>
@@ -359,5 +379,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: colors.primary,
+  },
+
+  // Social Icon glyphs
+  socialIconContainer: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  googleLetter: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#EA4335',
+  },
+  appleStem: {
+    width: 4,
+    height: 3,
+    borderTopRightRadius: 3,
+    borderWidth: 1.2,
+    borderColor: '#171717',
+    borderBottomWidth: 0,
+    borderLeftWidth: 0,
+    alignSelf: 'center',
+    marginBottom: -0.5,
+  },
+  appleBody: {
+    width: 14,
+    height: 13,
+    borderRadius: 7,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
+    backgroundColor: '#171717',
+  },
+  facebookLetter: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1877F2',
+    marginTop: -2,
   },
 });
