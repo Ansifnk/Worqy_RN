@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
@@ -18,13 +17,14 @@ import {
   MailIcon,
   PhoneIcon,
   LockIcon,
-  EyeIcon,
   BackChevronIcon,
   DecorativeSparkle,
   GoogleSocialIcon,
   AppleSocialIcon,
   FacebookSocialIcon,
 } from '../../components/AuthIcons';
+import TextInput from '../../components/TextInput';
+import Button from '../../components/Button';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
 
@@ -33,7 +33,6 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignUp = () => {
     // In demo flow, proceed to main app
@@ -104,81 +103,50 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
           {/* Form Fields */}
           <View style={styles.formContainer}>
             {/* Email Field */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Email</Text>
-              <View style={styles.pillInputContainer}>
-                <View style={styles.inputLeftIcon}>
-                  <MailIcon color={colors.textSecondary} />
-                </View>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="name@example.com"
-                  placeholderTextColor={colors.textSecondary}
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                />
-              </View>
-            </View>
+            <TextInput
+              label="Email"
+              placeholder="name@example.com"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              leftIcon={<MailIcon color={colors.textSecondary} />}
+            />
 
             {/* Mobile Number Field */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Mobile Number</Text>
-              <View style={styles.pillInputContainer}>
-                <View style={styles.inputLeftIcon}>
-                  <PhoneIcon color={colors.textSecondary} />
-                </View>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="+1 (555) 000-0000"
-                  placeholderTextColor={colors.textSecondary}
-                  value={phone}
-                  onChangeText={setPhone}
-                  keyboardType="phone-pad"
-                />
-              </View>
-            </View>
+            <TextInput
+              label="Mobile Number"
+              placeholder="+1 (555) 000-0000"
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              leftIcon={<PhoneIcon color={colors.textSecondary} />}
+            />
 
             {/* Password Field */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Password</Text>
-              <View style={styles.pillInputContainer}>
-                <View style={styles.inputLeftIcon}>
-                  <LockIcon color={colors.textSecondary} />
-                </View>
-                <TextInput
-                  style={[styles.textInput, styles.passwordInput]}
-                  placeholder="••••••••"
-                  placeholderTextColor={colors.textSecondary}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                />
-                {password.length > 0 && (
+            <TextInput
+              label="Password"
+              placeholder="••••••••"
+              value={password}
+              onChangeText={setPassword}
+              autoCapitalize="none"
+              isPassword
+              leftIcon={<LockIcon color={colors.textSecondary} />}
+              rightAccessory={
+                password.length > 0 ? (
                   <View style={styles.strengthBadge}>
                     <Text style={styles.strengthText}>Strong</Text>
                   </View>
-                )}
-                <TouchableOpacity
-                  style={styles.eyeToggle}
-                  onPress={() => setShowPassword(!showPassword)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <EyeIcon visible={showPassword} color={colors.textSecondary} />
-                </TouchableOpacity>
-              </View>
-            </View>
+                ) : undefined
+              }
+            />
 
             {/* Sign Up Primary Button */}
-            <TouchableOpacity
-              style={styles.submitButton}
+            <Button
+              title="Sign up"
               onPress={handleSignUp}
-              activeOpacity={0.88}
-            >
-              <Text style={styles.submitButtonText}>Sign up</Text>
-            </TouchableOpacity>
+              style={styles.submitButton}
+            />
 
             {/* Divider */}
             <View style={styles.dividerRow}>
@@ -316,38 +284,6 @@ const styles = StyleSheet.create({
   formContainer: {
     marginVertical: 10,
   },
-  fieldGroup: {
-    marginBottom: 18,
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  pillInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: '#EEF5F2',
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 16,
-  },
-  inputLeftIcon: {
-    marginRight: 12,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 15,
-    color: colors.text,
-    height: '100%',
-  },
-  passwordInput: {
-    paddingRight: 8,
-  },
   strengthBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -360,29 +296,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary,
   },
-  eyeToggle: {
-    padding: 4,
-  },
 
   // Primary Button
   submitButton: {
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 10,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  submitButtonText: {
-    fontSize: 16.5,
-    fontWeight: '700',
-    color: colors.white,
-    letterSpacing: 0.3,
   },
 
   // Divider

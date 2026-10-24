@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
@@ -17,13 +16,14 @@ import { colors } from '../../utils/colors';
 import {
   MailIcon,
   LockIcon,
-  EyeIcon,
   BackChevronIcon,
   DecorativeSparkle,
   GoogleSocialIcon,
   AppleSocialIcon,
   FacebookSocialIcon,
 } from '../../components/AuthIcons';
+import TextInput from '../../components/TextInput';
+import Button from '../../components/Button';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -31,7 +31,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignIn = () => {
     navigation.replace('Main');
@@ -101,49 +100,26 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           {/* Form Fields */}
           <View style={styles.formContainer}>
             {/* Email Field */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Email</Text>
-              <View style={styles.pillInputContainer}>
-                <View style={styles.inputLeftIcon}>
-                  <MailIcon color={colors.textSecondary} />
-                </View>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="name@example.com"
-                  placeholderTextColor={colors.textSecondary}
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                />
-              </View>
-            </View>
+            <TextInput
+              label="Email"
+              placeholder="name@example.com"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              leftIcon={<MailIcon color={colors.textSecondary} />}
+            />
 
             {/* Password Field */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Password</Text>
-              <View style={styles.pillInputContainer}>
-                <View style={styles.inputLeftIcon}>
-                  <LockIcon color={colors.textSecondary} />
-                </View>
-                <TextInput
-                  style={[styles.textInput, styles.passwordInput]}
-                  placeholder="••••••••"
-                  placeholderTextColor={colors.textSecondary}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                />
-                <TouchableOpacity
-                  style={styles.eyeToggle}
-                  onPress={() => setShowPassword(!showPassword)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <EyeIcon visible={showPassword} color={colors.textSecondary} />
-                </TouchableOpacity>
-              </View>
-            </View>
+            <TextInput
+              label="Password"
+              placeholder="••••••••"
+              value={password}
+              onChangeText={setPassword}
+              autoCapitalize="none"
+              isPassword
+              leftIcon={<LockIcon color={colors.textSecondary} />}
+            />
 
             {/* Forgot Password Link */}
             <TouchableOpacity
@@ -154,13 +130,11 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
 
             {/* Sign In Primary Button */}
-            <TouchableOpacity
-              style={styles.submitButton}
+            <Button
+              title="Sign in"
               onPress={handleSignIn}
-              activeOpacity={0.88}
-            >
-              <Text style={styles.submitButtonText}>Sign in</Text>
-            </TouchableOpacity>
+              style={styles.submitButton}
+            />
 
             {/* Divider */}
             <View style={styles.dividerRow}>
@@ -298,41 +272,6 @@ const styles = StyleSheet.create({
   formContainer: {
     marginVertical: 10,
   },
-  fieldGroup: {
-    marginBottom: 18,
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  pillInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: '#EEF5F2',
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 16,
-  },
-  inputLeftIcon: {
-    marginRight: 12,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 15,
-    color: colors.text,
-    height: '100%',
-  },
-  passwordInput: {
-    paddingRight: 8,
-  },
-  eyeToggle: {
-    padding: 4,
-  },
   forgotPasswordBtn: {
     alignSelf: 'flex-end',
     marginBottom: 16,
@@ -347,23 +286,7 @@ const styles = StyleSheet.create({
 
   // Primary Button
   submitButton: {
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 4,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  submitButtonText: {
-    fontSize: 16.5,
-    fontWeight: '700',
-    color: colors.white,
-    letterSpacing: 0.3,
   },
 
   // Divider

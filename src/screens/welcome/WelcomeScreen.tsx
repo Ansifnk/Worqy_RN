@@ -22,6 +22,7 @@ import {
   CalendarBookingIcon,
   SparkleIcon,
 } from './components/WelcomeIcons';
+import Button from '../../components/Button';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Welcome'>;
 
@@ -124,7 +125,7 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
           {/* CTA Actions */}
           <View style={styles.actionsContainer}>
             {/* Get Started Pill Button with Left Arrow Badge */}
-            <TouchableOpacity
+            <Button
               style={styles.getStartedButton}
               onPress={handleGetStarted}
               activeOpacity={0.88}
@@ -133,7 +134,7 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
                 <ArrowUpRight size={22} color={colors.primary} strokeWidth={2.6} />
               </View>
               <Text style={styles.getStartedText}>Get Started</Text>
-            </TouchableOpacity>
+            </Button>
 
             {/* Sign in footer link */}
             <View style={styles.footerRow}>
