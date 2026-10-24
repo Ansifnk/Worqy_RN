@@ -8,6 +8,7 @@ import {
   Platform,
   ScrollView,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -22,7 +23,10 @@ import {
 } from 'lucide-react-native';
 import TextInput from '../../components/TextInput';
 import Button from '../../components/Button';
-import { useAppContext } from '../../context/AppContext';
+import { useAppContext, User as AppUser } from '../../context/AppContext';
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from '@react-native-firebase/auth';
+import { getFirestore, doc, setDoc } from '@react-native-firebase/firestore';
+import { firebaseCollections } from '../../utils/constants';
 
 // Direct Social Icons
 const GoogleSocialIcon: React.FC = () => (
@@ -52,15 +56,73 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSignUp = () => {
-    setUser({
-      id: Date.now().toString(),
-      name: name.trim() || 'User',
-      email: email.trim(),
-    });
-    // In demo flow, proceed to main app
-    navigation.replace('Main');
+  const handleSignUp = async () => {
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedName) {
+      Alert.alert('Name Required', 'Please enter your full name.');
+      return;
+    }
+    if (!trimmedEmail) {
+      Alert.alert('Email Required', 'Please enter your email address.');
+      return;
+    }
+    if (!password) {
+      Alert.alert('Password Required', 'Please enter your password.');
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert('Password Too Short', 'Password must be at least 6 characters.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(auth, trimmedEmail, password);
+      const authUser = userCredential.user;
+
+      try {
+        await updateProfile(authUser, { displayName: trimmedName });
+      } catch (profileError) {
+        console.warn('Failed to update displayName:', profileError);
+      }
+
+      const db = getFirestore();
+      const userData: AppUser = {
+        id: authUser.uid,
+        name: trimmedName,
+        email: authUser.email || trimmedEmail,
+      };
+
+      await setDoc(doc(db, firebaseCollections.users, authUser.uid), userData);
+
+      setUser(userData);
+      navigation.replace('Main');
+    } catch (error: any) {
+      let errorMessage = 'Failed to create account. Please try again.';
+      if (error?.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email address is already registered. Please sign in instead.';
+      } else if (error?.code === 'auth/invalid-email') {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (error?.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please use at least 6 characters.';
+      } else if (error?.code === 'auth/operation-not-allowed') {
+        errorMessage = 'Email/password sign up is not enabled in Firebase console.';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      Alert.alert('Sign Up Failed', errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocialNotSupported = () => {
+    Alert.alert('Notice', 'Social sign up is not supported. Please sign up with email.');
   };
 
   const handleGoToLogin = () => {
@@ -129,6 +191,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
+              disabled={loading}
               leftIcon={<User size={20} color={colors.textSecondary} strokeWidth={2} />}
             />
 
@@ -140,6 +203,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
+              disabled={loading}
               leftIcon={<Mail size={20} color={colors.textSecondary} strokeWidth={2} />}
             />
 
@@ -151,6 +215,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               onChangeText={setPassword}
               autoCapitalize="none"
               isPassword
+              disabled={loading}
               leftIcon={<Lock size={20} color={colors.textSecondary} strokeWidth={2} />}
               rightAccessory={
                 password.length > 0 ? (
@@ -164,6 +229,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
             {/* Sign Up Primary Button */}
             <Button
               title="Sign up"
+              loading={loading}
               onPress={handleSignUp}
               style={styles.submitButton}
             />
@@ -180,7 +246,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.socialCircleBtn}
                 activeOpacity={0.8}
-                onPress={handleSignUp}
+                onPress={handleSocialNotSupported}
               >
                 <GoogleSocialIcon />
               </TouchableOpacity>
@@ -188,7 +254,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.socialCircleBtn}
                 activeOpacity={0.8}
-                onPress={handleSignUp}
+                onPress={handleSocialNotSupported}
               >
                 <AppleSocialIcon />
               </TouchableOpacity>
@@ -196,7 +262,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.socialCircleBtn}
                 activeOpacity={0.8}
-                onPress={handleSignUp}
+                onPress={handleSocialNotSupported}
               >
                 <FacebookSocialIcon />
               </TouchableOpacity>

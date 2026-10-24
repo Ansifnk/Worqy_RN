@@ -8,6 +8,7 @@ import {
   Platform,
   ScrollView,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -21,7 +22,10 @@ import {
 } from 'lucide-react-native';
 import TextInput from '../../components/TextInput';
 import Button from '../../components/Button';
-import { useAppContext } from '../../context/AppContext';
+import { useAppContext, User } from '../../context/AppContext';
+import { getAuth, signInWithEmailAndPassword } from '@react-native-firebase/auth';
+import { getFirestore, doc, getDoc, setDoc } from '@react-native-firebase/firestore';
+import { firebaseCollections } from '../../utils/constants';
 
 // Direct Social Icons
 const GoogleSocialIcon: React.FC = () => (
@@ -50,14 +54,73 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const { setUser } = useAppContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSignIn = () => {
-    setUser({
-      id: Date.now().toString(),
-      name: email ? email.split('@')[0] : 'User',
-      email: email.trim(),
-    });
-    navigation.replace('Main');
+  const handleSignIn = async () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      Alert.alert('Email Required', 'Please enter your email address.');
+      return;
+    }
+    if (!password) {
+      Alert.alert('Password Required', 'Please enter your password.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, password);
+      const authUser = userCredential.user;
+
+      const db = getFirestore();
+      const userDocRef = doc(db, firebaseCollections.users, authUser.uid);
+      const userSnap = await getDoc(userDocRef);
+
+      let userData: User;
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        userData = {
+          id: authUser.uid,
+          name: data?.name || authUser.displayName || trimmedEmail.split('@')[0],
+          email: data?.email || authUser.email || trimmedEmail,
+        };
+      } else {
+        userData = {
+          id: authUser.uid,
+          name: authUser.displayName || trimmedEmail.split('@')[0],
+          email: authUser.email || trimmedEmail,
+        };
+        await setDoc(userDocRef, userData);
+      }
+
+      setUser(userData);
+      navigation.replace('Main');
+    } catch (error: any) {
+      let errorMessage = 'Failed to sign in. Please try again.';
+      if (error?.code === 'auth/invalid-email') {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (
+        error?.code === 'auth/user-not-found' ||
+        error?.code === 'auth/wrong-password' ||
+        error?.code === 'auth/invalid-credential'
+      ) {
+        errorMessage = 'Invalid email or password.';
+      } else if (error?.code === 'auth/user-disabled') {
+        errorMessage = 'This account has been disabled.';
+      } else if (error?.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later.';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      Alert.alert('Sign In Failed', errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocialNotSupported = () => {
+    Alert.alert('Notice', 'Social sign in is not supported. Please sign in with email.');
   };
 
   const handleGoToSignup = () => {
@@ -127,6 +190,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
+              disabled={loading}
               leftIcon={<Mail size={20} color={colors.textSecondary} strokeWidth={2} />}
             />
 
@@ -138,6 +202,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               onChangeText={setPassword}
               autoCapitalize="none"
               isPassword
+              disabled={loading}
               leftIcon={<Lock size={20} color={colors.textSecondary} strokeWidth={2} />}
             />
 
@@ -145,6 +210,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               style={styles.forgotPasswordBtn}
               activeOpacity={0.7}
+              disabled={loading}
             >
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
@@ -152,6 +218,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             {/* Sign In Primary Button */}
             <Button
               title="Sign in"
+              loading={loading}
               onPress={handleSignIn}
               style={styles.submitButton}
             />
@@ -168,7 +235,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.socialCircleBtn}
                 activeOpacity={0.8}
-                onPress={handleSignIn}
+                onPress={handleSocialNotSupported}
               >
                 <GoogleSocialIcon />
               </TouchableOpacity>
@@ -176,7 +243,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.socialCircleBtn}
                 activeOpacity={0.8}
-                onPress={handleSignIn}
+                onPress={handleSocialNotSupported}
               >
                 <AppleSocialIcon />
               </TouchableOpacity>
@@ -184,7 +251,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.socialCircleBtn}
                 activeOpacity={0.8}
-                onPress={handleSignIn}
+                onPress={handleSocialNotSupported}
               >
                 <FacebookSocialIcon />
               </TouchableOpacity>
