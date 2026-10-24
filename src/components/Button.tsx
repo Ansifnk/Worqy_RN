@@ -45,9 +45,6 @@ export const Button: React.FC<ButtonProps> = ({
   ...rest
 }) => {
   const isPrimary = variant === 'primary';
-  const isSecondary = variant === 'secondary';
-  const isOutline = variant === 'outline';
-  const isGhost = variant === 'ghost';
 
   const defaultActiveOpacity = isPrimary ? 0.88 : 0.7;
 
