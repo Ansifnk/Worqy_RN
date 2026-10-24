@@ -1,6 +1,6 @@
+---
 name: react-native-pro
 description: Expert guidance, architecture patterns, performance optimization, and best practices for building cross-platform mobile apps with React Native (Expo and Bare CLI), TypeScript, and native bridges.
-
 ---
 
 # React Native Expert Skill
