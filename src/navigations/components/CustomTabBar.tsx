@@ -24,9 +24,9 @@ const TabIcon: React.FC<TabIconProps> = ({ name, focused, color, size = 22 }) =>
   switch (name) {
     case 'Home':
       return <Home size={size} color={color} strokeWidth={strokeWidth} fill={focused ? color : 'none'} />;
-    case 'Customers':
+    case 'Clients':
     case 'Explore':
-      return <Users size={size} color={color} strokeWidth={strokeWidth} />;
+      return <Users size={size} color={color} strokeWidth={strokeWidth} fill={focused ? color : 'none'} />;
     case 'Schedule':
     case 'Bookings':
       return <Calendar size={size} color={color} strokeWidth={strokeWidth} />;
@@ -71,7 +71,8 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
               : route.name;
 
           const labelText = typeof label === 'string' ? label : route.name;
-          const activeColor = colors.primary;
+          const activeColor =
+            route.name === 'Clients' ? colors.darkPlum || '#2D1225' : colors.primary;
           const inactiveColor = colors.textSecondary;
           const currentColor = isFocused ? activeColor : inactiveColor;
 
@@ -111,7 +112,9 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
               <View style={styles.tabContent}>
                 {/* Active indicator dot placed subtly above icon */}
                 <View style={styles.indicatorContainer}>
-                  {isFocused && <View style={styles.topActiveDot} />}
+                  {isFocused && (
+                    <View style={[styles.topActiveDot, { backgroundColor: activeColor }]} />
+                  )}
                 </View>
 
                 <View style={styles.iconWrapper}>

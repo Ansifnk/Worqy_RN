@@ -6,7 +6,7 @@ const ExploreScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Text style={styles.title}>Customers & Spaces</Text>
+      <Text style={styles.title}>Clients & Spaces</Text>
       <Text style={styles.subtitle}>Discover workspaces, team members & clients</Text>
     </View>
   );
