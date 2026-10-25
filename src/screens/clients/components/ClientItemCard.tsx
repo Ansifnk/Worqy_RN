@@ -1,18 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { MoreVertical } from 'lucide-react-native';
-import { ClientLogo, ClientLogoType } from './ClientLogos';
+import { ClientLogo } from './ClientLogos';
 import { colors } from '../../../utils/colors';
+import { ClientItem, ClientStatus } from '../types';
 
-export type ClientStatus = 'Active' | 'Completed' | 'On Hold';
-
-export interface ClientItem {
-  id: string;
-  name: string;
-  category: string;
-  status: ClientStatus;
-  logoType: ClientLogoType;
-}
+export type { ClientItem, ClientStatus };
 
 interface ClientItemCardProps {
   item: ClientItem;
@@ -31,6 +24,16 @@ export const ClientItemCard: React.FC<ClientItemCardProps> = ({
         return {
           bg: colors.statusActiveBg || '#EAF6EE',
           text: colors.statusActiveText || '#238349',
+        };
+      case 'Lead':
+        return {
+          bg: '#EBF4FF',
+          text: '#2563EB',
+        };
+      case 'Inactive':
+        return {
+          bg: '#F1F5F9',
+          text: '#64748B',
         };
       case 'Completed':
         return {
@@ -62,7 +65,7 @@ export const ClientItemCard: React.FC<ClientItemCardProps> = ({
     >
       {/* Client Avatar / Logo */}
       <View style={styles.logoWrapper}>
-        <ClientLogo type={item.logoType} name={item.name} size={50} />
+        <ClientLogo type={item.logoType || 'custom'} name={item.name} size={50} />
       </View>
 
       {/* Info: Name & Project category */}
