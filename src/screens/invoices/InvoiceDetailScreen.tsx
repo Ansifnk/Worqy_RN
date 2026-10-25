@@ -23,7 +23,6 @@ import {
 } from 'lucide-react-native';
 import { colors } from '../../utils/colors';
 import { useInvoice } from '../../hooks/useInvoice';
-import InvoiceClientAvatar from './components/InvoiceClientAvatar';
 import InvoiceStatusBadge from './components/InvoiceStatusBadge';
 import { formatCurrency } from './components/InvoiceItemCard';
 import { InvoiceStatus } from './types';
@@ -187,12 +186,7 @@ export const InvoiceDetailScreen: React.FC = () => {
 
         {/* Client Card */}
         <View style={styles.clientCard}>
-          <InvoiceClientAvatar
-            letter={invoice.avatarLetter}
-            name={invoice.clientName}
-            color={invoice.avatarColor}
-            size={48}
-          />
+
           <View style={styles.clientDetails}>
             <Text style={styles.clientName}>{invoice.clientName}</Text>
             {invoice.clientEmail ? (

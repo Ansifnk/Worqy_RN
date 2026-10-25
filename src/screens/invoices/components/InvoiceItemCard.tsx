@@ -3,7 +3,6 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { MoreVertical } from 'lucide-react-native';
 import { colors } from '../../../utils/colors';
 import { Invoice } from '../types';
-import InvoiceClientAvatar from './InvoiceClientAvatar';
 import InvoiceStatusBadge from './InvoiceStatusBadge';
 
 interface InvoiceItemCardProps {
@@ -28,13 +27,7 @@ export const InvoiceItemCard: React.FC<InvoiceItemCardProps> = ({
       activeOpacity={0.7}
     >
       <View style={styles.cardContent}>
-        {/* Left Avatar */}
-        <InvoiceClientAvatar
-          letter={item.avatarLetter}
-          name={item.clientName}
-          color={item.avatarColor}
-          size={42}
-        />
+
 
         {/* Middle Info */}
         <View style={styles.infoContainer}>
