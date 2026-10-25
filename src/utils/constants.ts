@@ -3,4 +3,5 @@ export const firebaseCollections = {
     clients: 'CLIENTS',
     schedules: 'SCHEDULES',
     tasks: 'TASKS',
+    invoices: 'INVOICES',
 };

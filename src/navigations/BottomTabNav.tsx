@@ -4,15 +4,16 @@ import CustomTabBar from './components/CustomTabBar';
 import HomeScreen from '../screens/home/HomeScreen';
 import ClientsScreen from '../screens/clients/ClientsScreen';
 import ScheduleScreen from '../screens/schedule/ScheduleScreen';
-import ProfileScreen from '../screens/profile/ProfileScreen';
 import TasksScreen from '../screens/tasks/TasksScreen';
+
+import InvoicesScreen from '../screens/invoices/InvoicesScreen';
 
 export type BottomTabParamList = {
   Home: undefined;
   Clients: undefined;
   Schedule: undefined;
   Tasks: undefined;
-  Pages: undefined;
+  Invoices: undefined;
 };
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -35,7 +36,7 @@ export const BottomTabNav: React.FC = () => {
       <Tab.Screen
         name="Clients"
         component={ClientsScreen}
-        options={{ tabBarLabel: 'Clients' }}
+        options={{ tabBarLabel: 'Customers' }}
       />
       <Tab.Screen
         name="Schedule"
@@ -48,9 +49,9 @@ export const BottomTabNav: React.FC = () => {
         options={{ tabBarLabel: 'Tasks' }}
       />
       <Tab.Screen
-        name="Pages"
-        component={ProfileScreen}
-        options={{ tabBarLabel: 'Pages' }}
+        name="Invoices"
+        component={InvoicesScreen}
+        options={{ tabBarLabel: 'Invoices' }}
       />
     </Tab.Navigator>
   );

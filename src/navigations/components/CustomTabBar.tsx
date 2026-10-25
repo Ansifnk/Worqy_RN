@@ -32,6 +32,7 @@ const TabIcon: React.FC<TabIconProps> = ({ name, focused, color, size = 22 }) =>
       return <Calendar size={size} color={color} strokeWidth={strokeWidth} />;
     case 'Tasks':
       return <CheckSquare size={size} color={color} strokeWidth={strokeWidth} />;
+    case 'Invoices':
     case 'Pages':
     case 'Profile':
       return <FileText size={size} color={color} strokeWidth={strokeWidth} />;
@@ -74,7 +75,7 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
 
           const labelText = typeof label === 'string' ? label : route.name;
           const activeColor =
-            route.name === 'Clients' || route.name === 'Tasks'
+            route.name === 'Clients' || route.name === 'Tasks' || route.name === 'Invoices'
               ? colors.darkPlum || '#2D1225'
               : colors.primary;
           const inactiveColor = colors.textSecondary;
