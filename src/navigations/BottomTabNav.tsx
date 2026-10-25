@@ -3,7 +3,7 @@ import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/b
 import CustomTabBar from './components/CustomTabBar';
 import HomeScreen from '../screens/home/HomeScreen';
 import ClientsScreen from '../screens/clients/ClientsScreen';
-import BookingsScreen from '../screens/bookings/BookingsScreen';
+import ScheduleScreen from '../screens/schedule/ScheduleScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 
 export type BottomTabParamList = {
@@ -37,7 +37,7 @@ export const BottomTabNav: React.FC = () => {
       />
       <Tab.Screen
         name="Schedule"
-        component={BookingsScreen}
+        component={ScheduleScreen}
         options={{ tabBarLabel: 'Schedule' }}
       />
       <Tab.Screen
