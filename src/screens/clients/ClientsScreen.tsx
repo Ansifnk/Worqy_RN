@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -16,162 +16,25 @@ import ClientFilterTabs, { FilterStatus } from './components/ClientFilterTabs';
 import ClientItemCard from './components/ClientItemCard';
 import ClientFormModal from './components/ClientFormModal';
 import { ClientItem, ClientFormData } from './types';
-
-const INITIAL_CLIENTS: ClientItem[] = [
-  {
-    id: 'c-1',
-    name: 'Bricado',
-    category: 'Active Project',
-    status: 'Active',
-    logoType: 'bricado',
-    clientType: 'Company',
-    companyName: 'Bricado Group Inc.',
-    email: 'contact@bricado.com',
-    phone: '+1 (415) 890-2341',
-    tags: ['VIP', 'Enterprise'],
-    clientSource: 'Referral',
-  },
-  {
-    id: 'c-2',
-    name: 'NKT Electronics',
-    category: 'Website Development',
-    status: 'Active',
-    logoType: 'nkt',
-    clientType: 'Company',
-    companyName: 'NKT Tech Corp',
-    email: 'hello@nktelectronics.com',
-    phone: '+1 (512) 432-8711',
-    tags: ['Long-term'],
-    clientSource: 'Website',
-  },
-  {
-    id: 'c-3',
-    name: 'Britauria',
-    category: 'Mobile App',
-    status: 'Completed',
-    logoType: 'britauria',
-    clientType: 'Company',
-    companyName: 'Britauria Labs',
-    email: 'team@britauria.io',
-    phone: '+44 20 7946 0991',
-    tags: ['Completed'],
-    clientSource: 'LinkedIn',
-  },
-  {
-    id: 'c-4',
-    name: 'Teckito',
-    category: 'UI/UX Design',
-    status: 'Active',
-    logoType: 'teckito',
-    clientType: 'Company',
-    companyName: 'Teckito Studio',
-    email: 'info@teckito.com',
-    tags: ['High Priority'],
-    clientSource: 'Referral',
-  },
-  {
-    id: 'c-5',
-    name: 'Pantone Consultants',
-    category: 'Maintenance',
-    status: 'Active',
-    logoType: 'pantone',
-    clientType: 'Company',
-    companyName: 'Pantone Global',
-    email: 'consult@pantone.com',
-    tags: ['Long-term'],
-    clientSource: 'Direct Outreach',
-  },
-  {
-    id: 'c-6',
-    name: 'Indian Breeze',
-    category: 'E-commerce',
-    status: 'On Hold',
-    logoType: 'indianBreeze',
-    clientType: 'Company',
-    companyName: 'Indian Breeze Retail Ltd.',
-    email: 'support@indianbreeze.in',
-    clientSource: 'Website',
-  },
-  {
-    id: 'c-7',
-    name: 'Kanshub',
-    category: 'Consultation',
-    status: 'Active',
-    logoType: 'kanshub',
-    clientType: 'Company',
-    companyName: 'Kanshub Digital',
-    email: 'team@kanshub.com',
-    clientSource: 'Referral',
-  },
-  {
-    id: 'c-8',
-    name: 'Apex Studio',
-    category: 'Brand Identity',
-    status: 'Active',
-    logoType: 'apex',
-    clientType: 'Company',
-    companyName: 'Apex Creative Co.',
-    email: 'design@apexstudio.com',
-    tags: ['VIP'],
-    clientSource: 'LinkedIn',
-  },
-  {
-    id: 'c-9',
-    name: 'Zenith Health',
-    category: 'Health Tech Platform',
-    status: 'Active',
-    logoType: 'zenith',
-    clientType: 'Company',
-    companyName: 'Zenith Healthcare',
-    email: 'info@zenithhealth.org',
-    tags: ['Enterprise'],
-    clientSource: 'Referral',
-  },
-  {
-    id: 'c-10',
-    name: 'Lumina Labs',
-    category: 'AI Research',
-    status: 'Active',
-    logoType: 'lumina',
-    clientType: 'Company',
-    companyName: 'Lumina AI Inc',
-    email: 'research@luminalabs.ai',
-    tags: ['High Priority'],
-    clientSource: 'Conference',
-  },
-  {
-    id: 'c-11',
-    name: 'Nova Robotics',
-    category: 'Automation System',
-    status: 'Completed',
-    logoType: 'nova',
-    clientType: 'Company',
-    companyName: 'Nova Automations',
-    email: 'support@novarobotics.com',
-    clientSource: 'Referral',
-  },
-  {
-    id: 'c-12',
-    name: 'Solaria Clean',
-    category: 'Renewable Energy',
-    status: 'Completed',
-    logoType: 'solaria',
-    clientType: 'Company',
-    companyName: 'Solaria Energy Corp',
-    email: 'contact@solariaclean.com',
-    clientSource: 'Website',
-  },
-];
+import { useClient } from '../../hooks/useClient';
+import { LoadingView } from '../../components/LoadingView';
 
 export const ClientsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const [clients, setClients] = useState<ClientItem[]>(INITIAL_CLIENTS);
+  const { clients, loading, error, addClient, updateClient, deleteClient, refresh } = useClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<FilterStatus>('all');
+  const [refreshing, setRefreshing] = useState(false);
 
   // Modal State for Add / Edit
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const [editingClient, setEditingClient] = useState<ClientItem | null>(null);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  }, [refresh]);
 
   const counts = useMemo(() => {
     const all = clients.length;
@@ -219,8 +82,12 @@ export const ClientsScreen: React.FC = () => {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            setClients((prev) => prev.filter((c) => c.id !== item.id));
+          onPress: async () => {
+            try {
+              await deleteClient(item.id);
+            } catch (err: any) {
+              Alert.alert('Error', err?.message || 'Failed to delete client');
+            }
           },
         },
       ]
@@ -255,35 +122,17 @@ export const ClientsScreen: React.FC = () => {
     ]);
   };
 
-  const handleFormSubmit = (data: ClientFormData) => {
-    if (editingClient) {
-      // Edit existing client
-      setClients((prev) =>
-        prev.map((c) =>
-          c.id === editingClient.id
-            ? {
-                ...c,
-                ...data,
-                category:
-                  data.companyName ||
-                  (data.clientType === 'Company' ? 'Enterprise' : 'Personal Client'),
-              }
-            : c
-        )
-      );
-      Alert.alert('Client Updated', `"${data.name}" has been updated successfully.`);
-    } else {
-      // Add new client
-      const newClient: ClientItem = {
-        ...data,
-        id: `client-${Date.now()}`,
-        category:
-          data.companyName ||
-          (data.clientType === 'Company' ? 'Enterprise' : 'Personal Client'),
-        logoType: 'custom',
-      };
-      setClients((prev) => [newClient, ...prev]);
-      Alert.alert('Client Added', `"${data.name}" has been added to your client list.`);
+  const handleFormSubmit = async (data: ClientFormData) => {
+    try {
+      if (editingClient) {
+        await updateClient(editingClient.id, data);
+        Alert.alert('Client Updated', `"${data.name}" has been updated successfully.`);
+      } else {
+        await addClient(data);
+        Alert.alert('Client Added', `"${data.name}" has been added to your client list.`);
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Failed to save client');
     }
   };
 
@@ -326,15 +175,26 @@ export const ClientsScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         onScrollBeginDrag={Keyboard.dismiss}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No clients found</Text>
-            <Text style={styles.emptySubtitle}>
-              {searchQuery.trim()
-                ? `No clients matching "${searchQuery}"`
-                : 'No clients available in this category'}
-            </Text>
-          </View>
+          loading ? (
+            <LoadingView message="Loading clients..." style={styles.emptyContainer} />
+          ) : error ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyTitle}>Unable to load clients</Text>
+              <Text style={styles.emptySubtitle}>{error}</Text>
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyTitle}>No clients found</Text>
+              <Text style={styles.emptySubtitle}>
+                {searchQuery.trim()
+                  ? `No clients matching "${searchQuery}"`
+                  : 'No clients available yet. Tap "+ New Client" to add one.'}
+              </Text>
+            </View>
+          )
         }
       />
 

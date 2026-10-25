@@ -1,3 +1,4 @@
 export const firebaseCollections = {
-    users: 'USERS'
+    users: 'USERS',
+    clients: 'CLIENTS'
 }

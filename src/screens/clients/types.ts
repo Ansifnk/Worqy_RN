@@ -25,4 +25,7 @@ export interface ClientItem extends ClientFormData {
   id: string;
   category: string;
   logoType?: string;
+  userId: string;
+  createdAt: any;
+  updatedAt: any;
 }
