@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Home, Users, Calendar, FileText } from 'lucide-react-native';
+import { Home, Users, Calendar, FileText, CheckSquare } from 'lucide-react-native';
 import { colors } from '../../utils/colors';
 
 interface TabIconProps {
@@ -30,6 +30,8 @@ const TabIcon: React.FC<TabIconProps> = ({ name, focused, color, size = 22 }) =>
     case 'Schedule':
     case 'Bookings':
       return <Calendar size={size} color={color} strokeWidth={strokeWidth} />;
+    case 'Tasks':
+      return <CheckSquare size={size} color={color} strokeWidth={strokeWidth} />;
     case 'Pages':
     case 'Profile':
       return <FileText size={size} color={color} strokeWidth={strokeWidth} />;
@@ -72,7 +74,9 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
 
           const labelText = typeof label === 'string' ? label : route.name;
           const activeColor =
-            route.name === 'Clients' ? colors.darkPlum || '#2D1225' : colors.primary;
+            route.name === 'Clients' || route.name === 'Tasks'
+              ? colors.darkPlum || '#2D1225'
+              : colors.primary;
           const inactiveColor = colors.textSecondary;
           const currentColor = isFocused ? activeColor : inactiveColor;
 

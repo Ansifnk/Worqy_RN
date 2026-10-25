@@ -5,11 +5,13 @@ import HomeScreen from '../screens/home/HomeScreen';
 import ClientsScreen from '../screens/clients/ClientsScreen';
 import ScheduleScreen from '../screens/schedule/ScheduleScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
+import TasksScreen from '../screens/tasks/TasksScreen';
 
 export type BottomTabParamList = {
   Home: undefined;
   Clients: undefined;
   Schedule: undefined;
+  Tasks: undefined;
   Pages: undefined;
 };
 
@@ -39,6 +41,11 @@ export const BottomTabNav: React.FC = () => {
         name="Schedule"
         component={ScheduleScreen}
         options={{ tabBarLabel: 'Schedule' }}
+      />
+      <Tab.Screen
+        name="Tasks"
+        component={TasksScreen}
+        options={{ tabBarLabel: 'Tasks' }}
       />
       <Tab.Screen
         name="Pages"

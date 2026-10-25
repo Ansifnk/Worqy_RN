@@ -35,4 +35,14 @@ export const colors = {
     statusCompletedText: "#3566B8",
     statusOnHoldBg: "#FEF3E6",
     statusOnHoldText: "#BA6F18",
+
+    // Task badge colors
+    priorityHighBg: "#FDE8E8",
+    priorityHighText: "#D64545",
+    priorityMediumBg: "#FEF0DC",
+    priorityMediumText: "#D97706",
+    priorityLowBg: "#E6F5EC",
+    priorityLowText: "#24865B",
+    statusInProgressBg: "#EDE9FE",
+    statusInProgressText: "#6C47C8",
 };
