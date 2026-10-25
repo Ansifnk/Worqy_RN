@@ -23,7 +23,7 @@ import { firebaseCollections } from '../../utils/constants';
 import AuthHeader from '../../components/AuthHeader';
 import TextInput from '../../components/TextInput';
 import Button from '../../components/Button';
-import SocialAuthButtons from '../../components/SocialAuthButtons';
+// import SocialAuthButtons from '../../components/SocialAuthButtons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
 
@@ -110,9 +110,9 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleSocialNotSupported = () => {
-    Alert.alert('Notice', 'Social sign up is not supported. Please sign up with email.');
-  };
+  // const handleSocialNotSupported = () => {
+  //   Alert.alert('Notice', 'Social sign up is not supported. Please sign up with email.');
+  // };
 
   const handleGoToLogin = () => {
     navigation.navigate('Login');
@@ -247,13 +247,13 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
             />
 
             {/* Reusable Social Auth Buttons */}
-            <SocialAuthButtons
+            {/* <SocialAuthButtons
               dividerText="or sign up with"
               disabled={loading}
               onPressGoogle={handleSocialNotSupported}
               onPressApple={handleSocialNotSupported}
               onPressFacebook={handleSocialNotSupported}
-            />
+            /> */}
           </View>
 
           {/* Switch to Login Link */}

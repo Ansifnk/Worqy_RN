@@ -1,10 +1,13 @@
 import React from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer, NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import BottomTabNav, { BottomTabParamList } from './BottomTabNav';
 import LoginScreen from '../screens/login/LoginScreen';
 import SignupScreen from '../screens/signup/SignupScreen';
 import WelcomeScreen from '../screens/welcome/WelcomeScreen';
+import { useAppContext } from '../context/AppContext';
+import { colors } from '../utils/colors';
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -16,22 +19,54 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppNav: React.FC = () => {
+  const { user, loading } = useAppContext();
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Welcome"
+        key={user ? 'authenticated' : 'unauthenticated'}
+        initialRouteName={user ? 'Main' : 'Welcome'}
         screenOptions={{
           headerShown: false,
           animation: 'slide_from_right',
         }}
       >
-        <Stack.Screen name="Welcome" component={WelcomeScreen} />
-        <Stack.Screen name="Main" component={BottomTabNav} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Signup" component={SignupScreen} />
+        {user ? (
+          <>
+            <Stack.Screen name="Main" component={BottomTabNav} />
+            <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Signup" component={SignupScreen} />
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Signup" component={SignupScreen} />
+            <Stack.Screen name="Main" component={BottomTabNav} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
 };
 
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
 export default AppNav;
+
