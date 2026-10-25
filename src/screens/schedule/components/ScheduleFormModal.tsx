@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: '#F0ECE7',
+    backgroundColor: colors.surfaceSecondary,
   },
   quickDateBtnActive: {
     backgroundColor: colors.primary,
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: '#F0ECE7',
+    backgroundColor: colors.surfaceSecondary,
   },
   quickTimeChipActive: {
     backgroundColor: colors.primary,

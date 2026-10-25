@@ -83,12 +83,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabItemSelected: {
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
   },
   tabItemUnselected: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#E7E5E4',
+    borderColor: colors.border,
   },
   tabLabel: {
     fontSize: 13,
@@ -96,11 +96,11 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   tabLabelSelected: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontWeight: '600',
   },
   tabLabelUnselected: {
-    color: '#57534E',
+    color: colors.textSecondary,
   },
 });
 

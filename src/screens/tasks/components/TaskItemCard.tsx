@@ -128,22 +128,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: 'transparent',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#EBE5DC',
+    borderBottomColor: colors.border,
   },
   checkbox: {
     width: 22,
     height: 22,
     borderRadius: 7,
     borderWidth: 1.5,
-    borderColor: '#C8BEB2',
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
   },
   checkboxDone: {
-    backgroundColor: colors.darkPlum || '#2D1225',
-    borderColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   content: {
     flex: 1,
@@ -152,17 +152,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '700',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
     marginBottom: 3,
   },
   titleDone: {
     textDecorationLine: 'line-through',
-    color: '#9CA3AF',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   subtitle: {
     fontSize: 13,
-    color: '#7E8B88',
+    color: colors.textSecondary,
     fontWeight: '400',
   },
   metaColumn: {
@@ -174,10 +174,10 @@ const styles = StyleSheet.create({
   dueDate: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
   },
   textMuted: {
-    color: '#9CA3AF',
+    color: colors.textSecondary,
   },
   priorityBadge: {
     paddingHorizontal: 8,

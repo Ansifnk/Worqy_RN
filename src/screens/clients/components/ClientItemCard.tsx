@@ -94,7 +94,7 @@ export const ClientItemCard: React.FC<ClientItemCardProps> = ({
         accessibilityRole="button"
         accessibilityLabel="More options"
       >
-        <MoreVertical size={18} color="#A8A29D" />
+        <MoreVertical size={18} color={colors.textSecondary} />
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -120,13 +120,13 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
     letterSpacing: -0.2,
   },
   categoryText: {
     fontSize: 13.5,
     fontWeight: '400',
-    color: '#7C7670',
+    color: colors.textSecondary,
     marginTop: 3,
     letterSpacing: -0.1,
   },

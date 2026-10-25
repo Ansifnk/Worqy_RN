@@ -49,7 +49,7 @@ export const TaskChecklistSection: React.FC<TaskChecklistSectionProps> = ({
           onPress={() => setIsAdding(true)}
           activeOpacity={0.7}
         >
-          <Plus size={16} color={colors.darkPlum || '#2D1225'} strokeWidth={2.5} />
+          <Plus size={16} color={colors.primary} strokeWidth={2.5} />
           <Text style={styles.addBtnText}>Add</Text>
         </TouchableOpacity>
       </View>
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
   },
   addBtn: {
     flexDirection: 'row',
@@ -161,14 +161,14 @@ const styles = StyleSheet.create({
   addBtnText: {
     fontSize: 14,
     fontWeight: '700',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.primary,
   },
   inlineAddRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 12,
-    backgroundColor: '#F3EFEA',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -176,14 +176,14 @@ const styles = StyleSheet.create({
   inlineInput: {
     flex: 1,
     fontSize: 14,
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
     paddingVertical: 6,
   },
   inlineSaveBtn: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -206,26 +206,26 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 1.8,
-    borderColor: '#C4BAB0',
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   circleCheckActive: {
-    backgroundColor: '#3538CD', // modern vivid indigo / purple as seen in design
-    borderColor: '#3538CD',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   itemTitleWrapper: {
     flex: 1,
   },
   itemTitle: {
     fontSize: 15,
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
     fontWeight: '500',
   },
   itemTitleCompleted: {
     textDecorationLine: 'line-through',
-    color: '#9CA3AF',
+    color: colors.textSecondary,
   },
   deleteBtn: {
     padding: 4,

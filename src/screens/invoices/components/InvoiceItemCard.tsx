@@ -64,14 +64,14 @@ export const InvoiceItemCard: React.FC<InvoiceItemCardProps> = ({
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#F0ECE8',
-    shadowColor: '#000000',
+    borderColor: colors.border,
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
     shadowRadius: 6,
@@ -90,13 +90,13 @@ const styles = StyleSheet.create({
   invoiceNumber: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
     marginBottom: 2,
     letterSpacing: -0.2,
   },
   clientName: {
     fontSize: 13,
-    color: '#78716C',
+    color: colors.textSecondary,
     fontWeight: '400',
   },
   amountStatusContainer: {
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   amountText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
     marginBottom: 4,
     letterSpacing: -0.2,
   },

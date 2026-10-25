@@ -86,12 +86,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabPillActive: {
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
   },
   tabPillInactive: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#E8E2D9',
+    borderColor: colors.border,
   },
   tabText: {
     fontSize: 13,
@@ -102,9 +102,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   tabTextInactive: {
-    color: colors.darkPlum || '#2D1225',
+    color: colors.textSecondary,
     fontWeight: '500',
-    opacity: 0.85,
   },
 });
 

@@ -50,7 +50,7 @@ export const ClientLogo: React.FC<ClientLogoProps> = ({
               d="M16 6.5C19 6.5 22.5 10 22.5 15C22.5 19.5 19 23 16 23C13 23 9.5 19.5 9.5 15C9.5 10 13 6.5 16 6.5Z"
               fill="#22804A"
             />
-            <Circle cx="16" cy="15.5" r="3.2" fill="#FAF8F5" />
+            <Circle cx="16" cy="15.5" r="3.2" fill="#F5FAF8" />
           </Svg>
         </View>
       );
@@ -149,13 +149,13 @@ export const ClientLogo: React.FC<ClientLogoProps> = ({
             {/* Mask slit / eyes */}
             <Path
               d="M12 14L15 16L12 17M20 14L17 16L20 17"
-              stroke="#FAF8F5"
+              stroke="#F5FAF8"
               strokeWidth="1.5"
               strokeLinecap="round"
             />
             <Path
               d="M16 18V22"
-              stroke="#FAF8F5"
+              stroke="#F5FAF8"
               strokeWidth="1.5"
               strokeLinecap="round"
             />

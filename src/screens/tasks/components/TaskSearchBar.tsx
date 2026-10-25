@@ -53,7 +53,7 @@ export const TaskSearchBar: React.FC<TaskSearchBarProps> = ({
         activeOpacity={0.7}
         accessibilityLabel="Filter Options"
       >
-        <SlidersHorizontal size={18} color={colors.darkPlum || '#2D1225'} />
+        <SlidersHorizontal size={18} color={colors.primary} />
       </TouchableOpacity>
     </View>
   );
@@ -71,7 +71,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0ECE7',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 24,
     paddingHorizontal: 16,
     height: 48,
@@ -80,7 +82,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 15,
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
     paddingVertical: 0,
   },
   clearBtn: {
@@ -90,11 +92,11 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#EFEAE4',
+    borderColor: colors.border,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,

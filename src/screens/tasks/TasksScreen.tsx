@@ -175,14 +175,14 @@ export const TasksScreen: React.FC = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor={colors.darkPlum || '#2D1225'}
-              colors={[colors.darkPlum || '#2D1225']}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <View style={styles.emptyIconCircle}>
-                <CheckCircle2 size={36} color="#A79F97" />
+                <CheckCircle2 size={36} color={colors.textSecondary} />
               </View>
               <Text style={styles.emptyTitle}>
                 {searchQuery
@@ -207,7 +207,7 @@ export const TasksScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF8F5',
+    backgroundColor: colors.background,
   },
   listContent: {
     paddingBottom: 90,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#EFEAE4',
+    backgroundColor: colors.surfaceSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -235,12 +235,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#8C857D',
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },

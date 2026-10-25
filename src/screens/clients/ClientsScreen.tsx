@@ -214,7 +214,7 @@ export default ClientsScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.warmBackground || '#FAF8F5',
+    backgroundColor: colors.background,
   },
   listContent: {
     paddingTop: 4,
@@ -228,12 +228,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
     marginBottom: 6,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#8A847E',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
 });

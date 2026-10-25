@@ -108,7 +108,7 @@ export const TaskDetailScreen: React.FC = () => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <ArrowLeft size={22} color={colors.darkPlum || '#2D1225'} />
+            <ArrowLeft size={22} color={colors.text} />
           </TouchableOpacity>
         </View>
         <View style={styles.notFoundContainer}>
@@ -369,7 +369,7 @@ export const TaskDetailScreen: React.FC = () => {
             onPress={() => navigation.goBack()}
             activeOpacity={0.7}
           >
-            <ArrowLeft size={22} color={colors.darkPlum || '#2D1225'} />
+            <ArrowLeft size={22} color={colors.text} />
           </TouchableOpacity>
 
           {isNew ? (
@@ -394,7 +394,7 @@ export const TaskDetailScreen: React.FC = () => {
               onPress={handleMorePress}
               activeOpacity={0.7}
             >
-              <MoreHorizontal size={22} color={colors.darkPlum || '#2D1225'} />
+              <MoreHorizontal size={22} color={colors.text} />
             </TouchableOpacity>
           )}
         </View>
@@ -692,7 +692,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#FAF8F5',
+    backgroundColor: colors.background,
   },
   topHeader: {
     flexDirection: 'row',
@@ -711,7 +711,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -739,15 +739,15 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#C8BEB2',
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 2,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
   },
   bigCheckboxDone: {
-    backgroundColor: colors.darkPlum || '#2D1225',
-    borderColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   titleWrapper: {
     flex: 1,
@@ -755,7 +755,7 @@ const styles = StyleSheet.create({
   titleInput: {
     fontSize: 22,
     fontWeight: '800',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
     lineHeight: 28,
     paddingVertical: 0,
     letterSpacing: -0.3,
@@ -763,7 +763,7 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
     lineHeight: 28,
     letterSpacing: -0.3,
   },
@@ -816,18 +816,18 @@ const styles = StyleSheet.create({
   },
   attrLabel: {
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   attrValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
   },
   projectInput: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
     textAlign: 'right',
     paddingVertical: 0,
     flex: 1,
@@ -854,14 +854,14 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#E7DFD6',
+    backgroundColor: colors.surfaceSecondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarMiniText: {
     fontSize: 11,
     fontWeight: '700',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.primary,
   },
   descriptionSection: {
     marginBottom: 16,
@@ -869,25 +869,25 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 17,
     fontWeight: '700',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
     marginBottom: 8,
   },
   descInput: {
     fontSize: 14,
-    color: '#4B5563',
+    color: colors.text,
     lineHeight: 22,
-    backgroundColor: '#F3EFEA',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 12,
     textAlignVertical: 'top',
   },
   descriptionText: {
     fontSize: 14,
-    color: '#4B5563',
+    color: colors.text,
     lineHeight: 22,
   },
   bottomCreateBtn: {
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
@@ -905,7 +905,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   commentItem: {
-    backgroundColor: '#F3EFEA',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -918,28 +918,28 @@ const styles = StyleSheet.create({
   commentAuthor: {
     fontSize: 12,
     fontWeight: '700',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
   },
   commentTime: {
     fontSize: 11,
-    color: '#9CA3AF',
+    color: colors.textSecondary,
   },
   commentContent: {
     fontSize: 13,
-    color: '#374151',
+    color: colors.text,
     lineHeight: 18,
   },
   bottomBarWrapper: {
     paddingHorizontal: 20,
     paddingTop: 8,
-    backgroundColor: '#FAF8F5',
+    backgroundColor: colors.background,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#EBE5DC',
+    borderTopColor: colors.border,
   },
   commentInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EFEAE4',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 24,
     paddingHorizontal: 14,
     height: 46,
@@ -951,14 +951,14 @@ const styles = StyleSheet.create({
   commentInput: {
     flex: 1,
     fontSize: 14,
-    color: colors.darkPlum || '#2D1225',
+    color: colors.text,
     paddingVertical: 0,
   },
   sendButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },

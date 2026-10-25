@@ -46,11 +46,11 @@ const styles = StyleSheet.create({
   },
   fullscreen: {
     flex: 1,
-    backgroundColor: colors.warmBackground || '#FAF8F5',
+    backgroundColor: colors.background,
   },
   message: {
     fontSize: 14,
-    color: '#8A847E',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 12,
   },

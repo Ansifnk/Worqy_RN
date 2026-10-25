@@ -253,7 +253,7 @@ export const InvoiceDetailScreen: React.FC = () => {
               onPress={handleEdit}
               activeOpacity={0.7}
             >
-              <Plus size={16} color={colors.darkPlum || '#2D1225'} />
+              <Plus size={16} color={colors.primary} />
               <Text style={styles.addItemText}>Add</Text>
             </TouchableOpacity>
           </View>
@@ -327,7 +327,7 @@ export const InvoiceDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF8F5',
+    backgroundColor: colors.background,
   },
   topNav: {
     flexDirection: 'row',
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   invoiceTitle: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#1C1917',
+    color: colors.text,
     letterSpacing: -0.5,
   },
   clientCard: {
@@ -367,12 +367,12 @@ const styles = StyleSheet.create({
   clientName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
     letterSpacing: -0.2,
   },
   clientEmail: {
     fontSize: 13,
-    color: '#78716C',
+    color: colors.textSecondary,
     marginTop: 2,
   },
   metaSection: {
@@ -391,16 +391,16 @@ const styles = StyleSheet.create({
   },
   metaLabel: {
     fontSize: 14,
-    color: '#78716C',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   metaValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1C1917',
+    color: colors.text,
   },
   summaryBox: {
-    backgroundColor: '#F3EFEA',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 16,
     padding: 18,
     marginBottom: 28,
@@ -413,17 +413,17 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
-    color: '#78716C',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   summaryValue: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1C1917',
+    color: colors.text,
   },
   summaryDivider: {
     height: 1,
-    backgroundColor: '#E7E2DB',
+    backgroundColor: colors.border,
     marginVertical: 10,
   },
   totalRow: {
@@ -434,12 +434,12 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#1C1917',
+    color: colors.text,
   },
   totalValue: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#1C1917',
+    color: colors.text,
   },
   itemsSection: {
     marginBottom: 24,
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
   itemsTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
   },
   addItemButton: {
     flexDirection: 'row',
@@ -465,20 +465,20 @@ const styles = StyleSheet.create({
   addItemText: {
     fontSize: 14,
     fontWeight: '700',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.primary,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0ECE8',
+    borderBottomColor: colors.border,
   },
   itemIconContainer: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#F5F1EC',
+    backgroundColor: colors.surfaceSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -489,22 +489,22 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1C1917',
+    color: colors.text,
     marginBottom: 2,
   },
   itemSubtitle: {
     fontSize: 12,
-    color: '#78716C',
+    color: colors.textSecondary,
   },
   itemAmount: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
     marginLeft: 8,
   },
   noItemsText: {
     fontSize: 13,
-    color: '#A8A29E',
+    color: colors.textSecondary,
     fontStyle: 'italic',
     paddingVertical: 10,
   },
@@ -513,13 +513,13 @@ const styles = StyleSheet.create({
   },
   notesTitle: {
     fontSize: 13,
-    color: '#78716C',
+    color: colors.textSecondary,
     fontWeight: '600',
     marginBottom: 6,
   },
   notesContent: {
     fontSize: 14,
-    color: '#44403C',
+    color: colors.text,
     lineHeight: 20,
   },
   bottomActionBar: {
@@ -527,22 +527,22 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#FAF8F5',
+    backgroundColor: colors.background,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#F0ECE8',
+    borderTopColor: colors.border,
     gap: 10,
   },
   moreActionBtn: {
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#E7E5E4',
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -550,9 +550,9 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#E7E5E4',
+    borderColor: colors.border,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -561,13 +561,13 @@ const styles = StyleSheet.create({
   downloadPdfText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1C1917',
+    color: colors.text,
   },
   sendBtn: {
     flex: 1,
     height: 48,
     borderRadius: 14,
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
   sendText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: colors.white,
   },
   notFoundContainer: {
     flex: 1,
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
   },
   notFoundText: {
     fontSize: 16,
-    color: '#78716C',
+    color: colors.textSecondary,
   },
 });
 

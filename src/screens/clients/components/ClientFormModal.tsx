@@ -605,9 +605,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 4,
     borderRadius: 14,
-    backgroundColor: '#FAF8F5',
+    backgroundColor: colors.surfaceSecondary,
     borderWidth: 1,
-    borderColor: '#EAE6E1',
+    borderColor: colors.border,
   },
   expandOptionalText: {
     fontSize: 13.5,

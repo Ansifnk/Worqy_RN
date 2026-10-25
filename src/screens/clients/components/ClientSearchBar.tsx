@@ -25,13 +25,13 @@ export const ClientSearchBar: React.FC<ClientSearchBarProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.searchBox}>
-        <Search size={18} color="#9C958F" strokeWidth={2.2} style={styles.searchIcon} />
+        <Search size={18} color={colors.textSecondary} strokeWidth={2.2} style={styles.searchIcon} />
         <TextInput
           style={styles.input}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor="#9C958F"
+          placeholderTextColor={colors.textSecondary}
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="search"
@@ -67,7 +67,9 @@ const styles = StyleSheet.create({
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.searchBackground || '#F0ECE7',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 24,
     height: 46,
     paddingHorizontal: 16,
@@ -79,7 +81,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: '400',
-    color: '#1A1817',
+    color: colors.text,
     paddingVertical: Platform.OS === 'ios' ? 10 : 6,
     paddingHorizontal: 0,
   },
@@ -91,7 +93,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#9C958F',
+    backgroundColor: colors.textSecondary,
     justifyContent: 'center',
     alignItems: 'center',
   },

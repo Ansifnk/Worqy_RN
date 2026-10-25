@@ -221,7 +221,7 @@ export default ScheduleScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.warmBackground || '#FAF8F5',
+    backgroundColor: colors.background,
   },
   dateHeaderContainer: {
     paddingHorizontal: 20,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#F0ECE7',
+    backgroundColor: colors.surfaceSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,

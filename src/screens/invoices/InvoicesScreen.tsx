@@ -202,13 +202,13 @@ export const InvoicesScreen: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor={colors.darkPlum || '#2D1225'}
-            colors={[colors.darkPlum || '#2D1225']}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <FileQuestion size={44} color="#A8A29E" strokeWidth={1.5} />
+            <FileQuestion size={44} color={colors.textSecondary} strokeWidth={1.5} />
             <Text style={styles.emptyTitle}>No invoices found</Text>
             <Text style={styles.emptySubtitle}>
               {searchQuery
@@ -225,7 +225,7 @@ export const InvoicesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF8F5',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -238,17 +238,17 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#1C1917',
+    color: colors.text,
     letterSpacing: -0.5,
   },
   addButton: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.darkPlum || '#2D1225',
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -266,12 +266,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#44403C',
+    color: colors.text,
     marginTop: 12,
   },
   emptySubtitle: {
     fontSize: 13,
-    color: '#78716C',
+    color: colors.textSecondary,
     marginTop: 4,
     textAlign: 'center',
     paddingHorizontal: 32,

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { colors } from '../../../utils/colors';
 
 export type FilterStatus = 'all' | 'active' | 'completed';
 
@@ -93,10 +94,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabButtonActive: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#E5E0D8',
-    shadowColor: '#000000',
+    borderColor: colors.border,
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -113,10 +114,10 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
   },
   tabTextInactive: {
     fontWeight: '500',
-    color: '#7C7670',
+    color: colors.textSecondary,
   },
 });

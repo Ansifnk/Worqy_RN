@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Search, SlidersHorizontal, X } from 'lucide-react-native';
+import { colors } from '../../../utils/colors';
 
 interface InvoiceSearchBarProps {
   value: string;
@@ -24,11 +25,11 @@ export const InvoiceSearchBar: React.FC<InvoiceSearchBarProps> = ({
     <View style={styles.container}>
       {/* Search Input Box */}
       <View style={styles.inputContainer}>
-        <Search size={18} color="#78716C" style={styles.searchIcon} />
+        <Search size={18} color={colors.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.input}
           placeholder={placeholder}
-          placeholderTextColor="#A8A29E"
+          placeholderTextColor={colors.textSecondary}
           value={value}
           onChangeText={onChangeText}
           autoCorrect={false}
@@ -41,7 +42,7 @@ export const InvoiceSearchBar: React.FC<InvoiceSearchBarProps> = ({
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             style={styles.clearButton}
           >
-            <X size={16} color="#78716C" />
+            <X size={16} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
       </View>
@@ -53,7 +54,7 @@ export const InvoiceSearchBar: React.FC<InvoiceSearchBarProps> = ({
           onPress={onFilterPress}
           activeOpacity={0.7}
         >
-          <SlidersHorizontal size={18} color="#44403C" />
+          <SlidersHorizontal size={18} color={colors.primary} />
         </TouchableOpacity>
       )}
     </View>
@@ -72,7 +73,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F1EC',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 12,
     height: 44,
@@ -83,7 +86,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    color: '#1C1917',
+    color: colors.text,
     paddingVertical: 0,
   },
   clearButton: {
@@ -93,7 +96,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#F5F1EC',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },

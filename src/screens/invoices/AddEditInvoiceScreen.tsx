@@ -346,7 +346,7 @@ export const AddEditInvoiceScreen: React.FC = () => {
                   <Text style={styles.selectExistingText}>
                     {showClientSelector ? 'Hide List' : 'Select Client'}
                   </Text>
-                  <ChevronDown size={14} color={colors.darkPlum || '#2D1225'} />
+                  <ChevronDown size={14} color={colors.primary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -470,7 +470,7 @@ export const AddEditInvoiceScreen: React.FC = () => {
                 style={styles.addItemHeaderBtn}
                 onPress={handleAddItem}
               >
-                <Plus size={16} color={colors.darkPlum || '#2D1225'} />
+                <Plus size={16} color={colors.primary} />
                 <Text style={styles.addItemHeaderText}>Add Item</Text>
               </TouchableOpacity>
             </View>
@@ -620,7 +620,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#FAF8F5',
+    backgroundColor: colors.background,
   },
   topNav: {
     flexDirection: 'row',
@@ -635,13 +635,13 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
   },
   saveTopBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -653,17 +653,17 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   sectionCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#F0ECE8',
+    borderColor: colors.border,
   },
   sectionHeader: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
     marginBottom: 12,
   },
   cardHeaderRow: {
@@ -680,15 +680,15 @@ const styles = StyleSheet.create({
   selectExistingText: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.primary,
   },
   clientsDropdown: {
-    backgroundColor: '#FAF8F5',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 8,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#E7E5E4',
+    borderColor: colors.border,
   },
   clientDropdownItem: {
     flexDirection: 'row',
@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 6,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E7E5E4',
+    borderBottomColor: colors.border,
   },
   clientDropdownTextContainer: {
     flex: 1,
@@ -705,11 +705,11 @@ const styles = StyleSheet.create({
   clientDropdownName: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#1C1917',
+    color: colors.text,
   },
   clientDropdownEmail: {
     fontSize: 11,
-    color: '#78716C',
+    color: colors.textSecondary,
   },
   inputGroup: {
     marginBottom: 12,
@@ -717,16 +717,18 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#78716C',
+    color: colors.textSecondary,
     marginBottom: 6,
   },
   textInput: {
-    backgroundColor: '#F5F1EC',
+    backgroundColor: colors.surface,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#1C1917',
+    color: colors.text,
   },
   statusPillsRow: {
     flexDirection: 'row',
@@ -736,18 +738,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 14,
-    backgroundColor: '#F5F1EC',
+    backgroundColor: colors.surfaceSecondary,
   },
   statusPillActive: {
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
   },
   statusPillText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#57534E',
+    color: colors.textSecondary,
   },
   statusPillTextActive: {
-    color: '#FFFFFF',
+    color: colors.white,
   },
   datesRow: {
     flexDirection: 'row',
@@ -759,7 +761,9 @@ const styles = StyleSheet.create({
   dateSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F1EC',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -768,7 +772,7 @@ const styles = StyleSheet.create({
   dateValue: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#1C1917',
+    color: colors.text,
   },
   termsScroll: {
     flexDirection: 'row',
@@ -778,18 +782,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 14,
-    backgroundColor: '#F5F1EC',
+    backgroundColor: colors.surfaceSecondary,
   },
   termPillActive: {
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
   },
   termPillText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#57534E',
+    color: colors.textSecondary,
   },
   termPillTextActive: {
-    color: '#FFFFFF',
+    color: colors.white,
   },
   addItemHeaderBtn: {
     flexDirection: 'row',
@@ -799,15 +803,15 @@ const styles = StyleSheet.create({
   addItemHeaderText: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.darkPlum || '#2D1225',
+    color: colors.primary,
   },
   itemBox: {
-    backgroundColor: '#FAF8F5',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#EFEAE4',
+    borderColor: colors.border,
   },
   itemBoxHeader: {
     flexDirection: 'row',
@@ -818,17 +822,17 @@ const styles = StyleSheet.create({
   itemIndexLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#78716C',
+    color: colors.textSecondary,
   },
   itemTitleInput: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
     fontSize: 13,
-    color: '#1C1917',
+    color: colors.text,
     borderWidth: 1,
-    borderColor: '#E7E5E4',
+    borderColor: colors.border,
     marginBottom: 8,
   },
   itemNumbersRow: {
@@ -849,23 +853,23 @@ const styles = StyleSheet.create({
   },
   subInputLabel: {
     fontSize: 11,
-    color: '#78716C',
+    color: colors.textSecondary,
     marginBottom: 4,
   },
   numberInput: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 6,
     fontSize: 13,
-    color: '#1C1917',
+    color: colors.text,
     borderWidth: 1,
-    borderColor: '#E7E5E4',
+    borderColor: colors.border,
   },
   itemRowTotal: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1C1917',
+    color: colors.text,
     paddingVertical: 6,
   },
   summaryItemRow: {
@@ -876,69 +880,71 @@ const styles = StyleSheet.create({
   },
   summaryRowLabel: {
     fontSize: 14,
-    color: '#78716C',
+    color: colors.textSecondary,
   },
   summaryRowValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1C1917',
+    color: colors.text,
   },
   taxLabelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   taxInput: {
-    backgroundColor: '#F5F1EC',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 2,
     fontSize: 12,
-    color: '#1C1917',
+    color: colors.text,
     width: 44,
     textAlign: 'center',
     marginLeft: 8,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E7E5E4',
+    backgroundColor: colors.border,
     marginVertical: 8,
   },
   grandTotalLabel: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#1C1917',
+    color: colors.text,
   },
   grandTotalValue: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#1C1917',
+    color: colors.text,
   },
   notesInput: {
-    backgroundColor: '#F5F1EC',
+    backgroundColor: colors.surface,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 13,
-    color: '#1C1917',
+    color: colors.text,
     minHeight: 60,
     textAlignVertical: 'top',
   },
   saveBtn: {
-    backgroundColor: colors.darkPlum || '#2D1225',
+    backgroundColor: colors.primary,
     borderRadius: 14,
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
     marginBottom: 20,
-    shadowColor: colors.darkPlum || '#2D1225',
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 3,
   },
   saveBtnText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '700',
   },
