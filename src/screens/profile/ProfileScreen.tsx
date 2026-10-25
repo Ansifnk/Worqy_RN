@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F172A',
+    backgroundColor: colors.background,
     padding: 24,
   },
   avatar: {
@@ -67,17 +67,17 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: colors.white,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#F8FAFC',
+    color: colors.text,
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 14,
-    color: '#94A3B8',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 32,
   },

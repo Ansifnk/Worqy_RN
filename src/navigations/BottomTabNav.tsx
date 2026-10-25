@@ -8,9 +8,9 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 
 export type BottomTabParamList = {
   Home: undefined;
-  Explore: undefined;
-  Bookings: undefined;
-  Profile: undefined;
+  Customers: undefined;
+  Schedule: undefined;
+  Pages: undefined;
 };
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -31,19 +31,19 @@ export const BottomTabNav: React.FC = () => {
         options={{ tabBarLabel: 'Home' }}
       />
       <Tab.Screen
-        name="Explore"
+        name="Customers"
         component={ExploreScreen}
-        options={{ tabBarLabel: 'Explore' }}
+        options={{ tabBarLabel: 'Customers' }}
       />
       <Tab.Screen
-        name="Bookings"
+        name="Schedule"
         component={BookingsScreen}
-        options={{ tabBarLabel: 'Bookings' }}
+        options={{ tabBarLabel: 'Schedule' }}
       />
       <Tab.Screen
-        name="Profile"
+        name="Pages"
         component={ProfileScreen}
-        options={{ tabBarLabel: 'Profile' }}
+        options={{ tabBarLabel: 'Pages' }}
       />
     </Tab.Navigator>
   );

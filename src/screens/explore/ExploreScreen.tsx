@@ -1,11 +1,13 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, StatusBar } from 'react-native';
+import { colors } from '../../utils/colors';
 
 const ExploreScreen = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Explore Spaces</Text>
-      <Text style={styles.subtitle}>Discover workspaces, desks & meeting rooms</Text>
+      <StatusBar barStyle="dark-content" />
+      <Text style={styles.title}>Customers & Spaces</Text>
+      <Text style={styles.subtitle}>Discover workspaces, team members & clients</Text>
     </View>
   );
 };
@@ -17,18 +19,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F172A',
+    backgroundColor: colors.background,
     padding: 20,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#F8FAFC',
+    color: colors.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: '#94A3B8',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
 });

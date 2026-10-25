@@ -4,108 +4,37 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { Home, Users, Calendar, FileText } from 'lucide-react-native';
+import { colors } from '../../utils/colors';
 
 interface TabIconProps {
   name: string;
   focused: boolean;
   color: string;
+  size?: number;
 }
 
-// Built-in vector icons rendered with pure React Native primitives
-const DefaultTabIcon: React.FC<TabIconProps> = ({ name, focused, color }) => {
+const TabIcon: React.FC<TabIconProps> = ({ name, focused, color, size = 22 }) => {
+  const strokeWidth = focused ? 2.4 : 1.8;
+
   switch (name) {
     case 'Home':
-      return (
-        <View style={iconStyles.container}>
-          <View
-            style={[
-              iconStyles.homeRoof,
-              { borderBottomColor: color },
-            ]}
-          />
-          <View
-            style={[
-              iconStyles.homeBase,
-              focused ? iconStyles.homeBaseFocused : iconStyles.homeBaseUnfocused,
-              { borderColor: color },
-              focused && { backgroundColor: color },
-            ]}
-          >
-            {focused && <View style={iconStyles.homeDoor} />}
-          </View>
-        </View>
-      );
-
+      return <Home size={size} color={color} strokeWidth={strokeWidth} fill={focused ? color : 'none'} />;
+    case 'Customers':
     case 'Explore':
-      return (
-        <View style={iconStyles.container}>
-          <View
-            style={[
-              iconStyles.exploreCircle,
-              focused ? iconStyles.exploreFocused : iconStyles.exploreUnfocused,
-              { borderColor: color },
-            ]}
-          >
-            <View style={[iconStyles.exploreCompassPin, { backgroundColor: color }]} />
-          </View>
-          <View style={[iconStyles.exploreHandle, { backgroundColor: color }]} />
-        </View>
-      );
-
+      return <Users size={size} color={color} strokeWidth={strokeWidth} />;
+    case 'Schedule':
     case 'Bookings':
-      return (
-        <View style={iconStyles.container}>
-          <View
-            style={[
-              iconStyles.calendarBody,
-              focused ? iconStyles.calendarFocused : iconStyles.calendarUnfocused,
-              { borderColor: color },
-            ]}
-          >
-            <View style={[iconStyles.calendarHeader, { backgroundColor: color }]} />
-            <View style={iconStyles.calendarDotsRow}>
-              <View style={[iconStyles.calendarDot, { backgroundColor: color }]} />
-              <View style={[iconStyles.calendarDot, { backgroundColor: color }]} />
-            </View>
-          </View>
-        </View>
-      );
-
+      return <Calendar size={size} color={color} strokeWidth={strokeWidth} />;
+    case 'Pages':
     case 'Profile':
-      return (
-        <View style={iconStyles.container}>
-          <View
-            style={[
-              iconStyles.profileHead,
-              { borderColor: color },
-              focused && { backgroundColor: color },
-            ]}
-          />
-          <View
-            style={[
-              iconStyles.profileBody,
-              { borderColor: color },
-              focused && { backgroundColor: color },
-            ]}
-          />
-        </View>
-      );
-
+      return <FileText size={size} color={color} strokeWidth={strokeWidth} />;
     default:
-      return (
-        <View style={iconStyles.container}>
-          <View
-            style={[
-              iconStyles.defaultDot,
-              focused ? iconStyles.defaultDotFocused : iconStyles.defaultDotUnfocused,
-              { backgroundColor: color },
-            ]}
-          />
-        </View>
-      );
+      return <Home size={size} color={color} strokeWidth={strokeWidth} />;
   }
 };
 
@@ -119,13 +48,12 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
   const bottomInset = Math.max(propInsets?.bottom ?? 0, safeAreaInsets.bottom);
 
   return (
-    <View style={[styles.barWrapper, { paddingBottom: Math.max(bottomInset, 12) }]}>
+    <View style={[styles.barWrapper, { paddingBottom: Math.max(bottomInset, Platform.OS === 'ios' ? 14 : 10) }]}>
       <View style={styles.barContainer}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
 
-          // Check if tab is explicitly hidden
           if (
             typeof options.tabBarStyle === 'object' &&
             options.tabBarStyle !== null &&
@@ -143,8 +71,8 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
               : route.name;
 
           const labelText = typeof label === 'string' ? label : route.name;
-          const activeColor = '#38BDF8';
-          const inactiveColor = '#64748B';
+          const activeColor = colors.primary;
+          const inactiveColor = colors.textSecondary;
           const currentColor = isFocused ? activeColor : inactiveColor;
 
           const onPress = () => {
@@ -180,7 +108,12 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
               style={styles.tabButton}
               activeOpacity={0.7}
             >
-              <View style={[styles.pillContainer, isFocused && styles.pillActive]}>
+              <View style={styles.tabContent}>
+                {/* Active indicator dot placed subtly above icon */}
+                <View style={styles.indicatorContainer}>
+                  {isFocused && <View style={styles.topActiveDot} />}
+                </View>
+
                 <View style={styles.iconWrapper}>
                   {options.tabBarIcon ? (
                     options.tabBarIcon({
@@ -189,10 +122,11 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
                       size: 22,
                     })
                   ) : (
-                    <DefaultTabIcon
+                    <TabIcon
                       name={route.name}
                       focused={isFocused}
                       color={currentColor}
+                      size={22}
                     />
                   )}
 
@@ -216,9 +150,6 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
                 >
                   {labelText}
                 </Text>
-
-                {/* Active indicator dot */}
-                {isFocused && <View style={styles.activeDot} />}
               </View>
             </TouchableOpacity>
           );
@@ -232,10 +163,15 @@ export default CustomTabBar;
 
 const styles = StyleSheet.create({
   barWrapper: {
-    backgroundColor: '#0F172A',
+    backgroundColor: colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#1E293B',
-    paddingTop: 8,
+    borderTopColor: colors.border,
+    paddingTop: 6,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 8,
   },
   barContainer: {
     flexDirection: 'row',
@@ -247,21 +183,27 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
-  pillContainer: {
+  tabContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
     minHeight: 48,
   },
-  pillActive: {
-    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+  indicatorContainer: {
+    height: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  topActiveDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: colors.primary,
   },
   iconWrapper: {
-    width: 26,
+    width: 28,
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
@@ -269,27 +211,20 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 11,
-    marginTop: 3,
-    letterSpacing: 0.2,
+    marginTop: 4,
+    letterSpacing: -0.1,
   },
   tabLabelFocused: {
-    fontWeight: '600',
+    fontWeight: '700',
   },
   tabLabelUnfocused: {
     fontWeight: '500',
-  },
-  activeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#38BDF8',
-    marginTop: 2,
   },
   badge: {
     position: 'absolute',
     top: -4,
     right: -10,
-    backgroundColor: '#EF4444',
+    backgroundColor: colors.error,
     borderRadius: 8,
     minWidth: 16,
     height: 16,
@@ -298,130 +233,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 9,
     fontWeight: '700',
-  },
-});
-
-const iconStyles = StyleSheet.create({
-  container: {
-    width: 22,
-    height: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  homeRoof: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderBottomWidth: 7,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-  },
-  homeBase: {
-    width: 14,
-    height: 10,
-    borderWidth: 1.5,
-    borderTopWidth: 0,
-    borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 2,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  homeBaseFocused: {
-    backgroundColor: '#38BDF8',
-  },
-  homeBaseUnfocused: {
-    backgroundColor: 'transparent',
-  },
-  homeDoor: {
-    width: 4,
-    height: 5,
-    backgroundColor: '#0F172A',
-    borderTopLeftRadius: 1,
-    borderTopRightRadius: 1,
-  },
-  exploreCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  exploreFocused: {
-    borderWidth: 2.5,
-  },
-  exploreUnfocused: {
-    borderWidth: 2,
-  },
-  exploreCompassPin: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-  },
-  exploreHandle: {
-    position: 'absolute',
-    width: 2,
-    height: 5,
-    bottom: 0,
-    right: 2,
-    transform: [{ rotate: '-45deg' }],
-    borderRadius: 1,
-  },
-  calendarBody: {
-    width: 16,
-    height: 16,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  calendarFocused: {
-    borderWidth: 2,
-  },
-  calendarUnfocused: {
-    borderWidth: 1.5,
-  },
-  calendarHeader: {
-    height: 4,
-    width: '100%',
-  },
-  calendarDotsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    flex: 1,
-    paddingHorizontal: 2,
-  },
-  calendarDot: {
-    width: 2.5,
-    height: 2.5,
-    borderRadius: 1.5,
-  },
-  profileHead: {
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
-    borderWidth: 1.5,
-    marginBottom: 2,
-  },
-  profileBody: {
-    width: 16,
-    height: 7,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    borderWidth: 1.5,
-    borderBottomWidth: 0,
-  },
-  defaultDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  defaultDotFocused: {
-    opacity: 1,
-  },
-  defaultDotUnfocused: {
-    opacity: 0.6,
   },
 });
