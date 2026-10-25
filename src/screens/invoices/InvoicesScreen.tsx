@@ -19,6 +19,7 @@ import InvoiceSearchBar from './components/InvoiceSearchBar';
 import InvoiceFilterTabs from './components/InvoiceFilterTabs';
 import InvoiceItemCard from './components/InvoiceItemCard';
 import { LoadingView } from '../../components/LoadingView';
+import { ActionMenuItem } from '../../components/ThreeDotsMenu';
 
 export const InvoicesScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -142,11 +143,49 @@ export const InvoicesScreen: React.FC = () => {
     ]);
   };
 
+  const getInvoiceActions = useCallback(
+    (item: Invoice): ActionMenuItem[] => [
+      {
+        id: 'details',
+        title: 'View Details',
+        onPress: () => handleInvoicePress(item),
+      },
+      {
+        id: 'edit',
+        title: 'Edit Invoice',
+        onPress: () => handleEditInvoice(item),
+      },
+      {
+        id: 'status',
+        title: 'Change Status',
+        subactions: (['Draft', 'Sent', 'Paid', 'Overdue'] as InvoiceStatus[]).map((st) => ({
+          id: `status_${st}`,
+          title: st,
+          state: (st === item.status ? 'on' : 'off') as 'on' | 'off',
+          onPress: async () => {
+            try {
+              await updateInvoiceStatus(item.id, st);
+            } catch (err: any) {
+              Alert.alert('Error', err?.message || 'Failed to update status');
+            }
+          },
+        })),
+      },
+      {
+        id: 'delete',
+        title: 'Delete Invoice',
+        destructive: true,
+        onPress: () => handleDeleteInvoice(item),
+      },
+    ],
+    [handleInvoicePress, handleEditInvoice, updateInvoiceStatus, handleDeleteInvoice]
+  );
+
   const handleSortPress = () => {
     Alert.alert('Filter & Sort', 'Select sorting order:', [
-      { text: 'Newest to Oldest', onPress: () => {} },
-      { text: 'Amount: High to Low', onPress: () => {} },
-      { text: 'Amount: Low to High', onPress: () => {} },
+      { text: 'Newest to Oldest', onPress: () => { } },
+      { text: 'Amount: High to Low', onPress: () => { } },
+      { text: 'Amount: Low to High', onPress: () => { } },
       { text: 'Cancel', style: 'cancel' },
     ]);
   };
@@ -193,7 +232,7 @@ export const InvoicesScreen: React.FC = () => {
           <InvoiceItemCard
             item={item}
             onPress={() => handleInvoicePress(item)}
-            onMorePress={() => handleMorePress(item)}
+            actions={getInvoiceActions(item)}
           />
         )}
         contentContainerStyle={styles.listContent}

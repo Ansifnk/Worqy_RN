@@ -136,6 +136,28 @@ export const ClientsScreen: React.FC = () => {
     }
   };
 
+  const getClientActions = useCallback(
+    (item: ClientItem) => [
+      {
+        id: 'details',
+        title: 'View Details',
+        onPress: () => handleClientPress(item),
+      },
+      {
+        id: 'edit',
+        title: 'Edit Client',
+        onPress: () => handleEditClientPress(item),
+      },
+      {
+        id: 'delete',
+        title: 'Delete Client',
+        destructive: true,
+        onPress: () => handleDeleteClientPress(item),
+      },
+    ],
+    [handleClientPress, handleEditClientPress, handleDeleteClientPress]
+  );
+
   return (
     <View style={[styles.screen, { paddingTop: Math.max(insets.top, 12) }]}>
       <StatusBar barStyle="dark-content" />
@@ -165,7 +187,7 @@ export const ClientsScreen: React.FC = () => {
           <ClientItemCard
             item={item}
             onPress={() => handleClientPress(item)}
-            onOptionsPress={() => handleOptionsPress(item)}
+            actions={getClientActions(item)}
           />
         )}
         contentContainerStyle={[

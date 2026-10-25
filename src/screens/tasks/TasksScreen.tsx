@@ -7,6 +7,7 @@ import {
   Alert,
   Text,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -123,6 +124,37 @@ export const TasksScreen: React.FC = () => {
     ]);
   };
 
+  const getTaskActions = useCallback(
+    (item: TaskItem) => [
+      {
+        id: 'details',
+        title: 'View Details',
+        onPress: () => handleTaskPress(item),
+      },
+      {
+        id: 'edit',
+        title: 'Edit Task',
+        onPress: () => handleEditTask(item),
+      },
+      {
+        id: 'toggle',
+        title: item.status === 'Done' ? 'Mark Incomplete' : 'Mark Complete',
+        image:
+          item.status === 'Done'
+            ? Platform.select({ ios: 'circle', android: 'ic_menu_revert' })
+            : Platform.select({ ios: 'checkmark.circle', android: 'ic_menu_send' }),
+        onPress: () => toggleTaskComplete(item.id),
+      },
+      {
+        id: 'delete',
+        title: 'Delete Task',
+        destructive: true,
+        onPress: () => handleDeleteTask(item),
+      },
+    ],
+    [handleTaskPress, handleEditTask, toggleTaskComplete, handleDeleteTask]
+  );
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" />
@@ -164,7 +196,7 @@ export const TasksScreen: React.FC = () => {
               item={item}
               onPress={() => handleTaskPress(item)}
               onToggleComplete={() => toggleTaskComplete(item.id)}
-              onMorePress={() => handleMorePress(item)}
+              actions={getTaskActions(item)}
             />
           )}
           contentContainerStyle={[

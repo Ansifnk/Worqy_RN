@@ -36,6 +36,7 @@ import { TaskPriority, TaskStatus, ChecklistItem, TaskFormData } from './types';
 import TaskChecklistSection from './components/TaskChecklistSection';
 import { getPriorityColors } from './components/TaskItemCard';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import ThreeDotsMenu from '../../components/ThreeDotsMenu';
 
 export const TaskDetailScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -145,8 +146,8 @@ export const TaskDetailScreen: React.FC = () => {
     const prefix = d.isSame(today, 'day')
       ? 'Today, '
       : d.isSame(today.add(1, 'day'), 'day')
-      ? 'Tomorrow, '
-      : '';
+        ? 'Tomorrow, '
+        : '';
     return prefix + d.format('D MMM YYYY');
   };
 
@@ -241,16 +242,16 @@ export const TaskDetailScreen: React.FC = () => {
   const handleProjectPress = () => {
     Alert.prompt
       ? Alert.prompt(
-          'Project Name',
-          'Enter the associated project name:',
-          (text) => {
-            const val = text.trim();
-            if (isNew) setProject(val);
-            else if (existingTask) updateTask(existingTask.id, { project: val });
-          },
-          'plain-text',
-          isNew ? project : existingTask?.project || ''
-        )
+        'Project Name',
+        'Enter the associated project name:',
+        (text) => {
+          const val = text.trim();
+          if (isNew) setProject(val);
+          else if (existingTask) updateTask(existingTask.id, { project: val });
+        },
+        'plain-text',
+        isNew ? project : existingTask?.project || ''
+      )
       : null;
   };
 
@@ -389,13 +390,43 @@ export const TaskDetailScreen: React.FC = () => {
               )}
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity
-              style={styles.moreButton}
-              onPress={handleMorePress}
-              activeOpacity={0.7}
-            >
-              <MoreHorizontal size={22} color={colors.text} />
-            </TouchableOpacity>
+            <ThreeDotsMenu
+              orientation="horizontal"
+              iconSize={22}
+              iconColor={colors.text}
+              title="Task Options"
+              buttonStyle={styles.moreButton}
+              actions={[
+                {
+                  id: 'toggle',
+                  title: isDone ? 'Mark Incomplete' : 'Mark Done',
+                  image: isDone
+                    ? Platform.select({ ios: 'circle', android: 'ic_menu_revert' })
+                    : Platform.select({ ios: 'checkmark.circle', android: 'ic_menu_send' }),
+                  onPress: () => existingTask && toggleTaskComplete(existingTask.id),
+                },
+                {
+                  id: 'delete',
+                  title: 'Delete Task',
+                  destructive: true,
+                  onPress: () => {
+                    Alert.alert('Confirm Delete', 'Delete this task permanently?', [
+                      { text: 'Cancel', style: 'cancel' },
+                      {
+                        text: 'Delete',
+                        style: 'destructive',
+                        onPress: async () => {
+                          if (existingTask) {
+                            await deleteTask(existingTask.id);
+                            navigation.goBack();
+                          }
+                        },
+                      },
+                    ]);
+                  },
+                },
+              ]}
+            />
           )}
         </View>
 

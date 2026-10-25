@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Video, FileText, MoreVertical } from 'lucide-react-native';
 import { colors } from '../../../utils/colors';
+import ThreeDotsMenu, { ActionMenuItem } from '../../../components/ThreeDotsMenu';
 
 export interface ScheduleItem {
   id: string;
@@ -15,12 +16,14 @@ interface ScheduleCardProps {
   item: ScheduleItem;
   onPress?: () => void;
   onOptionsPress?: () => void;
+  actions?: ActionMenuItem[];
 }
 
 export const ScheduleCard: React.FC<ScheduleCardProps> = ({
   item,
   onPress,
   onOptionsPress,
+  actions,
 }) => {
   const isVideo = item.type === 'video';
 
@@ -55,17 +58,27 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
         </Text>
       </View>
 
-      {/* Options Menu Button */}
-      <TouchableOpacity
-        style={styles.optionsButton}
-        onPress={onOptionsPress}
-        hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
-        activeOpacity={0.6}
-        accessibilityRole="button"
-        accessibilityLabel="More options"
-      >
-        <MoreVertical size={19} color="#9E9E9E" />
-      </TouchableOpacity>
+      {/* Options Menu */}
+      {actions && actions.length > 0 ? (
+        <ThreeDotsMenu
+          actions={actions}
+          title={item.title}
+          iconSize={19}
+          iconColor="#9E9E9E"
+          buttonStyle={styles.optionsButton}
+        />
+      ) : (
+        <TouchableOpacity
+          style={styles.optionsButton}
+          onPress={onOptionsPress}
+          hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+          activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel="More options"
+        >
+          <MoreVertical size={19} color="#9E9E9E" />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 };

@@ -4,6 +4,7 @@ import { MoreVertical } from 'lucide-react-native';
 import { ClientLogo } from './ClientLogos';
 import { colors } from '../../../utils/colors';
 import { ClientItem, ClientStatus } from '../types';
+import ThreeDotsMenu, { ActionMenuItem } from '../../../components/ThreeDotsMenu';
 
 export type { ClientItem, ClientStatus };
 
@@ -11,12 +12,14 @@ interface ClientItemCardProps {
   item: ClientItem;
   onPress?: () => void;
   onOptionsPress?: () => void;
+  actions?: ActionMenuItem[];
 }
 
 export const ClientItemCard: React.FC<ClientItemCardProps> = ({
   item,
   onPress,
   onOptionsPress,
+  actions,
 }) => {
   const getBadgeStyle = () => {
     switch (item.status) {
@@ -85,17 +88,27 @@ export const ClientItemCard: React.FC<ClientItemCardProps> = ({
         </Text>
       </View>
 
-      {/* Options Menu Button */}
-      <TouchableOpacity
-        style={styles.optionsButton}
-        onPress={onOptionsPress}
-        hitSlop={{ top: 12, bottom: 12, left: 10, right: 12 }}
-        activeOpacity={0.6}
-        accessibilityRole="button"
-        accessibilityLabel="More options"
-      >
-        <MoreVertical size={18} color={colors.textSecondary} />
-      </TouchableOpacity>
+      {/* Options Menu */}
+      {actions && actions.length > 0 ? (
+        <ThreeDotsMenu
+          actions={actions}
+          title={item.name}
+          iconSize={18}
+          iconColor={colors.textSecondary}
+          buttonStyle={styles.optionsButton}
+        />
+      ) : (
+        <TouchableOpacity
+          style={styles.optionsButton}
+          onPress={onOptionsPress}
+          hitSlop={{ top: 12, bottom: 12, left: 10, right: 12 }}
+          activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel="More options"
+        >
+          <MoreVertical size={18} color={colors.textSecondary} />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 };

@@ -141,7 +141,18 @@ export const HomeScreen: React.FC = () => {
               key={item.id}
               item={item}
               onPress={() => handleSchedulePress(item)}
-              onOptionsPress={() => Alert.alert(item.title, 'Schedule options')}
+              actions={[
+                {
+                  id: 'details',
+                  title: 'View Details',
+                  onPress: () => handleSchedulePress(item),
+                },
+                {
+                  id: 'share',
+                  title: 'Share Schedule',
+                  onPress: () => Alert.alert('Share', `Sharing ${item.title}`),
+                },
+              ]}
             />
           ))}
         </View>
@@ -164,7 +175,13 @@ export const HomeScreen: React.FC = () => {
               key={item.id}
               item={item}
               onPress={() => handleClientPress(item)}
-              onOptionsPress={() => Alert.alert(item.name, 'Client options')}
+              actions={[
+                {
+                  id: 'details',
+                  title: 'View Client',
+                  onPress: () => handleClientPress(item),
+                },
+              ]}
             />
           ))}
         </View>

@@ -9,12 +9,14 @@ import { Check, MoreVertical } from 'lucide-react-native';
 import dayjs from 'dayjs';
 import { colors } from '../../../utils/colors';
 import { TaskItem, TaskPriority } from '../types';
+import ThreeDotsMenu, { ActionMenuItem } from '../../../components/ThreeDotsMenu';
 
 interface TaskItemCardProps {
   item: TaskItem;
   onPress: () => void;
   onToggleComplete: () => void;
   onMorePress?: () => void;
+  actions?: ActionMenuItem[];
 }
 
 export const formatDueDate = (dateStr?: string): string => {
@@ -60,6 +62,7 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
   onPress,
   onToggleComplete,
   onMorePress,
+  actions,
 }) => {
   const isDone = item.status === 'Done';
   const priorityTheme = getPriorityColors(item.priority);
@@ -109,13 +112,23 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
       </View>
 
       {/* More Options */}
-      <TouchableOpacity
-        style={styles.moreButton}
-        onPress={onMorePress}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <MoreVertical size={18} color="#9CA3AF" />
-      </TouchableOpacity>
+      {actions && actions.length > 0 ? (
+        <ThreeDotsMenu
+          actions={actions}
+          title={item.title}
+          iconSize={18}
+          iconColor="#9CA3AF"
+          buttonStyle={styles.moreButton}
+        />
+      ) : (
+        <TouchableOpacity
+          style={styles.moreButton}
+          onPress={onMorePress}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <MoreVertical size={18} color="#9CA3AF" />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 };

@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { MoreVertical, Leaf } from 'lucide-react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { colors } from '../../../utils/colors';
+import ThreeDotsMenu, { ActionMenuItem } from '../../../components/ThreeDotsMenu';
 
 export interface ClientItem {
   id: string;
@@ -16,12 +17,14 @@ interface ClientCardProps {
   item: ClientItem;
   onPress?: () => void;
   onOptionsPress?: () => void;
+  actions?: ActionMenuItem[];
 }
 
 export const ClientCard: React.FC<ClientCardProps> = ({
   item,
   onPress,
   onOptionsPress,
+  actions,
 }) => {
   const renderBadge = () => {
     switch (item.badgeType) {
@@ -80,20 +83,30 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         </Text>
       </View>
 
-      {/* Options Menu Button */}
-      <TouchableOpacity
-        style={styles.optionsButton}
-        onPress={onOptionsPress}
-        hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
-        activeOpacity={0.6}
-        accessibilityRole="button"
-        accessibilityLabel="Client options"
-      >
-        <MoreVertical
-          size={19}
-          color={item.optionsColor || '#9E9E9E'}
+      {/* Options Menu */}
+      {actions && actions.length > 0 ? (
+        <ThreeDotsMenu
+          actions={actions}
+          title={item.name}
+          iconSize={19}
+          iconColor={item.optionsColor || '#9E9E9E'}
+          buttonStyle={styles.optionsButton}
         />
-      </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={styles.optionsButton}
+          onPress={onOptionsPress}
+          hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+          activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel="Client options"
+        >
+          <MoreVertical
+            size={19}
+            color={item.optionsColor || '#9E9E9E'}
+          />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 };

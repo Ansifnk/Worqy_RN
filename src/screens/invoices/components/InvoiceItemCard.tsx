@@ -4,11 +4,13 @@ import { MoreVertical } from 'lucide-react-native';
 import { colors } from '../../../utils/colors';
 import { Invoice } from '../types';
 import InvoiceStatusBadge from './InvoiceStatusBadge';
+import ThreeDotsMenu, { ActionMenuItem } from '../../../components/ThreeDotsMenu';
 
 interface InvoiceItemCardProps {
   item: Invoice;
   onPress: () => void;
-  onMorePress: () => void;
+  onMorePress?: () => void;
+  actions?: ActionMenuItem[];
 }
 
 export const formatCurrency = (amount: number): string => {
@@ -19,6 +21,7 @@ export const InvoiceItemCard: React.FC<InvoiceItemCardProps> = ({
   item,
   onPress,
   onMorePress,
+  actions,
 }) => {
   return (
     <TouchableOpacity
@@ -49,14 +52,24 @@ export const InvoiceItemCard: React.FC<InvoiceItemCardProps> = ({
           </View>
         </View>
 
-        {/* More options button */}
-        <TouchableOpacity
-          style={styles.moreButton}
-          onPress={onMorePress}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <MoreVertical size={18} color={colors.textSecondary} />
-        </TouchableOpacity>
+        {/* More options */}
+        {actions && actions.length > 0 ? (
+          <ThreeDotsMenu
+            actions={actions}
+            title={item.invoiceNumber}
+            iconSize={18}
+            iconColor={colors.textSecondary}
+            buttonStyle={styles.moreButton}
+          />
+        ) : (
+          <TouchableOpacity
+            style={styles.moreButton}
+            onPress={onMorePress}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MoreVertical size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
+        )}
       </View>
     </TouchableOpacity>
   );

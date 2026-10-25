@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -26,6 +26,7 @@ import { useInvoice } from '../../hooks/useInvoice';
 import InvoiceStatusBadge from './components/InvoiceStatusBadge';
 import { formatCurrency } from './components/InvoiceItemCard';
 import { InvoiceStatus } from './types';
+import ThreeDotsMenu, { ActionMenuItem } from '../../components/ThreeDotsMenu';
 
 export const InvoiceDetailScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -43,34 +44,18 @@ export const InvoiceDetailScreen: React.FC = () => {
     return invoices.find((inv) => inv.id === invoiceId);
   }, [invoices, invoiceId]);
 
-  if (!invoice) {
-    return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.topNav}>
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => navigation.goBack()}
-          >
-            <ArrowLeft size={22} color="#1C1917" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.notFoundContainer}>
-          <Text style={styles.notFoundText}>Invoice not found or removed.</Text>
-        </View>
-      </View>
-    );
-  }
-
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'N/A';
     return dayjs(dateStr).format('DD MMM YYYY');
   };
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
+    if (!invoice) return;
     navigation.navigate('AddEditInvoice', { invoiceId: invoice.id, isEdit: true });
-  };
+  }, [navigation, invoice]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
+    if (!invoice) return;
     Alert.alert(
       'Delete Invoice',
       `Are you sure you want to delete invoice ${invoice.invoiceNumber}?`,
@@ -90,19 +75,24 @@ export const InvoiceDetailScreen: React.FC = () => {
         },
       ]
     );
-  };
+  }, [invoice, deleteInvoice, navigation]);
 
-  const handleStatusChange = (status: InvoiceStatus) => {
-    updateInvoiceStatus(invoice.id, status)
-      .then(() => {
-        Alert.alert('Status Updated', `Invoice status changed to ${status}`);
-      })
-      .catch((err) => {
-        Alert.alert('Error', err?.message || 'Failed to update status');
-      });
-  };
+  const handleStatusChange = useCallback(
+    (status: InvoiceStatus) => {
+      if (!invoice) return;
+      updateInvoiceStatus(invoice.id, status)
+        .then(() => {
+          Alert.alert('Status Updated', `Invoice status changed to ${status}`);
+        })
+        .catch((err) => {
+          Alert.alert('Error', err?.message || 'Failed to update status');
+        });
+    },
+    [invoice, updateInvoiceStatus]
+  );
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
+    if (!invoice) return;
     Alert.alert(
       'Send Invoice',
       `Send invoice ${invoice.invoiceNumber} to ${invoice.clientEmail || invoice.clientName}?`,
@@ -113,7 +103,10 @@ export const InvoiceDetailScreen: React.FC = () => {
           onPress: async () => {
             try {
               await updateInvoiceStatus(invoice.id, 'Sent');
-              Alert.alert('Success', `Invoice successfully sent to ${invoice.clientEmail || invoice.clientName}!`);
+              Alert.alert(
+                'Success',
+                `Invoice successfully sent to ${invoice.clientEmail || invoice.clientName}!`
+              );
             } catch (err: any) {
               Alert.alert('Error', err?.message || 'Failed to send invoice');
             }
@@ -121,30 +114,61 @@ export const InvoiceDetailScreen: React.FC = () => {
         },
       ]
     );
-  };
+  }, [invoice, updateInvoiceStatus]);
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = useCallback(() => {
+    if (!invoice) return;
     Alert.alert(
       'Download PDF',
       `PDF for ${invoice.invoiceNumber} has been generated and is ready to save or share.`,
       [{ text: 'OK' }]
     );
-  };
+  }, [invoice]);
 
-  const handleMorePress = () => {
-    const statuses: InvoiceStatus[] = ['Draft', 'Sent', 'Paid', 'Overdue'];
-    Alert.alert('Invoice Options', invoice.invoiceNumber, [
-      { text: 'Edit Invoice', onPress: handleEdit },
-      ...statuses
-        .filter((s) => s !== invoice.status)
-        .map((s) => ({
-          text: `Mark as ${s}`,
-          onPress: () => handleStatusChange(s),
+  const invoiceActions: ActionMenuItem[] = useMemo(() => {
+    if (!invoice) return [];
+    return [
+      {
+        id: 'edit',
+        title: 'Edit Invoice',
+        onPress: handleEdit,
+      },
+      {
+        id: 'status',
+        title: 'Change Status',
+        subactions: (['Draft', 'Sent', 'Paid', 'Overdue'] as InvoiceStatus[]).map((st) => ({
+          id: `status_${st}`,
+          title: `Mark as ${st}`,
+          state: (invoice ? st === invoice.status : false) ? 'on' : 'off',
+          onPress: () => handleStatusChange(st),
         })),
-      { text: 'Delete', style: 'destructive', onPress: handleDelete },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
-  };
+      },
+      {
+        id: 'delete',
+        title: 'Delete Invoice',
+        destructive: true,
+        onPress: handleDelete,
+      },
+    ];
+  }, [handleEdit, invoice, handleStatusChange, handleDelete]);
+
+  if (!invoice) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.topNav}>
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={() => navigation.goBack()}
+          >
+            <ArrowLeft size={22} color="#1C1917" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.notFoundContainer}>
+          <Text style={styles.notFoundText}>Invoice not found or removed.</Text>
+        </View>
+      </View>
+    );
+  }
 
   const subtotal = invoice.subtotal || invoice.items.reduce((acc, it) => acc + (it.amount || 0), 0);
   const taxRate = invoice.taxRate ?? 18;
@@ -165,13 +189,14 @@ export const InvoiceDetailScreen: React.FC = () => {
           <ArrowLeft size={22} color="#1C1917" />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={handleMorePress}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <MoreHorizontal size={22} color="#1C1917" />
-        </TouchableOpacity>
+        <ThreeDotsMenu
+          orientation="horizontal"
+          iconSize={22}
+          iconColor="#1C1917"
+          title="Invoice Options"
+          actions={invoiceActions}
+          buttonStyle={styles.navButton}
+        />
       </View>
 
       <ScrollView
@@ -294,13 +319,14 @@ export const InvoiceDetailScreen: React.FC = () => {
           { paddingBottom: Math.max(insets.bottom, 14) },
         ]}
       >
-        <TouchableOpacity
-          style={styles.moreActionBtn}
-          onPress={handleMorePress}
-          activeOpacity={0.7}
-        >
-          <MoreHorizontal size={20} color="#1C1917" />
-        </TouchableOpacity>
+        <ThreeDotsMenu
+          orientation="horizontal"
+          iconSize={20}
+          iconColor="#1C1917"
+          title="Invoice Options"
+          actions={invoiceActions}
+          buttonStyle={styles.moreActionBtn}
+        />
 
         <TouchableOpacity
           style={styles.downloadPdfBtn}
