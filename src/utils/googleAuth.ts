@@ -96,28 +96,32 @@ export const signInWithGoogle = async (): Promise<GoogleAuthResult> => {
     const authUser = userCredential.user;
 
     // 7. Sync or create user record in Firestore
-    const db = getFirestore();
-    const userDocRef = doc(db, firebaseCollections.users, authUser.uid);
-    const userSnap = await getDoc(userDocRef);
+    let userData: User = {
+      id: authUser.uid,
+      name:
+        authUser.displayName ||
+        googleUser.name ||
+        (authUser.email ? authUser.email.split('@')[0] : 'User'),
+      email: authUser.email || googleUser.email || '',
+    };
 
-    let userData: User;
-    if (userSnap.exists()) {
-      const data = userSnap.data();
-      userData = {
-        id: authUser.uid,
-        name: data?.name || authUser.displayName || googleUser.name || 'User',
-        email: data?.email || authUser.email || googleUser.email || '',
-      };
-    } else {
-      userData = {
-        id: authUser.uid,
-        name:
-          authUser.displayName ||
-          googleUser.name ||
-          (authUser.email ? authUser.email.split('@')[0] : 'User'),
-        email: authUser.email || googleUser.email || '',
-      };
-      await setDoc(userDocRef, userData);
+    try {
+      const db = getFirestore();
+      const userDocRef = doc(db, firebaseCollections.users, authUser.uid);
+      const userSnap = await getDoc(userDocRef);
+
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        userData = {
+          id: authUser.uid,
+          name: data?.name || authUser.displayName || googleUser.name || 'User',
+          email: data?.email || authUser.email || googleUser.email || '',
+        };
+      } else {
+        await setDoc(userDocRef, userData);
+      }
+    } catch (firestoreError) {
+      console.warn('Firestore user profile sync warning (proceeding with authUser):', firestoreError);
     }
 
     return {

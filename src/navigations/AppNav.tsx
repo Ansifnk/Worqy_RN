@@ -8,7 +8,7 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import BottomTabNav, { BottomTabParamList } from './BottomTabNav';
 import LoginScreen from '../screens/login/LoginScreen';
-import SignupScreen from '../screens/signup/SignupScreen';
+// import SignupScreen from '../screens/signup/SignupScreen';
 import WelcomeScreen from '../screens/welcome/WelcomeScreen';
 import TaskDetailScreen from '../screens/tasks/TaskDetailScreen';
 import InvoiceDetailScreen from '../screens/invoices/InvoiceDetailScreen';
@@ -43,7 +43,12 @@ export const AppNav: React.FC = () => {
     }
 
     if (!loading && navigationRef.isReady()) {
-      if (!user) {
+      if (user) {
+        navigationRef.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        });
+      } else {
         navigationRef.reset({
           index: 0,
           routes: [{ name: 'Welcome' }],
@@ -77,20 +82,12 @@ export const AppNav: React.FC = () => {
             <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} />
             <Stack.Screen name="AddEditInvoice" component={AddEditInvoiceScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
-            <Stack.Screen name="Welcome" component={WelcomeScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Signup" component={SignupScreen} />
           </>
         ) : (
           <>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Signup" component={SignupScreen} />
-            <Stack.Screen name="Main" component={BottomTabNav} />
-            <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
-            <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} />
-            <Stack.Screen name="AddEditInvoice" component={AddEditInvoiceScreen} />
-            <Stack.Screen name="Profile" component={ProfileScreen} />
+            {/* <Stack.Screen name="Signup" component={SignupScreen} /> */}
           </>
         )}
       </Stack.Navigator>
