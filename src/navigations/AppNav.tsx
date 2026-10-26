@@ -9,6 +9,7 @@ import WelcomeScreen from '../screens/welcome/WelcomeScreen';
 import TaskDetailScreen from '../screens/tasks/TaskDetailScreen';
 import InvoiceDetailScreen from '../screens/invoices/InvoiceDetailScreen';
 import AddEditInvoiceScreen from '../screens/invoices/AddEditInvoiceScreen';
+import ProfileScreen from '../screens/profile/ProfileScreen';
 import { useAppContext } from '../context/AppContext';
 import { colors } from '../utils/colors';
 
@@ -20,6 +21,7 @@ export type RootStackParamList = {
   TaskDetail: { taskId?: string; isNew?: boolean } | undefined;
   InvoiceDetail: { invoiceId: string } | undefined;
   AddEditInvoice: { invoiceId?: string; isEdit?: boolean } | undefined;
+  Profile: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -51,6 +53,7 @@ export const AppNav: React.FC = () => {
             <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
             <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} />
             <Stack.Screen name="AddEditInvoice" component={AddEditInvoiceScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Signup" component={SignupScreen} />
@@ -64,6 +67,7 @@ export const AppNav: React.FC = () => {
             <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
             <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} />
             <Stack.Screen name="AddEditInvoice" component={AddEditInvoiceScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
           </>
         )}
       </Stack.Navigator>

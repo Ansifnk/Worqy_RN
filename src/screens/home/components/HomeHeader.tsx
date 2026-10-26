@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
-import { Bell } from 'lucide-react-native';
+import { Bell, User } from 'lucide-react-native';
 import { colors } from '../../../utils/colors';
 
 interface HomeHeaderProps {
@@ -28,6 +28,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
 
   return (
     <View style={styles.container}>
+      {/* User Greeting & Left Avatar */}
       <TouchableOpacity
         style={styles.profileSection}
         onPress={onProfilePress}
@@ -53,16 +54,29 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.notificationButton}
-        onPress={onNotificationPress}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel="Notifications"
-      >
-        <Bell size={22} color={colors.text} strokeWidth={2} />
-        <View style={styles.notificationDot} />
-      </TouchableOpacity>
+      {/* Top Right Actions: Notification + Profile Button */}
+      <View style={styles.headerRightActions}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={onNotificationPress}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Notifications"
+        >
+          <Bell size={21} color={colors.text} strokeWidth={2} />
+          <View style={styles.notificationDot} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={onProfilePress}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Profile"
+        >
+          <User size={21} color={colors.text} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -82,7 +96,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    marginRight: 16,
+    marginRight: 12,
   },
   avatarWrapper: {
     width: 48,
@@ -136,7 +150,12 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
     marginTop: 2,
   },
-  notificationButton: {
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  iconButton: {
     width: 44,
     height: 44,
     borderRadius: 22,

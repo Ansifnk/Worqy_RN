@@ -1,6 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, signOut, type User as FirebaseUser } from '@react-native-firebase/auth';
-import { getFirestore, doc, getDoc, setDoc } from '@react-native-firebase/firestore';
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  deleteUser,
+  type User as FirebaseUser,
+} from '@react-native-firebase/auth';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc } from '@react-native-firebase/firestore';
 import { firebaseCollections } from '../utils/constants';
 
 export interface User {
@@ -14,6 +22,7 @@ export interface AppContextType {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   loading: boolean;
   signOutUser: () => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -102,6 +111,50 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const deleteAccount = useCallback(async (password: string) => {
+    try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      const currentUserId = user?.id || currentUser?.uid;
+
+      if (!currentUser || !currentUser.email || !currentUserId) {
+        throw new Error('No user is currently authenticated.');
+      }
+
+      // 1. Re-authenticate with password to satisfy Firebase security requirement
+      const credential = EmailAuthProvider.credential(currentUser.email, password);
+      await reauthenticateWithCredential(currentUser, credential);
+
+      // 2. Fetch existing user document
+      const db = getFirestore();
+      const userDocRef = doc(db, firebaseCollections.users, currentUserId);
+      const deletedUserDocRef = doc(db, firebaseCollections.deletedUsers, currentUserId);
+
+      const userSnap = await getDoc(userDocRef);
+      const userData = userSnap.exists()
+        ? userSnap.data()
+        : { id: currentUserId, name: user?.name || '', email: user?.email || '' };
+
+      // 3. Move user document to DELETED_USERS collection while freshly authenticated
+      await setDoc(deletedUserDocRef, {
+        ...userData,
+        deletedAt: new Date().toISOString(),
+        deletedTimestamp: Date.now(),
+      });
+
+      // 4. Remove from active USERS collection
+      await deleteDoc(userDocRef);
+
+      // 5. Delete Firebase Auth user account
+      await deleteUser(currentUser);
+
+      setUser(null);
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      throw error;
+    }
+  }, [user]);
+
   const refreshUser = useCallback(async () => {
     const auth = getAuth();
     const currentUser = auth.currentUser;
@@ -112,7 +165,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   }, [fetchUserData]);
 
   return (
-    <AppContext.Provider value={{ user, setUser, loading, signOutUser, refreshUser }}>
+    <AppContext.Provider value={{ user, setUser, loading, signOutUser, deleteAccount, refreshUser }}>
       {children}
     </AppContext.Provider>
   );

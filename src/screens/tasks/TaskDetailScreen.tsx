@@ -547,7 +547,7 @@ export const TaskDetailScreen: React.FC = () => {
             </TouchableOpacity>
 
             {/* Assigned to Row */}
-            <View style={styles.attributeRow}>
+            {/* <View style={styles.attributeRow}>
               <View style={styles.attrLeft}>
                 <User size={18} color="#6B7280" />
                 <Text style={styles.attrLabel}>Assigned to</Text>
@@ -559,7 +559,7 @@ export const TaskDetailScreen: React.FC = () => {
                 <Text style={styles.attrValue}>Me</Text>
                 <ChevronDown size={14} color="#6B7280" />
               </View>
-            </View>
+            </View> */}
 
             {/* Client Row */}
             <TouchableOpacity
@@ -582,10 +582,10 @@ export const TaskDetailScreen: React.FC = () => {
                 <FileText size={18} color="#6B7280" />
                 <Text style={styles.attrLabel}>Project</Text>
               </View>
-              {isNew ? (
+              {/* {isNew ? (
                 <TextInput
                   style={styles.projectInput}
-                  placeholder="e.g. Website Redesign"
+                  placeholder="Add a project"
                   placeholderTextColor="#A8A29E"
                   value={project}
                   onChangeText={setProject}
@@ -596,7 +596,7 @@ export const TaskDetailScreen: React.FC = () => {
                     {existingTask?.project || 'Tap to set project'}
                   </Text>
                 </TouchableOpacity>
-              )}
+              )} */}
             </View>
           </View>
 
@@ -606,7 +606,7 @@ export const TaskDetailScreen: React.FC = () => {
             {isNew ? (
               <TextInput
                 style={styles.descInput}
-                placeholder="Design a modern and responsive homepage with new branding. Include hero section, features, and testimonials."
+                placeholder="Add a description"
                 placeholderTextColor="#A8A29E"
                 value={description}
                 onChangeText={setDescription}

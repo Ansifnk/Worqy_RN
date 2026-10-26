@@ -1,15 +1,19 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { MoreVertical, Leaf } from 'lucide-react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
+import { MoreVertical } from 'lucide-react-native';
 import { colors } from '../../../utils/colors';
 import ThreeDotsMenu, { ActionMenuItem } from '../../../components/ThreeDotsMenu';
+import { ClientLogo } from '../../clients/components/ClientLogos';
 
 export interface ClientItem {
   id: string;
   name: string;
   status: string;
-  badgeType: 'bricado' | 'nkt' | 'britauria';
+  category?: string;
+  companyName?: string;
+  clientType?: string;
+  profilePic?: string;
+  badgeType?: string;
   optionsColor?: string;
 }
 
@@ -26,43 +30,22 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   onOptionsPress,
   actions,
 }) => {
-  const renderBadge = () => {
-    switch (item.badgeType) {
-      case 'bricado':
-        return (
-          <View style={[styles.badgeBase, styles.bricadoBadge]}>
-            <Svg width={30} height={30} viewBox="0 0 32 32" fill="none">
-              <Circle cx="16" cy="16" r="13" stroke="#F2C078" strokeWidth="2.5" opacity={0.6} />
-              <Path
-                d="M11 19C12.5 22 17 23 20 20C23 17 22 12.5 19 11C16 9.5 11.5 10.5 10 13.5"
-                stroke="#F2C078"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-              <Circle cx="16" cy="16" r="3.5" fill="#FFFFFF" />
-            </Svg>
-          </View>
-        );
-      case 'nkt':
-        return (
-          <View style={[styles.badgeBase, styles.nktBadge]}>
-            <Text style={styles.nktText}>NK</Text>
-          </View>
-        );
-      case 'britauria':
-        return (
-          <View style={[styles.badgeBase, styles.britauriaBadge]}>
-            <Leaf size={22} color="#FFFFFF" strokeWidth={2.4} fill="#FFFFFF" />
-          </View>
-        );
-      default:
-        return (
-          <View style={[styles.badgeBase, styles.nktBadge]}>
-            <Text style={styles.nktText}>{item.name.substring(0, 2).toUpperCase()}</Text>
-          </View>
-        );
-    }
-  };
+  // Infer logo type or fallback
+  const logoType =
+    item.badgeType ||
+    (item.name.toLowerCase().includes('bricado')
+      ? 'bricado'
+      : item.name.toLowerCase().includes('nkt')
+      ? 'nkt'
+      : item.name.toLowerCase().includes('britauria')
+      ? 'britauria'
+      : 'custom');
+
+  const subtitle =
+    item.companyName ||
+    item.category ||
+    item.status ||
+    (item.clientType ? `${item.clientType} Account` : 'Client');
 
   return (
     <TouchableOpacity
@@ -71,15 +54,41 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       activeOpacity={0.7}
     >
       {/* Client Logo / Badge */}
-      {renderBadge()}
+      <View style={styles.badgeWrapper}>
+        <ClientLogo type={logoType} name={item.name} size={50} />
+      </View>
 
       {/* Content Info */}
       <View style={styles.textContainer}>
-        <Text style={styles.nameText} numberOfLines={1}>
-          {item.name}
-        </Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.nameText} numberOfLines={1}>
+            {item.name}
+          </Text>
+          {item.status ? (
+            <View
+              style={[
+                styles.statusBadge,
+                item.status === 'Active'
+                  ? styles.activeBadge
+                  : styles.defaultBadge,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.statusBadgeText,
+                  item.status === 'Active'
+                    ? styles.activeBadgeText
+                    : styles.defaultBadgeText,
+                ]}
+              >
+                {item.status}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+
         <Text style={styles.statusText} numberOfLines={1}>
-          {item.status}
+          {subtitle}
         </Text>
       </View>
 
@@ -120,39 +129,45 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 6,
   },
-  badgeBase: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+  badgeWrapper: {
     marginRight: 16,
-  },
-  bricadoBadge: {
-    backgroundColor: '#1C1B1F',
-  },
-  nktBadge: {
-    backgroundColor: '#111111',
-  },
-  nktText: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: colors.white,
-    letterSpacing: 0.5,
-  },
-  britauriaBadge: {
-    backgroundColor: '#16A34A',
-    borderRadius: 26, // Circular as in screenshot
   },
   textContainer: {
     flex: 1,
     justifyContent: 'center',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   nameText: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
     letterSpacing: -0.2,
+    flexShrink: 1,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  activeBadge: {
+    backgroundColor: '#EAF6EE',
+  },
+  defaultBadge: {
+    backgroundColor: '#F3F4F6',
+  },
+  statusBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  activeBadgeText: {
+    color: '#238349',
+  },
+  defaultBadgeText: {
+    color: '#6B7280',
   },
   statusText: {
     fontSize: 13,

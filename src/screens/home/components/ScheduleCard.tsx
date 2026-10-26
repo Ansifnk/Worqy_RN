@@ -1,15 +1,19 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Video, FileText, MoreVertical } from 'lucide-react-native';
+import { Video, FileText, AlertCircle, Bell, Calendar, MoreVertical } from 'lucide-react-native';
 import { colors } from '../../../utils/colors';
 import ThreeDotsMenu, { ActionMenuItem } from '../../../components/ThreeDotsMenu';
 
 export interface ScheduleItem {
   id: string;
-  time: string;
   title: string;
-  subtitle: string;
-  type: 'video' | 'document';
+  time?: string;
+  startTime?: string;
+  endTime?: string;
+  subtitle?: string;
+  clientName?: string;
+  notes?: string;
+  type?: string;
 }
 
 interface ScheduleCardProps {
@@ -25,7 +29,51 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
   onOptionsPress,
   actions,
 }) => {
-  const isVideo = item.type === 'video';
+  const normalizedType = (item.type || 'Meeting').toLowerCase();
+
+  const getBadgeConfig = () => {
+    if (normalizedType.includes('meeting') || normalizedType === 'video') {
+      return {
+        bg: '#EBF3FC',
+        icon: <Video size={22} color="#4A80E8" strokeWidth={2.2} />,
+      };
+    }
+    if (normalizedType.includes('task') || normalizedType === 'document') {
+      return {
+        bg: '#F0EBFA',
+        icon: <FileText size={22} color="#6E56CF" strokeWidth={2.2} />,
+      };
+    }
+    if (normalizedType.includes('deadline')) {
+      return {
+        bg: '#FEF3C7',
+        icon: <AlertCircle size={22} color="#D97706" strokeWidth={2.2} />,
+      };
+    }
+    if (normalizedType.includes('reminder')) {
+      return {
+        bg: '#DCFCE7',
+        icon: <Bell size={22} color="#16A34A" strokeWidth={2.2} />,
+      };
+    }
+    return {
+      bg: '#E0F2FE',
+      icon: <Calendar size={22} color="#0284C7" strokeWidth={2.2} />,
+    };
+  };
+
+  const badgeConfig = getBadgeConfig();
+
+  const displayTime =
+    item.time ||
+    (item.startTime
+      ? `${item.startTime}${item.endTime ? ` - ${item.endTime}` : ''}`
+      : 'Scheduled');
+
+  const displaySubtitle =
+    item.subtitle ||
+    item.clientName ||
+    (item.type ? `${item.type} session` : 'Event');
 
   return (
     <TouchableOpacity
@@ -34,27 +82,18 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
       activeOpacity={0.7}
     >
       {/* Icon Badge */}
-      <View
-        style={[
-          styles.iconContainer,
-          isVideo ? styles.videoBadge : styles.documentBadge,
-        ]}
-      >
-        {isVideo ? (
-          <Video size={22} color="#4A80E8" strokeWidth={2.2} />
-        ) : (
-          <FileText size={22} color="#6E56CF" strokeWidth={2.2} />
-        )}
+      <View style={[styles.iconContainer, { backgroundColor: badgeConfig.bg }]}>
+        {badgeConfig.icon}
       </View>
 
       {/* Content Info */}
       <View style={styles.textContainer}>
-        <Text style={styles.timeText}>{item.time}</Text>
+        <Text style={styles.timeText}>{displayTime}</Text>
         <Text style={styles.titleText} numberOfLines={1}>
           {item.title}
         </Text>
         <Text style={styles.subtitleText} numberOfLines={1}>
-          {item.subtitle}
+          {displaySubtitle}
         </Text>
       </View>
 
@@ -99,12 +138,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-  },
-  videoBadge: {
-    backgroundColor: '#EBF3FC',
-  },
-  documentBadge: {
-    backgroundColor: '#F0EBFA',
   },
   textContainer: {
     flex: 1,
