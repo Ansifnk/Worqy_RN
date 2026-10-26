@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,31 +6,37 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
-import { Lock, AlertTriangle } from 'lucide-react-native';
+import { AlertTriangle } from 'lucide-react-native';
 import { BottomSheet } from '../../../components/BottomSheet';
-import { TextInput } from '../../../components/TextInput';
 import { Button } from '../../../components/Button';
 import { colors } from '../../../utils/colors';
 import { useAppContext } from '../../../context/AppContext';
+import { GoogleSocialIcon } from '../../../components/SocialAuthButtons';
+
+/* Kept for later reuse when email/password auth is restored
+import { useForm, Controller } from 'react-hook-form';
+import { Lock } from 'lucide-react-native';
+import { TextInput } from '../../../components/TextInput';
+
+interface DeleteAccountFormData {
+  password: string;
+}
+*/
 
 interface DeleteAccountModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
-interface DeleteAccountFormData {
-  password: string;
-}
-
 export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
   visible,
   onClose,
 }) => {
-  const { deleteAccount } = useAppContext();
+  const { deleteAccount, user } = useAppContext();
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  /* Password form state kept for future reuse
   const {
     control,
     handleSubmit,
@@ -41,37 +47,21 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
       password: '',
     },
   });
+  */
 
-  useEffect(() => {
-    if (visible) {
-      reset({ password: '' });
-      setErrorMessage(null);
-    }
-  }, [visible, reset]);
-
-  const onSubmit = async (data: DeleteAccountFormData) => {
+  const handleConfirmDelete = async () => {
     try {
       setSubmitting(true);
       setErrorMessage(null);
 
-      await deleteAccount(data.password);
+      // Deletes user account (handles Google user credentials directly without password)
+      await deleteAccount();
       onClose();
     } catch (err: any) {
       console.error('Delete account error:', err);
-      const errCode = err?.code || '';
-      if (
-        errCode === 'auth/wrong-password' ||
-        errCode === 'auth/invalid-credential' ||
-        errCode === 'auth/invalid-password'
-      ) {
-        setErrorMessage('Incorrect password. Please verify and try again.');
-      } else if (errCode === 'auth/too-many-requests') {
-        setErrorMessage('Too many failed attempts. Please try again later.');
-      } else {
-        setErrorMessage(
-          err?.message || 'Failed to delete account. Please try again.'
-        );
-      }
+      setErrorMessage(
+        err?.message || 'Failed to delete account. Please try again.'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -82,7 +72,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
       visible={visible}
       onClose={onClose}
       title="Delete Account"
-      subtitle="Security verification required"
+      subtitle="Permanent account deletion"
       maxHeightRatio={0.75}
     >
       <KeyboardAvoidingView
@@ -92,11 +82,24 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
         <View style={styles.content}>
           {/* Warning Banner */}
           <View style={styles.warningBanner}>
-            <AlertTriangle size={20} color="#DC2626" style={styles.warningIcon} />
+            <AlertTriangle size={22} color="#DC2626" style={styles.warningIcon} />
             <View style={styles.warningTextContainer}>
               <Text style={styles.warningTitle}>Permanent Action</Text>
               <Text style={styles.warningBody}>
-                Enter your password to confirm and permanently delete your account.
+                Are you sure you want to delete your account? All your datas will be permanently removed. This action cannot be undone.
+              </Text>
+            </View>
+          </View>
+
+          {/* Account Info Chip */}
+          <View style={styles.accountChip}>
+            <View style={styles.googleIconBadge}>
+              <GoogleSocialIcon size={18} />
+            </View>
+            <View style={styles.accountTextContainer}>
+              <Text style={styles.accountLabel}>Signed in with Google</Text>
+              <Text style={styles.accountEmail} numberOfLines={1}>
+                {user?.email || 'Google Account'}
               </Text>
             </View>
           </View>
@@ -108,34 +111,27 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
             </View>
           ) : null}
 
-          {/* Password Input */}
+          {/* Password Input (kept for later reuse when email/password auth is restored)
           <Controller
             control={control}
             name="password"
             rules={{
               required: 'Password is required to confirm account deletion',
-              minLength: {
-                value: 6,
-                message: 'Password must be at least 6 characters',
-              },
             }}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 label="Confirm Password"
                 placeholder="Enter your current password"
                 value={value}
-                onChangeText={(val) => {
-                  onChange(val);
-                  if (errorMessage) setErrorMessage(null);
-                }}
+                onChangeText={onChange}
                 onBlur={onBlur}
                 error={errors.password?.message}
                 isPassword
                 leftIcon={<Lock size={18} color={colors.textSecondary} />}
-                returnKeyType="done"
               />
             )}
           />
+          */}
 
           {/* Action Buttons */}
           <View style={styles.buttonGroup}>
@@ -149,7 +145,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
             <Button
               title={submitting ? 'Deleting...' : 'Delete Account'}
               variant="primary"
-              onPress={() => handleSubmit(onSubmit)()}
+              onPress={handleConfirmDelete}
               loading={submitting}
               disabled={submitting}
               style={styles.deleteButton}
@@ -199,6 +195,42 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     lineHeight: 18,
     color: '#991B1B',
+  },
+  accountChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5FAF8',
+    borderWidth: 1,
+    borderColor: '#DCEFE7',
+    borderRadius: 12,
+    padding: 12,
+    gap: 12,
+  },
+  googleIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E6F4F0',
+  },
+  accountTextContainer: {
+    flex: 1,
+  },
+  accountLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  accountEmail: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginTop: 2,
   },
   errorBanner: {
     backgroundColor: '#FEF2F2',

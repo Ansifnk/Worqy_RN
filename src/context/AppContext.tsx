@@ -10,7 +10,7 @@ import {
 } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, deleteDoc } from '@react-native-firebase/firestore';
 import { firebaseCollections } from '../utils/constants';
-import { signOutGoogle } from '../utils/googleAuth';
+import { signOutGoogle, signInWithGoogle } from '../utils/googleAuth';
 
 export interface User {
   id: string;
@@ -23,7 +23,7 @@ export interface AppContextType {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   loading: boolean;
   signOutUser: () => Promise<void>;
-  deleteAccount: (password: string) => Promise<void>;
+  deleteAccount: (password?: string) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -113,19 +113,21 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const deleteAccount = useCallback(async (password: string) => {
+  const deleteAccount = useCallback(async (password?: string) => {
     try {
       const auth = getAuth();
       const currentUser = auth.currentUser;
       const currentUserId = user?.id || currentUser?.uid;
 
-      if (!currentUser || !currentUser.email || !currentUserId) {
+      if (!currentUser || !currentUserId) {
         throw new Error('No user is currently authenticated.');
       }
 
-      // 1. Re-authenticate with password to satisfy Firebase security requirement
-      const credential = EmailAuthProvider.credential(currentUser.email, password);
-      await reauthenticateWithCredential(currentUser, credential);
+      // 1. If password was provided (for email/password users), re-authenticate with password
+      if (password && currentUser.email) {
+        const credential = EmailAuthProvider.credential(currentUser.email, password);
+        await reauthenticateWithCredential(currentUser, credential);
+      }
 
       // 2. Fetch existing user document
       const db = getFirestore();
@@ -137,7 +139,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         ? userSnap.data()
         : { id: currentUserId, name: user?.name || '', email: user?.email || '' };
 
-      // 3. Move user document to DELETED_USERS collection while freshly authenticated
+      // 3. Move user document to DELETED_USERS collection
       await setDoc(deletedUserDocRef, {
         ...userData,
         deletedAt: new Date().toISOString(),
@@ -147,8 +149,25 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       // 4. Remove from active USERS collection
       await deleteDoc(userDocRef);
 
-      // 5. Delete Firebase Auth user account
-      await deleteUser(currentUser);
+      // 5. Delete Firebase Auth user account with re-auth fallback if required
+      try {
+        await deleteUser(currentUser);
+      } catch (authError: any) {
+        if (authError?.code === 'auth/requires-recent-login') {
+          // Re-authenticate with Google for Google users
+          const googleResult = await signInWithGoogle();
+          if (googleResult.success && auth.currentUser) {
+            await deleteUser(auth.currentUser);
+          } else {
+            throw new Error('Please re-authenticate with Google to confirm account deletion.');
+          }
+        } else {
+          throw authError;
+        }
+      }
+
+      // 6. Sign out from Google session
+      await signOutGoogle();
 
       setUser(null);
     } catch (error) {
