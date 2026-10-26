@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "312386560214-pvtbho1fu4vrnk42sbfarknotoranjlh.apps.googleusercontent.com",
+          "client_id": "312386560214-e2fca7la2mcudud74ga5hl7jhlv68cuh.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "app.teckito.worqy",
-            "certificate_hash": "41cf0b6d410bf446029cc0e12cb2977ae79ee9bc"
+            "certificate_hash": "df11f6beaa9abbd4b9bcff5c1b7385e56a49731d"
           }
         },
         {

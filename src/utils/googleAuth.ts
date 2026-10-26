@@ -23,8 +23,9 @@ export const configureGoogleSignIn = () => {
   if (isConfigured) return;
   try {
     GoogleOneTapSignIn.configure({
-      webClientId: GOOGLE_CONFIG.webClientId,
-      iosClientId: GOOGLE_CONFIG.iosClientId,
+      // webClientId: GOOGLE_CONFIG.webClientId,
+      // iosClientId: GOOGLE_CONFIG.iosClientId,
+      webClientId: 'autoDetect'
     });
     isConfigured = true;
   } catch (error) {
@@ -72,6 +73,7 @@ export const signInWithGoogle = async (): Promise<GoogleAuthResult> => {
 
     // 4. Handle cancellation
     if (isCancelledResponse(response)) {
+      console.log('llllll')
       return { success: false, cancelled: true };
     }
 

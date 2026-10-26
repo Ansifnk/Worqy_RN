@@ -139,14 +139,7 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.getStartedText}>Get Started</Text>
             </Button>
 
-            {/* Sign in footer link - Commented out for now (Get Started navigates directly to Login)
-            <View style={styles.footerRow}>
-              <Text style={styles.footerPrompt}>Already have an account? </Text>
-              <TouchableOpacity onPress={handleSignIn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Text style={styles.signInLink}>Sign in</Text>
-              </TouchableOpacity>
-            </View>
-            */}
+
           </View>
         </View>
       </ScrollView>
@@ -332,6 +325,7 @@ const styles = StyleSheet.create({
   actionsContainer: {
     width: '100%',
     alignItems: 'center',
+    marginBottom: 30
   },
   getStartedButton: {
     width: '100%',

@@ -128,7 +128,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     try {
       setGoogleLoading(true);
       const result = await signInWithGoogle();
-
+      console.log(result, 'ee')
       if (result.cancelled) {
         return;
       }
