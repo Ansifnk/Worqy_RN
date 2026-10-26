@@ -10,6 +10,7 @@ import {
 } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, deleteDoc } from '@react-native-firebase/firestore';
 import { firebaseCollections } from '../utils/constants';
+import { signOutGoogle } from '../utils/googleAuth';
 
 export interface User {
   id: string;
@@ -102,6 +103,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const signOutUser = useCallback(async () => {
     try {
+      await signOutGoogle();
       const auth = getAuth();
       await signOut(auth);
       setUser(null);

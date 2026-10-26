@@ -42,6 +42,10 @@ export const ProfileScreen: React.FC = () => {
         onPress: async () => {
           try {
             await signOutUser();
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Welcome' }],
+            });
           } catch (err: any) {
             Alert.alert('Error', err?.message || 'Failed to sign out');
           }

@@ -23,7 +23,8 @@ import { firebaseCollections } from '../../utils/constants';
 import AuthHeader from '../../components/AuthHeader';
 import TextInput from '../../components/TextInput';
 import Button from '../../components/Button';
-// import SocialAuthButtons from '../../components/SocialAuthButtons';
+import SocialAuthButtons from '../../components/SocialAuthButtons';
+import { signInWithGoogle } from '../../utils/googleAuth';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -36,6 +37,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { setUser } = useAppContext();
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const {
     control,
@@ -105,13 +107,33 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  // const handleSocialNotSupported = () => {
-  //   Alert.alert('Notice', 'Social sign in is not supported. Please sign in with email.');
-  // };
+  const handleGoogleSignIn = async () => {
+    try {
+      setGoogleLoading(true);
+      const result = await signInWithGoogle();
+
+      if (result.cancelled) {
+        return;
+      }
+
+      if (result.success && result.user) {
+        setUser(result.user);
+        navigation.replace('Main');
+      } else if (result.error) {
+        Alert.alert('Sign In Failed', result.error);
+      }
+    } catch (error: any) {
+      Alert.alert('Sign In Failed', error?.message || 'Failed to sign in with Google.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleGoToSignup = () => {
     navigation.navigate('Signup');
   };
+
+  const isFormDisabled = loading || googleLoading;
 
   return (
     <View style={styles.screen}>
@@ -165,7 +187,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   error={errors.email?.message}
                   autoCapitalize="none"
                   keyboardType="email-address"
-                  disabled={loading}
+                  disabled={isFormDisabled}
                   leftIcon={<Mail size={20} color={colors.textSecondary} strokeWidth={2} />}
                 />
               )}
@@ -192,7 +214,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   error={errors.password?.message}
                   autoCapitalize="none"
                   isPassword
-                  disabled={loading}
+                  disabled={isFormDisabled}
                   leftIcon={<Lock size={20} color={colors.textSecondary} strokeWidth={2} />}
                 />
               )}
@@ -202,7 +224,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               style={styles.forgotPasswordBtn}
               activeOpacity={0.7}
-              disabled={loading}
+              disabled={isFormDisabled}
             >
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
@@ -211,18 +233,20 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <Button
               title="Sign in"
               loading={loading}
+              disabled={isFormDisabled}
               onPress={() => handleSubmit(onSubmit)()}
               style={styles.submitButton}
             />
 
             {/* Reusable Social Auth Buttons */}
-            {/* <SocialAuthButtons
+            <SocialAuthButtons
               dividerText="or sign in with"
-              disabled={loading}
-              onPressGoogle={handleSocialNotSupported}
-              onPressApple={handleSocialNotSupported}
-              onPressFacebook={handleSocialNotSupported}
-            /> */}
+              disabled={isFormDisabled}
+              googleLoading={googleLoading}
+              onPressGoogle={handleGoogleSignIn}
+              onPressApple={() => Alert.alert('Coming Soon', 'Apple sign-in will be available soon.')}
+              onPressFacebook={() => Alert.alert('Coming Soon', 'Facebook sign-in will be available soon.')}
+            />
           </View>
 
           {/* Switch to Sign Up Link */}

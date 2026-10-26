@@ -1,3 +1,4 @@
+import GoogleSignIn
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
@@ -14,6 +15,10 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
   ) {
     guard let windowScene = scene as? UIWindowScene else {
       return
+    }
+
+    if let url = connectionOptions.urlContexts.first?.url {
+      _ = GIDSignIn.sharedInstance.handle(url)
     }
 
     dependencyProvider = RCTAppDependencyProvider()
@@ -34,11 +39,14 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
       in: window,
       connectionOptions: connectionOptions
     )
-
-   
   }
 
   func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    for context in URLContexts {
+      if GIDSignIn.sharedInstance.handle(context.url) {
+        return
+      }
+    }
     RCTLinkingManager.scene(scene, openURLContexts: URLContexts)
   }
 

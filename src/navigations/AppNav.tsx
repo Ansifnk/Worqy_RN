@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { NavigationContainer, NavigatorScreenParams } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  NavigatorScreenParams,
+  createNavigationContainerRef,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import BottomTabNav, { BottomTabParamList } from './BottomTabNav';
 import LoginScreen from '../screens/login/LoginScreen';
@@ -24,10 +28,29 @@ export type RootStackParamList = {
   Profile: undefined;
 };
 
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppNav: React.FC = () => {
   const { user, loading } = useAppContext();
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    if (!loading && navigationRef.isReady()) {
+      if (!user) {
+        navigationRef.reset({
+          index: 0,
+          routes: [{ name: 'Welcome' }],
+        });
+      }
+    }
+  }, [user, loading]);
 
   if (loading) {
     return (
@@ -38,7 +61,7 @@ export const AppNav: React.FC = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         key={user ? 'authenticated' : 'unauthenticated'}
         initialRouteName={user ? 'Main' : 'Welcome'}

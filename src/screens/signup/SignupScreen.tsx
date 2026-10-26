@@ -23,7 +23,8 @@ import { firebaseCollections } from '../../utils/constants';
 import AuthHeader from '../../components/AuthHeader';
 import TextInput from '../../components/TextInput';
 import Button from '../../components/Button';
-// import SocialAuthButtons from '../../components/SocialAuthButtons';
+import SocialAuthButtons from '../../components/SocialAuthButtons';
+import { signInWithGoogle } from '../../utils/googleAuth';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
 
@@ -37,6 +38,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { setUser } = useAppContext();
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const {
     control,
@@ -110,13 +112,33 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  // const handleSocialNotSupported = () => {
-  //   Alert.alert('Notice', 'Social sign up is not supported. Please sign up with email.');
-  // };
+  const handleGoogleSignUp = async () => {
+    try {
+      setGoogleLoading(true);
+      const result = await signInWithGoogle();
+
+      if (result.cancelled) {
+        return;
+      }
+
+      if (result.success && result.user) {
+        setUser(result.user);
+        navigation.replace('Main');
+      } else if (result.error) {
+        Alert.alert('Sign Up Failed', result.error);
+      }
+    } catch (error: any) {
+      Alert.alert('Sign Up Failed', error?.message || 'Failed to sign up with Google.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleGoToLogin = () => {
     navigation.navigate('Login');
   };
+
+  const isFormDisabled = loading || googleLoading;
 
   return (
     <View style={styles.screen}>
@@ -169,7 +191,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
                   onBlur={onBlur}
                   error={errors.name?.message}
                   autoCapitalize="words"
-                  disabled={loading}
+                  disabled={isFormDisabled}
                   leftIcon={<User size={20} color={colors.textSecondary} strokeWidth={2} />}
                 />
               )}
@@ -196,7 +218,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
                   error={errors.email?.message}
                   autoCapitalize="none"
                   keyboardType="email-address"
-                  disabled={loading}
+                  disabled={isFormDisabled}
                   leftIcon={<Mail size={20} color={colors.textSecondary} strokeWidth={2} />}
                 />
               )}
@@ -223,7 +245,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
                   error={errors.password?.message}
                   autoCapitalize="none"
                   isPassword
-                  disabled={loading}
+                  disabled={isFormDisabled}
                   leftIcon={<Lock size={20} color={colors.textSecondary} strokeWidth={2} />}
                   rightAccessory={
                     strength ? (
@@ -242,18 +264,20 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
             <Button
               title="Sign up"
               loading={loading}
+              disabled={isFormDisabled}
               onPress={() => handleSubmit(onSubmit)()}
               style={styles.submitButton}
             />
 
             {/* Reusable Social Auth Buttons */}
-            {/* <SocialAuthButtons
+            <SocialAuthButtons
               dividerText="or sign up with"
-              disabled={loading}
-              onPressGoogle={handleSocialNotSupported}
-              onPressApple={handleSocialNotSupported}
-              onPressFacebook={handleSocialNotSupported}
-            /> */}
+              disabled={isFormDisabled}
+              googleLoading={googleLoading}
+              onPressGoogle={handleGoogleSignUp}
+              onPressApple={() => Alert.alert('Coming Soon', 'Apple sign-up will be available soon.')}
+              onPressFacebook={() => Alert.alert('Coming Soon', 'Facebook sign-up will be available soon.')}
+            />
           </View>
 
           {/* Switch to Login Link */}
