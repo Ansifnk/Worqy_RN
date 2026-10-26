@@ -1,3 +1,5 @@
+export const isDev = true
+
 export const firebaseCollections = {
     users: 'USERS',
     deletedUsers: 'DELETED_USERS',
