@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "312386560214",
+    "project_id": "worqy-prod",
+    "storage_bucket": "worqy-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:312386560214:android:11f631c9cf73e5da97e977",
+        "android_client_info": {
+          "package_name": "app.teckito.worqy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "312386560214-pvtbho1fu4vrnk42sbfarknotoranjlh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.teckito.worqy",
+            "certificate_hash": "41cf0b6d410bf446029cc0e12cb2977ae79ee9bc"
+          }
+        },
+        {
+          "client_id": "312386560214-mffusqoe3ifttpv724g8o0g79ht3ceup.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQyodXr6OFoMRmvKdJVxUitgA_4kMTWik"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "312386560214-mffusqoe3ifttpv724g8o0g79ht3ceup.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "312386560214-a6bbtlvd9d5qcqbhtb2ki03sronsq5ki.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.teckito.worqy"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

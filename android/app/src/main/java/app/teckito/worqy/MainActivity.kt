@@ -1,4 +1,4 @@
-package com.worqy
+package app.teckito.worqy
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
