@@ -70,11 +70,7 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
   const subtitle = item.clientName || item.project || 'General';
 
   return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
+    <View style={styles.card}>
       {/* Checkbox button */}
       <TouchableOpacity
         style={[styles.checkbox, isDone && styles.checkboxDone]}
@@ -84,32 +80,38 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
         {isDone && <Check size={14} color={colors.white} strokeWidth={3} />}
       </TouchableOpacity>
 
-      {/* Task Info */}
-      <View style={styles.content}>
-        <Text
-          style={[styles.title, isDone && styles.titleDone]}
-          numberOfLines={1}
-        >
-          {item.title}
-        </Text>
-        <Text style={styles.subtitle} numberOfLines={1}>
-          {subtitle}
-        </Text>
-      </View>
-
-      {/* Right Column: Due Date & Priority Pill */}
-      <View style={styles.metaColumn}>
-        {formattedDate ? (
-          <Text style={[styles.dueDate, isDone && styles.textMuted]}>
-            {formattedDate}
+      {/* Task Info & Meta Clickable Area */}
+      <TouchableOpacity
+        style={styles.clickableArea}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        <View style={styles.content}>
+          <Text
+            style={[styles.title, isDone && styles.titleDone]}
+            numberOfLines={1}
+          >
+            {item.title}
           </Text>
-        ) : null}
-        <View style={[styles.priorityBadge, { backgroundColor: priorityTheme.bg }]}>
-          <Text style={[styles.priorityText, { color: priorityTheme.text }]}>
-            {item.priority}
+          <Text style={styles.subtitle} numberOfLines={1}>
+            {subtitle}
           </Text>
         </View>
-      </View>
+
+        {/* Right Column: Due Date & Priority Pill */}
+        <View style={styles.metaColumn}>
+          {formattedDate ? (
+            <Text style={[styles.dueDate, isDone && styles.textMuted]}>
+              {formattedDate}
+            </Text>
+          ) : null}
+          <View style={[styles.priorityBadge, { backgroundColor: priorityTheme.bg }]}>
+            <Text style={[styles.priorityText, { color: priorityTheme.text }]}>
+              {item.priority}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
 
       {/* More Options */}
       {actions && actions.length > 0 ? (
@@ -129,7 +131,7 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
           <MoreVertical size={18} color="#9CA3AF" />
         </TouchableOpacity>
       )}
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -142,6 +144,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
+  },
+  clickableArea: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   checkbox: {
     width: 22,

@@ -77,7 +77,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
           name: string;
           role?: string;
         };
-      }>('/auth/customer/register', {
+      }>('/auth/client/register', {
         name: trimmedName,
         email: trimmedEmail,
         password,

@@ -48,75 +48,79 @@ export const ClientCard: React.FC<ClientCardProps> = ({
     (item.clientType ? `${item.clientType} Account` : 'Client');
 
   return (
-    <TouchableOpacity
-      style={styles.rowContainer}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      {/* Client Logo / Badge */}
-      <View style={styles.badgeWrapper}>
-        <ClientLogo type={logoType} name={item.name} size={50} />
-      </View>
-
-      {/* Content Info */}
-      <View style={styles.textContainer}>
-        <View style={styles.titleRow}>
-          <Text style={styles.nameText} numberOfLines={1}>
-            {item.name}
-          </Text>
-          {item.status ? (
-            <View
-              style={[
-                styles.statusBadge,
-                item.status === 'Active'
-                  ? styles.activeBadge
-                  : styles.defaultBadge,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.statusBadgeText,
-                  item.status === 'Active'
-                    ? styles.activeBadgeText
-                    : styles.defaultBadgeText,
-                ]}
-              >
-                {item.status}
-              </Text>
-            </View>
-          ) : null}
+    <View style={styles.rowContainer}>
+      <TouchableOpacity
+        style={styles.clickableContent}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        {/* Client Logo / Badge */}
+        <View style={styles.badgeWrapper}>
+          <ClientLogo type={logoType} name={item.name} size={50} />
         </View>
 
-        <Text style={styles.statusText} numberOfLines={1}>
-          {subtitle}
-        </Text>
-      </View>
+        {/* Content Info */}
+        <View style={styles.textContainer}>
+          <View style={styles.titleRow}>
+            <Text style={styles.nameText} numberOfLines={1}>
+              {item.name}
+            </Text>
+            {item.status ? (
+              <View
+                style={[
+                  styles.statusBadge,
+                  item.status === 'Active'
+                    ? styles.activeBadge
+                    : styles.defaultBadge,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.statusBadgeText,
+                    item.status === 'Active'
+                      ? styles.activeBadgeText
+                      : styles.defaultBadgeText,
+                  ]}
+                >
+                  {item.status}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+
+          <Text style={styles.statusText} numberOfLines={1}>
+            {subtitle}
+          </Text>
+        </View>
+      </TouchableOpacity>
 
       {/* Options Menu */}
-      {actions && actions.length > 0 ? (
-        <ThreeDotsMenu
-          actions={actions}
-          title={item.name}
-          iconSize={19}
-          iconColor={item.optionsColor || '#9E9E9E'}
-          buttonStyle={styles.optionsButton}
-        />
-      ) : (
-        <TouchableOpacity
-          style={styles.optionsButton}
-          onPress={onOptionsPress}
-          hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
-          activeOpacity={0.6}
-          accessibilityRole="button"
-          accessibilityLabel="Client options"
-        >
-          <MoreVertical
-            size={19}
-            color={item.optionsColor || '#9E9E9E'}
+      <View style={styles.optionsWrapper}>
+        {actions && actions.length > 0 ? (
+          <ThreeDotsMenu
+            actions={actions}
+            title={item.name}
+            iconSize={19}
+            iconColor={item.optionsColor || '#9E9E9E'}
+            buttonStyle={styles.optionsButton}
           />
-        </TouchableOpacity>
-      )}
-    </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={styles.optionsButton}
+            onPress={onOptionsPress}
+            hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+            activeOpacity={0.6}
+            accessibilityRole="button"
+            accessibilityLabel="Client options"
+          >
+            <MoreVertical
+              size={19}
+              color={item.optionsColor || '#9E9E9E'}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
   );
 };
 
@@ -128,6 +132,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     marginBottom: 6,
+  },
+  clickableContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  optionsWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
   },
   badgeWrapper: {
     marginRight: 16,

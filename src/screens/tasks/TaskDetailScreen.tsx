@@ -89,8 +89,8 @@ export const TaskDetailScreen: React.FC = () => {
     } else if (isNew) {
       // Default initial dummy values matching design inspiration
       setTitle('');
-      setClientName('');
-      setClientId('');
+      setClientName(route.params?.prefillClientName || '');
+      setClientId(route.params?.prefillClientId || '');
       setProject('');
       setDueDate(new Date().toISOString());
       setPriority('High');
@@ -98,7 +98,7 @@ export const TaskDetailScreen: React.FC = () => {
       setDescription('');
       setChecklist([]);
     }
-  }, [existingTask, isNew]);
+  }, [existingTask, isNew, route.params]);
 
   // If not new and task doesn't exist, show not found
   if (!isNew && !existingTask) {

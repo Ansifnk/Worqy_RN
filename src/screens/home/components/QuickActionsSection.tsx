@@ -4,7 +4,7 @@ import { UserPlus, CheckSquare, Receipt, CalendarPlus } from 'lucide-react-nativ
 import { colors } from '../../../utils/colors';
 
 interface QuickActionsSectionProps {
-  onAddCustomer: () => void;
+  onAddClient: () => void;
   onAddTask: () => void;
   onAddInvoice: () => void;
   onAddSchedule: () => void;
@@ -21,20 +21,20 @@ interface QuickActionItem {
 }
 
 export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
-  onAddCustomer,
+  onAddClient,
   onAddTask,
   onAddInvoice,
   onAddSchedule,
 }) => {
   const actions: QuickActionItem[] = [
     {
-      id: 'customer',
-      label: 'Add Customer',
+      id: 'client',
+      label: 'Add Client',
       icon: UserPlus,
       iconColor: '#0D9488',
       bgColor: '#F0FDFA',
       borderColor: '#CCFBF1',
-      onPress: onAddCustomer,
+      onPress: onAddClient,
     },
     {
       id: 'task',

@@ -76,49 +76,53 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
     (item.type ? `${item.type} session` : 'Event');
 
   return (
-    <TouchableOpacity
-      style={styles.rowContainer}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      {/* Icon Badge */}
-      <View style={[styles.iconContainer, { backgroundColor: badgeConfig.bg }]}>
-        {badgeConfig.icon}
-      </View>
+    <View style={styles.rowContainer}>
+      <TouchableOpacity
+        style={styles.clickableContent}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        {/* Icon Badge */}
+        <View style={[styles.iconContainer, { backgroundColor: badgeConfig.bg }]}>
+          {badgeConfig.icon}
+        </View>
 
-      {/* Content Info */}
-      <View style={styles.textContainer}>
-        <Text style={styles.timeText}>{displayTime}</Text>
-        <Text style={styles.titleText} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={styles.subtitleText} numberOfLines={1}>
-          {displaySubtitle}
-        </Text>
-      </View>
+        {/* Content Info */}
+        <View style={styles.textContainer}>
+          <Text style={styles.timeText}>{displayTime}</Text>
+          <Text style={styles.titleText} numberOfLines={1}>
+            {item.title}
+          </Text>
+          <Text style={styles.subtitleText} numberOfLines={1}>
+            {displaySubtitle}
+          </Text>
+        </View>
+      </TouchableOpacity>
 
       {/* Options Menu */}
-      {actions && actions.length > 0 ? (
-        <ThreeDotsMenu
-          actions={actions}
-          title={item.title}
-          iconSize={19}
-          iconColor="#9E9E9E"
-          buttonStyle={styles.optionsButton}
-        />
-      ) : (
-        <TouchableOpacity
-          style={styles.optionsButton}
-          onPress={onOptionsPress}
-          hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
-          activeOpacity={0.6}
-          accessibilityRole="button"
-          accessibilityLabel="More options"
-        >
-          <MoreVertical size={19} color="#9E9E9E" />
-        </TouchableOpacity>
-      )}
-    </TouchableOpacity>
+      <View style={styles.optionsWrapper}>
+        {actions && actions.length > 0 ? (
+          <ThreeDotsMenu
+            actions={actions}
+            title={item.title}
+            iconSize={19}
+            iconColor="#9E9E9E"
+            buttonStyle={styles.optionsButton}
+          />
+        ) : (
+          <TouchableOpacity
+            style={styles.optionsButton}
+            onPress={onOptionsPress}
+            hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+            activeOpacity={0.6}
+            accessibilityRole="button"
+            accessibilityLabel="More options"
+          >
+            <MoreVertical size={19} color="#9E9E9E" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
   );
 };
 
@@ -130,6 +134,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     marginBottom: 6,
+  },
+  clickableContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  optionsWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
   },
   iconContainer: {
     width: 52,

@@ -105,8 +105,13 @@ export const AddEditInvoiceScreen: React.FC = () => {
       const nextNum = (invoices.length + 19).toString().padStart(3, '0');
       const year = dayjs().year();
       setInvoiceNumber(`INV-${year}-${nextNum}`);
+      if (route.params?.prefillClientId) {
+        setClientId(route.params.prefillClientId);
+        setClientName(route.params.prefillClientName || '');
+        setClientEmail(route.params.prefillClientEmail || '');
+      }
     }
-  }, [existingInvoice, invoices.length]);
+  }, [existingInvoice, invoices.length, route.params]);
 
   // Handle client selection from existing clients
   const handleSelectClient = (c: any) => {

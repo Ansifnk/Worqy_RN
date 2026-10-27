@@ -24,33 +24,33 @@ export const InvoiceItemCard: React.FC<InvoiceItemCardProps> = ({
   actions,
 }) => {
   return (
-    <TouchableOpacity
-      style={styles.cardContainer}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
+    <View style={styles.cardContainer}>
       <View style={styles.cardContent}>
-
-
-        {/* Middle Info */}
-        <View style={styles.infoContainer}>
-          <Text style={styles.invoiceNumber} numberOfLines={1}>
-            {item.invoiceNumber}
-          </Text>
-          <Text style={styles.clientName} numberOfLines={1}>
-            {item.clientName}
-          </Text>
-        </View>
-
-        {/* Right Info: Amount & Status Badge */}
-        <View style={styles.amountStatusContainer}>
-          <Text style={styles.amountText}>
-            {formatCurrency(item.subtotal || item.total)}
-          </Text>
-          <View style={styles.badgeWrapper}>
-            <InvoiceStatusBadge status={item.status} size="small" />
+        <TouchableOpacity
+          style={styles.clickableArea}
+          onPress={onPress}
+          activeOpacity={0.7}
+        >
+          {/* Middle Info */}
+          <View style={styles.infoContainer}>
+            <Text style={styles.invoiceNumber} numberOfLines={1}>
+              {item.invoiceNumber}
+            </Text>
+            <Text style={styles.clientName} numberOfLines={1}>
+              {item.clientName}
+            </Text>
           </View>
-        </View>
+
+          {/* Right Info: Amount & Status Badge */}
+          <View style={styles.amountStatusContainer}>
+            <Text style={styles.amountText}>
+              {formatCurrency(item.subtotal || item.total)}
+            </Text>
+            <View style={styles.badgeWrapper}>
+              <InvoiceStatusBadge status={item.status} size="small" />
+            </View>
+          </View>
+        </TouchableOpacity>
 
         {/* More options */}
         {actions && actions.length > 0 ? (
@@ -71,7 +71,7 @@ export const InvoiceItemCard: React.FC<InvoiceItemCardProps> = ({
           </TouchableOpacity>
         )}
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -91,6 +91,11 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  clickableArea: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },

@@ -36,7 +36,7 @@ export const BottomTabNav: React.FC = () => {
       <Tab.Screen
         name="Clients"
         component={ClientsScreen}
-        options={{ tabBarLabel: 'Customers' }}
+        options={{ tabBarLabel: 'Clients' }}
       />
       <Tab.Screen
         name="Schedule"

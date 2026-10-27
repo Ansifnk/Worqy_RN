@@ -9,6 +9,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { colors } from '../../utils/colors';
 import ClientsHeader from './components/ClientsHeader';
 import ClientSearchBar from './components/ClientSearchBar';
@@ -21,6 +22,7 @@ import { LoadingView } from '../../components/LoadingView';
 
 export const ClientsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
   const { clients, loading, error, addClient, updateClient, deleteClient, refresh } = useClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<FilterStatus>('all');
@@ -68,59 +70,41 @@ export const ClientsScreen: React.FC = () => {
     setIsFormModalVisible(true);
   };
 
-  const handleEditClientPress = (item: ClientItem) => {
+  const handleEditClientPress = useCallback((item: ClientItem) => {
     setEditingClient(item);
     setIsFormModalVisible(true);
-  };
+  }, []);
 
-  const handleDeleteClientPress = (item: ClientItem) => {
-    Alert.alert(
-      'Delete Client',
-      `Are you sure you want to remove "${item.name}"? This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteClient(item.id);
-            } catch (err: any) {
-              Alert.alert('Error', err?.message || 'Failed to delete client');
-            }
+  const handleDeleteClientPress = useCallback(
+    (item: ClientItem) => {
+      Alert.alert(
+        'Delete Client',
+        `Are you sure you want to remove "${item.name}"? This action cannot be undone.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deleteClient(item.id);
+              } catch (err: any) {
+                Alert.alert('Error', err?.message || 'Failed to delete client');
+              }
+            },
           },
-        },
-      ]
-    );
-  };
+        ]
+      );
+    },
+    [deleteClient]
+  );
 
-  const handleClientPress = (item: ClientItem) => {
-    Alert.alert(
-      item.name,
-      `${item.category || item.clientType}\nStatus: ${item.status}\nEmail: ${
-        item.email || 'None'
-      }\nPhone: ${item.phone || 'None'}`
-    );
-  };
-
-  const handleOptionsPress = (item: ClientItem) => {
-    Alert.alert(item.name, 'Client Options', [
-      {
-        text: 'View Details',
-        onPress: () => handleClientPress(item),
-      },
-      {
-        text: 'Edit Client',
-        onPress: () => handleEditClientPress(item),
-      },
-      {
-        text: 'Delete Client',
-        style: 'destructive',
-        onPress: () => handleDeleteClientPress(item),
-      },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
-  };
+  const handleClientPress = useCallback(
+    (item: ClientItem) => {
+      navigation.navigate('ClientDetail', { clientId: item.id });
+    },
+    [navigation]
+  );
 
   const handleFormSubmit = async (data: ClientFormData) => {
     try {

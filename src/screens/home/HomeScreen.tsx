@@ -109,7 +109,7 @@ export const HomeScreen: React.FC = () => {
   };
 
   // Quick Action Handlers
-  const handleAddCustomer = () => {
+  const handleAddClient = () => {
     setIsClientModalVisible(true);
   };
 
@@ -165,7 +165,7 @@ export const HomeScreen: React.FC = () => {
 
   const handleDeleteClient = (item: ClientItem) => {
     Alert.alert(
-      'Delete Customer',
+      'Delete Client',
       `Are you sure you want to remove "${item.name}"?`,
       [
         { text: 'Cancel', style: 'cancel' },
@@ -176,7 +176,7 @@ export const HomeScreen: React.FC = () => {
             try {
               await deleteClient(item.id);
             } catch (err: any) {
-              Alert.alert('Error', err?.message || 'Failed to delete customer');
+              Alert.alert('Error', err?.message || 'Failed to delete client');
             }
           },
         },
@@ -187,7 +187,7 @@ export const HomeScreen: React.FC = () => {
   // FAB Press handler
   const handleFabPress = () => {
     Alert.alert('Create New', 'Choose an action to create in your workspace:', [
-      { text: 'Add Customer', onPress: handleAddCustomer },
+      { text: 'Add Client', onPress: handleAddClient },
       { text: 'Add Task', onPress: handleAddTask },
       { text: 'Add Invoice', onPress: handleAddInvoice },
       { text: 'Add Schedule', onPress: handleAddSchedule },
@@ -233,14 +233,14 @@ export const HomeScreen: React.FC = () => {
           onPressAnalytics={() => {
             Alert.alert(
               'Workspace Summary',
-              `• ${activeTasksCount} Pending Tasks\n• ${todayMeetingsCount} Scheduled Today\n• ${activeClientsCount} Active Customers`
+              `• ${activeTasksCount} Pending Tasks\n• ${todayMeetingsCount} Scheduled Today\n• ${activeClientsCount} Active Clients`
             );
           }}
         />
 
         {/* Quick Actions Section */}
         <QuickActionsSection
-          onAddCustomer={handleAddCustomer}
+          onAddClient={handleAddClient}
           onAddTask={handleAddTask}
           onAddInvoice={handleAddInvoice}
           onAddSchedule={handleAddSchedule}
@@ -323,7 +323,7 @@ export const HomeScreen: React.FC = () => {
                 actions={[
                   {
                     id: 'details',
-                    title: 'View Customer',
+                    title: 'View Client',
                     onPress: () => handleClientPress(item),
                   },
                   {
@@ -340,17 +340,17 @@ export const HomeScreen: React.FC = () => {
               <View style={styles.emptyIconBg}>
                 <Users size={22} color={colors.primary} />
               </View>
-              <Text style={styles.emptyStateTitle}>No customers added yet</Text>
+              <Text style={styles.emptyStateTitle}>No Clients added yet</Text>
               <Text style={styles.emptyStateSubtitle}>
                 Keep track of your clients and ongoing projects.
               </Text>
               <TouchableOpacity
                 style={styles.emptyStateButton}
-                onPress={handleAddCustomer}
+                onPress={handleAddClient}
                 activeOpacity={0.7}
               >
                 <PlusCircle size={15} color={colors.primary} />
-                <Text style={styles.emptyStateButtonText}>Add Customer</Text>
+                <Text style={styles.emptyStateButtonText}>Add Client</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -382,7 +382,7 @@ export const HomeScreen: React.FC = () => {
             await addClient(data);
             setIsClientModalVisible(false);
           } catch (err: any) {
-            Alert.alert('Error', err?.message || 'Failed to save customer');
+            Alert.alert('Error', err?.message || 'Failed to save client');
           }
         }}
         initialData={null}
