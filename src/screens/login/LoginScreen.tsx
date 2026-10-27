@@ -62,7 +62,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           name: string;
           role?: string;
         };
-      }>('/auth/client/login', {
+      }>('/auth/user/login', {
         email: trimmedEmail,
         password,
         source: 'mobile',

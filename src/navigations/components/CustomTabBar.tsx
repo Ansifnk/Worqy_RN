@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Home, Users, Calendar, FileText, CheckSquare } from 'lucide-react-native';
+import { Home, Users, Calendar, FileText, CheckSquare, Sparkles } from 'lucide-react-native';
 import { colors } from '../../utils/colors';
 
 interface TabIconProps {
@@ -36,6 +36,8 @@ const TabIcon: React.FC<TabIconProps> = ({ name, focused, color, size = 22 }) =>
     case 'Pages':
     case 'Profile':
       return <FileText size={size} color={color} strokeWidth={strokeWidth} />;
+    case 'AIChat':
+      return <Sparkles size={24} color={colors.white} strokeWidth={2.2} />;
     default:
       return <Home size={size} color={color} strokeWidth={strokeWidth} />;
   }
@@ -51,11 +53,22 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
   const bottomInset = Math.max(propInsets?.bottom ?? 0, safeAreaInsets.bottom);
 
   return (
-    <View style={[styles.barWrapper, { paddingBottom: Math.max(bottomInset, Platform.OS === 'ios' ? 14 : 10) }]}>
+    <View
+      style={[
+        styles.barWrapper,
+        {
+          paddingBottom: Math.max(
+            bottomInset,
+            Platform.OS === 'ios' ? 14 : 10,
+          ),
+        },
+      ]}
+    >
       <View style={styles.barContainer}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
+          const isAIChat = route.name === 'AIChat';
 
           if (
             typeof options.tabBarStyle === 'object' &&
@@ -99,6 +112,50 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
 
           const badge = options.tabBarBadge;
 
+          // Bulged Primary Center Tab for AI Chat
+          if (isAIChat) {
+            return (
+              <TouchableOpacity
+                key={route.key}
+                accessibilityRole="button"
+                accessibilityState={isFocused ? { selected: true } : {}}
+                accessibilityLabel={
+                  options.tabBarAccessibilityLabel ?? 'AI Chat'
+                }
+                testID={options.tabBarButtonTestID}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                style={styles.bulgedTabButton}
+                activeOpacity={0.85}
+              >
+                <View style={styles.bulgedButtonWrapper}>
+                  <View
+                    style={[
+                      styles.bulgedButtonInner,
+                      isFocused && styles.bulgedButtonInnerFocused,
+                    ]}
+                  >
+                    <Sparkles size={25} color={colors.white} strokeWidth={2.2} />
+                  </View>
+
+                  <Text
+                    style={[
+                      styles.tabLabel,
+                      styles.bulgedTabLabel,
+                      isFocused
+                        ? styles.tabLabelFocused
+                        : styles.tabLabelUnfocused,
+                      { color: currentColor },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {labelText === 'AIChat' ? 'AI' : labelText}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          }
+
           return (
             <TouchableOpacity
               key={route.key}
@@ -115,7 +172,12 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
                 {/* Active indicator dot placed subtly above icon */}
                 <View style={styles.indicatorContainer}>
                   {isFocused && (
-                    <View style={[styles.topActiveDot, { backgroundColor: activeColor }]} />
+                    <View
+                      style={[
+                        styles.topActiveDot,
+                        { backgroundColor: activeColor },
+                      ]}
+                    />
                   )}
                 </View>
 
@@ -139,7 +201,9 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
                   {badge !== undefined && (
                     <View style={styles.badge}>
                       <Text style={styles.badgeText}>
-                        {typeof badge === 'number' && badge > 99 ? '99+' : badge}
+                        {typeof badge === 'number' && badge > 99
+                          ? '99+'
+                          : badge}
                       </Text>
                     </View>
                   )}
@@ -148,7 +212,9 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
                 <Text
                   style={[
                     styles.tabLabel,
-                    isFocused ? styles.tabLabelFocused : styles.tabLabelUnfocused,
+                    isFocused
+                      ? styles.tabLabelFocused
+                      : styles.tabLabelUnfocused,
                     { color: currentColor },
                   ]}
                   numberOfLines={1}
@@ -177,12 +243,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 8,
+    overflow: 'visible',
   },
   barContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
     paddingHorizontal: 8,
+    overflow: 'visible',
   },
   tabButton: {
     flex: 1,
@@ -194,6 +262,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
+  },
+  bulgedTabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    overflow: 'visible',
+  },
+  bulgedButtonWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -22,
+  },
+  bulgedButtonInner: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 4,
+    borderColor: colors.surface,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  bulgedButtonInnerFocused: {
+    backgroundColor: colors.primaryDark,
+    transform: [{ scale: 1.05 }],
+  },
+  bulgedTabLabel: {
+    marginTop: 2,
   },
   indicatorContainer: {
     height: 5,

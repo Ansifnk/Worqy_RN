@@ -36,8 +36,8 @@ export interface HTTPError extends Error {
 
 // Default Base URL: configured for local dev (Android emulator vs iOS simulator / default)
 // export const DEFAULT_BASE_URL = isDev ? 'http://localhost:8000/api' : 'http://localhost:8000/api';
-
-export const DEFAULT_BASE_URL = isDev ? 'http://10.0.2.2:8000/api' : 'http://10.0.2.2:8000/api';
+// export const DEFAULT_BASE_URL = isDev ? 'http://10.0.2.2:8000/api' : 'http://10.0.2.2:8000/api';
+export const DEFAULT_BASE_URL = isDev ? 'http://172.20.10.4:8000/api' : 'http://172.20.10.4:8000/api';
 
 let currentBaseUrl: string = DEFAULT_BASE_URL;
 let authToken: string | null = null;

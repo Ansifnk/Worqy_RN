@@ -14,6 +14,7 @@ import TaskDetailScreen from '../screens/tasks/TaskDetailScreen';
 import InvoiceDetailScreen from '../screens/invoices/InvoiceDetailScreen';
 import AddEditInvoiceScreen from '../screens/invoices/AddEditInvoiceScreen';
 import ClientDetailScreen from '../screens/clients/ClientDetailScreen';
+import ScheduleScreen from '../screens/schedule/ScheduleScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import { useAppContext } from '../context/AppContext';
 import { colors } from '../utils/colors';
@@ -27,6 +28,7 @@ export type RootStackParamList = {
   InvoiceDetail: { invoiceId: string } | undefined;
   AddEditInvoice: { invoiceId?: string; isEdit?: boolean } | undefined;
   ClientDetail: { clientId: string };
+  Schedule: undefined;
   Profile: undefined;
 };
 
@@ -84,6 +86,7 @@ export const AppNav: React.FC = () => {
             <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} />
             <Stack.Screen name="AddEditInvoice" component={AddEditInvoiceScreen} />
             <Stack.Screen name="ClientDetail" component={ClientDetailScreen} />
+            <Stack.Screen name="Schedule" component={ScheduleScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
           </>
         ) : (
@@ -108,4 +111,3 @@ const styles = StyleSheet.create({
 });
 
 export default AppNav;
-

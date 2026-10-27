@@ -3,15 +3,14 @@ import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/b
 import CustomTabBar from './components/CustomTabBar';
 import HomeScreen from '../screens/home/HomeScreen';
 import ClientsScreen from '../screens/clients/ClientsScreen';
-import ScheduleScreen from '../screens/schedule/ScheduleScreen';
+import AIChatScreen from '../screens/chat/AIChatScreen';
 import TasksScreen from '../screens/tasks/TasksScreen';
-
 import InvoicesScreen from '../screens/invoices/InvoicesScreen';
 
 export type BottomTabParamList = {
   Home: undefined;
   Clients: undefined;
-  Schedule: undefined;
+  AIChat: undefined;
   Tasks: undefined;
   Invoices: undefined;
 };
@@ -39,9 +38,9 @@ export const BottomTabNav: React.FC = () => {
         options={{ tabBarLabel: 'Clients' }}
       />
       <Tab.Screen
-        name="Schedule"
-        component={ScheduleScreen}
-        options={{ tabBarLabel: 'Schedule' }}
+        name="AIChat"
+        component={AIChatScreen}
+        options={{ tabBarLabel: 'AI' }}
       />
       <Tab.Screen
         name="Tasks"
