@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../context/AppContext';
 import { http } from '../utils/http';
-import { ChatMessage, SendMessageResponse } from '../screens/chat/types';
+import { ChatMessage, SendMessageResponse, ChatAction } from '../screens/chat/types';
+import { ScheduleItem } from '../screens/schedule/types';
 import { clientKeys } from './useClient';
 import { taskKeys } from './useTask';
 import { scheduleKeys } from './useSchedule';
@@ -11,6 +12,74 @@ import { invoiceKeys } from './useInvoice';
 export const chatKeys = {
   all: ['chat'] as const,
   messages: (userId?: string) => [...chatKeys.all, 'messages', userId] as const,
+};
+
+export const extractScheduleFromActions = (
+  actions?: ChatAction[],
+): { schedule?: ScheduleItem; schedules?: ScheduleItem[] } => {
+  if (!actions || actions.length === 0) return {};
+
+  for (const act of actions) {
+    const tool = (act.tool || '').toLowerCase();
+    const result = act.result;
+    if (!result) continue;
+
+    if (tool.includes('create_schedule') || tool.includes('update_schedule')) {
+      if (result.schedule) {
+        return { schedule: result.schedule };
+      }
+    }
+
+    if (tool.includes('get_schedules')) {
+      if (Array.isArray(result.schedules) && result.schedules.length > 0) {
+        return {
+          schedule: result.schedules[0],
+          schedules: result.schedules,
+        };
+      }
+    }
+  }
+
+  return {};
+};
+
+export const parseMessageMetadata = (msg: ChatMessage): ChatMessage => {
+  if (!msg.content || typeof msg.content !== 'string') return msg;
+
+  const metadataRegex = /\n?<!--\s*METADATA:\s*([\s\S]*?)\s*-->/;
+  const match = msg.content.match(metadataRegex);
+
+  let cleanContent = msg.content;
+  let actions = msg.actions;
+  let schedule = msg.schedule;
+  let schedules = msg.schedules;
+
+  if (match) {
+    cleanContent = msg.content.replace(metadataRegex, '').trim();
+    try {
+      const parsed = JSON.parse(match[1]);
+      if (parsed.actions) {
+        actions = parsed.actions;
+        const extracted = extractScheduleFromActions(parsed.actions);
+        if (extracted.schedule) schedule = extracted.schedule;
+        if (extracted.schedules) schedules = extracted.schedules;
+      }
+    } catch (e) {
+      console.warn('Failed to parse chat message metadata:', e);
+    }
+  } else if (actions && !schedule) {
+    const extracted = extractScheduleFromActions(actions);
+    if (extracted.schedule) schedule = extracted.schedule;
+    if (extracted.schedules) schedules = extracted.schedules;
+  }
+
+  return {
+    ...msg,
+    content: cleanContent,
+    actions,
+    schedule,
+    schedules,
+  };
 };
 
 export interface UseAIChatReturn {
@@ -38,7 +107,8 @@ export const useAIChat = (): UseAIChatReturn => {
     queryKey: chatKeys.messages(user?.id),
     queryFn: async () => {
       const response = await http.get<ChatMessage[]>('/chat');
-      return response.data || [];
+      const raw = response.data || [];
+      return raw.map(parseMessageMetadata);
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60, // 1 minute
@@ -93,7 +163,14 @@ export const useAIChat = (): UseAIChatReturn => {
         (old = []) => {
           // Remove temporary sending message and add the server's persisted user + AI reply
           const filtered = old.filter((m) => !m.id.startsWith('temp-'));
-          return [...filtered, data.userMessage, data.reply];
+          const extracted = extractScheduleFromActions(data.actions);
+          const hydratedReply: ChatMessage = parseMessageMetadata({
+            ...data.reply,
+            actions: data.actions,
+            schedule: extracted.schedule,
+            schedules: extracted.schedules,
+          });
+          return [...filtered, data.userMessage, hydratedReply];
         },
       );
 

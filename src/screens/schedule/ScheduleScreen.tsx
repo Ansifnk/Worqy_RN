@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRoute } from '@react-navigation/native';
 import dayjs from 'dayjs';
 import { colors } from '../../utils/colors';
 import { LoadingView } from '../../components/LoadingView';
@@ -33,6 +34,9 @@ const DEFAULT_TIMELINE_HOURS = [
 
 export const ScheduleScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const route = useRoute<any>();
+  const initialParamDate = route.params?.date;
+
   const {
     schedules,
     loading,
@@ -44,9 +48,17 @@ export const ScheduleScreen: React.FC = () => {
   } = useSchedule();
 
   const [selectedDate, setSelectedDate] = useState<string>(() =>
-    formatDateToISOString(new Date())
+    initialParamDate
+      ? formatDateToISOString(new Date(initialParamDate))
+      : formatDateToISOString(new Date())
   );
   const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (route.params?.date) {
+      setSelectedDate(formatDateToISOString(new Date(route.params.date)));
+    }
+  }, [route.params?.date]);
 
   // Form Modal state
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);

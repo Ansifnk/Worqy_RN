@@ -4,12 +4,22 @@ import dayjs from 'dayjs';
 import { Sparkles, Clock } from 'lucide-react-native';
 import { colors } from '../../../utils/colors';
 import { ChatMessage } from '../types';
+import { ScheduleItem } from '../../schedule/types';
+import { ChatScheduleCard } from './ChatScheduleCard';
 
 interface ChatBubbleProps {
   message: ChatMessage;
+  onEditSchedule?: (schedule: ScheduleItem) => void;
+  onDeleteSchedule?: (scheduleId: string, scheduleTitle: string) => void;
+  onOpenSchedule?: (schedule: ScheduleItem) => void;
 }
 
-export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
+export const ChatBubble: React.FC<ChatBubbleProps> = ({
+  message,
+  onEditSchedule,
+  onDeleteSchedule,
+  onOpenSchedule,
+}) => {
   const isUser = message.role === 'user';
   const timeFormatted = message.createdAt
     ? dayjs(message.createdAt).format('h:mm A')
@@ -31,6 +41,14 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
     );
   }
 
+  // Determine schedules to display
+  const schedulesToRender: ScheduleItem[] = [];
+  if (message.schedules && message.schedules.length > 0) {
+    schedulesToRender.push(...message.schedules);
+  } else if (message.schedule) {
+    schedulesToRender.push(message.schedule);
+  }
+
   return (
     <View style={styles.assistantContainer}>
       <View style={styles.assistantAvatar}>
@@ -38,7 +56,22 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
       </View>
 
       <View style={styles.assistantBubble}>
-        <Text style={styles.assistantText}>{message.content}</Text>
+        {Boolean(message.content) && (
+          <Text style={styles.assistantText}>{message.content}</Text>
+        )}
+
+        {/* Schedule Cards if present */}
+        {schedulesToRender.map((sched, idx) => (
+          <ChatScheduleCard
+            key={sched.id || `sched-${idx}`}
+            schedule={sched}
+            isDeleted={message.isDeletedSchedule}
+            onEdit={(s) => onEditSchedule?.(s)}
+            onDelete={(id, title) => onDeleteSchedule?.(id, title)}
+            onOpen={(s) => onOpenSchedule?.(s)}
+          />
+        ))}
+
         <Text style={styles.assistantTime}>{timeFormatted}</Text>
       </View>
     </View>
@@ -106,7 +139,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   assistantBubble: {
-    maxWidth: '82%',
+    maxWidth: '88%',
     backgroundColor: colors.surface,
     borderRadius: 18,
     borderBottomLeftRadius: 4,

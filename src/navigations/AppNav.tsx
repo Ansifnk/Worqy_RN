@@ -30,7 +30,7 @@ export type RootStackParamList = {
   InvoiceDetail: { invoiceId: string } | undefined;
   AddEditInvoice: { invoiceId?: string; isEdit?: boolean } | undefined;
   ClientDetail: { clientId: string };
-  Schedule: undefined;
+  Schedule: { date?: string; scheduleId?: string } | undefined;
   Profile: undefined;
 };
 
