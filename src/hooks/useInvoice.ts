@@ -1,39 +1,20 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  getFirestore,
-  collection,
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  query,
-  where,
-  serverTimestamp,
-} from '@react-native-firebase/firestore';
-import { firebaseCollections } from '../utils/constants';
+import { useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../context/AppContext';
+import { http } from '../utils/http';
 import {
   Invoice,
   InvoiceFormData,
   InvoiceStatus,
 } from '../screens/invoices/types';
 
-/**
- * Removes undefined fields from payload to prevent Firestore write errors.
- */
-const sanitizePayload = (obj: Record<string, any>): Record<string, any> => {
-  const clean: Record<string, any> = {};
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] !== undefined) {
-      clean[key] = obj[key];
-    }
-  });
-  return clean;
+export const invoiceKeys = {
+  all: ['invoices'] as const,
+  lists: () => [...invoiceKeys.all, 'list'] as const,
+  list: (userId?: string) => [...invoiceKeys.lists(), userId] as const,
+  details: () => [...invoiceKeys.all, 'detail'] as const,
+  detail: (id: string) => [...invoiceKeys.details(), id] as const,
 };
-
 
 export interface UseInvoiceReturn {
   invoices: Invoice[];
@@ -49,42 +30,7 @@ export interface UseInvoiceReturn {
 
 export const useInvoice = (): UseInvoiceReturn => {
   const { user } = useAppContext();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const db = useMemo(() => getFirestore(), []);
-  const invoicesCollection = useMemo(
-    () => collection(db, firebaseCollections.invoices),
-    [db]
-  );
-
-  // Map Firestore document snapshot to typed Invoice
-  const mapDocToInvoice = useCallback((docSnap: any): Invoice => {
-    const data = docSnap.data() || {};
-    return {
-      id: docSnap.id,
-      invoiceNumber: data.invoiceNumber || 'INV-0000',
-      clientId: data.clientId,
-      clientName: data.clientName || 'Unnamed Client',
-      clientEmail: data.clientEmail || '',
-      issueDate: data.issueDate || new Date().toISOString(),
-      dueDate: data.dueDate || new Date().toISOString(),
-      paymentTerms: data.paymentTerms || 'Net 14 days',
-      status: (data.status as InvoiceStatus) || 'Draft',
-      items: Array.isArray(data.items) ? data.items : [],
-      subtotal: typeof data.subtotal === 'number' ? data.subtotal : 0,
-      taxRate: typeof data.taxRate === 'number' ? data.taxRate : 18,
-      taxAmount: typeof data.taxAmount === 'number' ? data.taxAmount : 0,
-      total: typeof data.total === 'number' ? data.total : 0,
-      notes: data.notes || '',
-      avatarColor: data.avatarColor || '#16A34A',
-      avatarLetter: data.avatarLetter || data.clientName?.[0]?.toUpperCase() || 'C',
-      userId: data.userId || '',
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    };
-  }, []);
+  const queryClient = useQueryClient();
 
   // Sort invoices: Latest invoice number descending, or createdAt descending
   const sortInvoices = useCallback((items: Invoice[]): Invoice[] => {
@@ -96,110 +42,99 @@ export const useInvoice = (): UseInvoiceReturn => {
     });
   }, []);
 
-  // Seed initial invoices if user collection is completely empty
-  const seedInitialInvoicesIfNeeded = useCallback(
-    async (userId: string) => {
-      try {
-        const q = query(invoicesCollection, where('userId', '==', userId));
-        const snap = await getDocs(q);
-
-      } catch (e) {
-        console.warn('Seeding initial invoices failed or skipped:', e);
-      }
+  // TanStack Query for fetching invoice list directly via HTTP
+  const {
+    data: rawInvoices = [],
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery<Invoice[]>({
+    queryKey: invoiceKeys.list(user?.id),
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const res = await http.get<Invoice[]>('/invoices', {
+        params: { limit: 1000 },
+      });
+      return res.data || [];
     },
-    [invoicesCollection]
-  );
+    enabled: Boolean(user?.id),
+    staleTime: 1000 * 60 * 2,
+  });
 
-  // Real-time listener strictly scoped to authenticated user
-  useEffect(() => {
-    if (!user?.id) {
-      setInvoices([]);
-      setLoading(false);
-      return;
-    }
+  const invoices = useMemo(() => {
+    return sortInvoices(rawInvoices);
+  }, [rawInvoices, sortInvoices]);
 
-    setLoading(true);
-    setError(null);
-
-    // Trigger seed in background if empty
-    seedInitialInvoicesIfNeeded(user.id);
-
-    const userInvoicesQuery = query(
-      invoicesCollection,
-      where('userId', '==', user.id)
-    );
-
-    const unsubscribe = onSnapshot(
-      userInvoicesQuery,
-      (snapshot) => {
-        const items = snapshot.docs.map((docSnap) => mapDocToInvoice(docSnap));
-        setInvoices(sortInvoices(items));
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Failed to listen to invoices:', err);
-        setError(err.message || 'Failed to fetch invoices');
-        setLoading(false);
+  // Mutation: Create invoice (POST /invoices)
+  const addMutation = useMutation({
+    mutationFn: async (invoiceData: InvoiceFormData) => {
+      const res = await http.post<Invoice>('/invoices', invoiceData);
+      if (!res.data) {
+        throw new Error(res.msg || 'Failed to create invoice');
       }
-    );
+      return res.data;
+    },
+    onSuccess: (newInvoice) => {
+      queryClient.setQueryData<Invoice[]>(invoiceKeys.list(user?.id), (old = []) => [
+        newInvoice,
+        ...old.filter((item) => item.id !== newInvoice.id),
+      ]);
+      queryClient.invalidateQueries({ queryKey: invoiceKeys.all });
+    },
+  });
 
-    return () => {
-      unsubscribe();
-    };
-  }, [user?.id, invoicesCollection, mapDocToInvoice, sortInvoices, seedInitialInvoicesIfNeeded]);
+  // Mutation: Update invoice (PUT /invoices/:id)
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, invoiceData }: { id: string; invoiceData: Partial<InvoiceFormData> }) => {
+      const res = await http.put<Invoice>(`/invoices/${id}`, invoiceData);
+      if (!res.data) {
+        throw new Error(res.msg || 'Failed to update invoice');
+      }
+      return res.data;
+    },
+    onSuccess: (updatedInvoice) => {
+      queryClient.setQueryData<Invoice[]>(invoiceKeys.list(user?.id), (old = []) =>
+        old.map((item) => (item.id === updatedInvoice.id ? updatedInvoice : item))
+      );
+      queryClient.invalidateQueries({ queryKey: invoiceKeys.all });
+    },
+  });
 
-  // Create new invoice
+  // Mutation: Delete invoice (DELETE /invoices/:id)
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await http.delete<{ id: string }>(`/invoices/${id}`);
+      return res.data || { id };
+    },
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData<Invoice[]>(invoiceKeys.list(user?.id), (old = []) =>
+        old.filter((item) => item.id !== deletedId)
+      );
+      queryClient.invalidateQueries({ queryKey: invoiceKeys.all });
+    },
+  });
+
+  // Create invoice
   const addInvoice = useCallback(
     async (invoiceData: InvoiceFormData): Promise<string> => {
       if (!user?.id) {
         throw new Error('You must be signed in to add an invoice.');
       }
-
-      setError(null);
-      try {
-        const payload = sanitizePayload({
-          ...invoiceData,
-          userId: user.id,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-
-        const docRef = await addDoc(invoicesCollection, payload);
-        return docRef.id;
-      } catch (err: any) {
-        console.error('Error adding invoice to Firestore:', err);
-        const message = err?.message || 'Failed to create invoice';
-        setError(message);
-        throw err;
-      }
+      const created = await addMutation.mutateAsync(invoiceData);
+      return created.id;
     },
-    [user?.id, invoicesCollection]
+    [user?.id, addMutation]
   );
 
-  // Update existing invoice
+  // Update invoice
   const updateInvoice = useCallback(
     async (id: string, invoiceData: Partial<InvoiceFormData>): Promise<void> => {
       if (!user?.id) {
         throw new Error('You must be signed in to update an invoice.');
       }
-
-      setError(null);
-      try {
-        const docRef = doc(db, firebaseCollections.invoices, id);
-        const payload = sanitizePayload({
-          ...invoiceData,
-          updatedAt: serverTimestamp(),
-        });
-
-        await updateDoc(docRef, payload);
-      } catch (err: any) {
-        console.error('Error updating invoice in Firestore:', err);
-        const message = err?.message || 'Failed to update invoice';
-        setError(message);
-        throw err;
-      }
+      await updateMutation.mutateAsync({ id, invoiceData });
     },
-    [user?.id, db]
+    [user?.id, updateMutation]
   );
 
   // Update status shortcut
@@ -216,58 +151,54 @@ export const useInvoice = (): UseInvoiceReturn => {
       if (!user?.id) {
         throw new Error('You must be signed in to delete an invoice.');
       }
-
-      setError(null);
-      try {
-        const docRef = doc(db, firebaseCollections.invoices, id);
-        await deleteDoc(docRef);
-      } catch (err: any) {
-        console.error('Error deleting invoice from Firestore:', err);
-        const message = err?.message || 'Failed to delete invoice';
-        setError(message);
-        throw err;
-      }
+      await deleteMutation.mutateAsync(id);
     },
-    [user?.id, db]
+    [user?.id, deleteMutation]
   );
 
   // Get single invoice
   const getInvoice = useCallback(
     async (id: string): Promise<Invoice | null> => {
+      const cached = queryClient.getQueryData<Invoice[]>(invoiceKeys.list(user?.id));
+      const found = cached?.find((inv) => inv.id === id);
+      if (found) {
+        return found;
+      }
+
       try {
-        const docRef = doc(db, firebaseCollections.invoices, id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          return mapDocToInvoice(docSnap);
-        }
-        return null;
-      } catch (err: any) {
-        console.error('Error fetching single invoice:', err);
+        const res = await http.get<Invoice>(`/invoices/${id}`);
+        return res.data || null;
+      } catch (err) {
+        console.warn('Error fetching invoice by id:', err);
         return null;
       }
     },
-    [db, mapDocToInvoice]
+    [queryClient, user?.id]
   );
 
   // Manual refresh trigger
   const refresh = useCallback(async (): Promise<void> => {
     if (!user?.id) return;
-    try {
-      setLoading(true);
-      const userInvoicesQuery = query(
-        invoicesCollection,
-        where('userId', '==', user.id)
-      );
-      const snapshot = await getDocs(userInvoicesQuery);
-      const items = snapshot.docs.map((docSnap) => mapDocToInvoice(docSnap));
-      setInvoices(sortInvoices(items));
-      setLoading(false);
-    } catch (err: any) {
-      console.error('Error refreshing invoices:', err);
-      setError(err.message || 'Failed to refresh invoices');
-      setLoading(false);
+    await refetch();
+  }, [user?.id, refetch]);
+
+  const error = useMemo(() => {
+    if (queryError) {
+      return (queryError as any)?.msg || (queryError as any)?.message || 'Failed to fetch invoices';
     }
-  }, [user?.id, invoicesCollection, mapDocToInvoice, sortInvoices]);
+    if (addMutation.error) {
+      return (addMutation.error as any)?.msg || (addMutation.error as any)?.message || 'Failed to create invoice';
+    }
+    if (updateMutation.error) {
+      return (updateMutation.error as any)?.msg || (updateMutation.error as any)?.message || 'Failed to update invoice';
+    }
+    if (deleteMutation.error) {
+      return (deleteMutation.error as any)?.msg || (deleteMutation.error as any)?.message || 'Failed to delete invoice';
+    }
+    return null;
+  }, [queryError, addMutation.error, updateMutation.error, deleteMutation.error]);
+
+  const loading = Boolean(user?.id) && isLoading;
 
   return {
     invoices,
@@ -281,3 +212,5 @@ export const useInvoice = (): UseInvoiceReturn => {
     refresh,
   };
 };
+
+export default useInvoice;

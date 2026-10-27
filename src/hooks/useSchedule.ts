@@ -1,34 +1,16 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  getFirestore,
-  collection,
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  query,
-  where,
-  serverTimestamp,
-} from '@react-native-firebase/firestore';
-import { firebaseCollections } from '../utils/constants';
+import { useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../context/AppContext';
+import { http } from '../utils/http';
 import { ScheduleItem, ScheduleFormData } from '../screens/schedule/types';
 import dayjs from 'dayjs';
 
-/**
- * Removes undefined fields from payload to prevent Firestore write errors.
- */
-const sanitizePayload = (obj: Record<string, any>): Record<string, any> => {
-  const clean: Record<string, any> = {};
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] !== undefined) {
-      clean[key] = obj[key];
-    }
-  });
-  return clean;
+export const scheduleKeys = {
+  all: ['schedules'] as const,
+  lists: () => [...scheduleKeys.all, 'list'] as const,
+  list: (userId?: string) => [...scheduleKeys.lists(), userId] as const,
+  details: () => [...scheduleKeys.all, 'detail'] as const,
+  detail: (id: string) => [...scheduleKeys.details(), id] as const,
 };
 
 /**
@@ -61,34 +43,7 @@ export interface UseScheduleReturn {
 
 export const useSchedule = (): UseScheduleReturn => {
   const { user } = useAppContext();
-  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const db = useMemo(() => getFirestore(), []);
-  const schedulesCollection = useMemo(
-    () => collection(db, firebaseCollections.schedules),
-    [db]
-  );
-
-  // Parse document snapshot into typed ScheduleItem
-  const mapDocToScheduleItem = useCallback((docSnap: any): ScheduleItem => {
-    const data = docSnap.data() || {};
-    return {
-      id: docSnap.id,
-      title: data.title || '',
-      date: data.date || '',
-      startTime: data.startTime || '',
-      endTime: data.endTime || '',
-      type: data.type || 'Meeting',
-      clientId: data.clientId,
-      clientName: data.clientName,
-      notes: data.notes,
-      userId: data.userId,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    };
-  }, []);
+  const queryClient = useQueryClient();
 
   // Sort helper to display chronological order (by date then startTime)
   const sortSchedules = useCallback((items: ScheduleItem[]): ScheduleItem[] => {
@@ -104,95 +59,99 @@ export const useSchedule = (): UseScheduleReturn => {
     });
   }, []);
 
-  // Real-time listener strictly scoped to authenticated user
-  useEffect(() => {
-    if (!user?.id) {
-      setSchedules([]);
-      setLoading(false);
-      return;
-    }
+  // TanStack Query for fetching schedules list directly via HTTP
+  const {
+    data: rawSchedules = [],
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery<ScheduleItem[]>({
+    queryKey: scheduleKeys.list(user?.id),
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const res = await http.get<ScheduleItem[]>('/schedules', {
+        params: { limit: 1000 },
+      });
+      return res.data || [];
+    },
+    enabled: Boolean(user?.id),
+    staleTime: 1000 * 60 * 2,
+  });
 
-    setLoading(true);
-    setError(null);
+  const schedules = useMemo(() => {
+    return sortSchedules(rawSchedules);
+  }, [rawSchedules, sortSchedules]);
 
-    const userSchedulesQuery = query(
-      schedulesCollection,
-      where('userId', '==', user.id)
-    );
-
-    const unsubscribe = onSnapshot(
-      userSchedulesQuery,
-      (snapshot) => {
-        const items = snapshot.docs.map((docSnap) => mapDocToScheduleItem(docSnap));
-        setSchedules(sortSchedules(items));
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Failed to listen to schedules:', err);
-        setError(err.message || 'Failed to fetch schedules');
-        setLoading(false);
+  // Mutation: Create schedule (POST /schedules)
+  const addMutation = useMutation({
+    mutationFn: async (scheduleData: ScheduleFormData) => {
+      const res = await http.post<ScheduleItem>('/schedules', scheduleData);
+      if (!res.data) {
+        throw new Error(res.msg || 'Failed to create schedule');
       }
-    );
+      return res.data;
+    },
+    onSuccess: (newSchedule) => {
+      queryClient.setQueryData<ScheduleItem[]>(scheduleKeys.list(user?.id), (old = []) => [
+        newSchedule,
+        ...old.filter((item) => item.id !== newSchedule.id),
+      ]);
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
+    },
+  });
 
-    return () => {
-      unsubscribe();
-    };
-  }, [user?.id, schedulesCollection, mapDocToScheduleItem, sortSchedules]);
+  // Mutation: Update schedule (PUT /schedules/:id)
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, scheduleData }: { id: string; scheduleData: Partial<ScheduleFormData> }) => {
+      const res = await http.put<ScheduleItem>(`/schedules/${id}`, scheduleData);
+      if (!res.data) {
+        throw new Error(res.msg || 'Failed to update schedule');
+      }
+      return res.data;
+    },
+    onSuccess: (updatedSchedule) => {
+      queryClient.setQueryData<ScheduleItem[]>(scheduleKeys.list(user?.id), (old = []) =>
+        old.map((item) => (item.id === updatedSchedule.id ? updatedSchedule : item))
+      );
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
+    },
+  });
 
-  // Create new schedule item
+  // Mutation: Delete schedule (DELETE /schedules/:id)
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await http.delete<{ id: string }>(`/schedules/${id}`);
+      return res.data || { id };
+    },
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData<ScheduleItem[]>(scheduleKeys.list(user?.id), (old = []) =>
+        old.filter((item) => item.id !== deletedId)
+      );
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
+    },
+  });
+
+  // Create schedule
   const addSchedule = useCallback(
     async (scheduleData: ScheduleFormData): Promise<string> => {
       if (!user?.id) {
         throw new Error('You must be signed in to add a schedule.');
       }
-
-      setError(null);
-      try {
-        const payload = sanitizePayload({
-          ...scheduleData,
-          date: dayjs(scheduleData.date).toISOString(),
-          userId: user.id,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-
-        const docRef = await addDoc(schedulesCollection, payload);
-        return docRef.id;
-      } catch (err: any) {
-        console.error('Error adding schedule to Firestore:', err);
-        const message = err?.message || 'Failed to create schedule';
-        setError(message);
-        throw err;
-      }
+      const created = await addMutation.mutateAsync(scheduleData);
+      return created.id;
     },
-    [user?.id, schedulesCollection]
+    [user?.id, addMutation]
   );
 
-  // Update existing schedule
+  // Update schedule
   const updateSchedule = useCallback(
     async (id: string, scheduleData: Partial<ScheduleFormData>): Promise<void> => {
       if (!user?.id) {
         throw new Error('You must be signed in to update a schedule.');
       }
-
-      setError(null);
-      try {
-        const docRef = doc(db, firebaseCollections.schedules, id);
-        const payload = sanitizePayload({
-          ...scheduleData,
-          ...(scheduleData.date ? { date: dayjs(scheduleData.date).toISOString() } : {}),
-          updatedAt: serverTimestamp(),
-        });
-
-        await updateDoc(docRef, payload);
-      } catch (err: any) {
-        console.error('Error updating schedule in Firestore:', err);
-        const message = err?.message || 'Failed to update schedule';
-        setError(message);
-        throw err;
-      }
+      await updateMutation.mutateAsync({ id, scheduleData });
     },
-    [user?.id, db]
+    [user?.id, updateMutation]
   );
 
   // Delete schedule
@@ -201,64 +160,54 @@ export const useSchedule = (): UseScheduleReturn => {
       if (!user?.id) {
         throw new Error('You must be signed in to delete a schedule.');
       }
-
-      setError(null);
-      try {
-        const docRef = doc(db, firebaseCollections.schedules, id);
-        await deleteDoc(docRef);
-      } catch (err: any) {
-        console.error('Error deleting schedule from Firestore:', err);
-        const message = err?.message || 'Failed to delete schedule';
-        setError(message);
-        throw err;
-      }
+      await deleteMutation.mutateAsync(id);
     },
-    [user?.id, db]
+    [user?.id, deleteMutation]
   );
 
   // Get single schedule
   const getSchedule = useCallback(
     async (id: string): Promise<ScheduleItem | null> => {
+      const cached = queryClient.getQueryData<ScheduleItem[]>(scheduleKeys.list(user?.id));
+      const found = cached?.find((s) => s.id === id);
+      if (found) {
+        return found;
+      }
+
       try {
-        const docRef = doc(db, firebaseCollections.schedules, id);
-        const snap = await getDoc(docRef);
-        if (!snap.exists()) {
-          return null;
-        }
-        return mapDocToScheduleItem(snap);
-      } catch (err: any) {
-        console.error('Error getting schedule from Firestore:', err);
+        const res = await http.get<ScheduleItem>(`/schedules/${id}`);
+        return res.data || null;
+      } catch (err) {
+        console.warn('Error fetching schedule by id:', err);
         return null;
       }
     },
-    [db, mapDocToScheduleItem]
+    [queryClient, user?.id]
   );
 
-  // Manual refresh
+  // Refresh
   const refresh = useCallback(async (): Promise<void> => {
-    if (!user?.id) {
-      setSchedules([]);
-      setLoading(false);
-      return;
-    }
+    if (!user?.id) return;
+    await refetch();
+  }, [user?.id, refetch]);
 
-    try {
-      setLoading(true);
-      const userSchedulesQuery = query(
-        schedulesCollection,
-        where('userId', '==', user.id)
-      );
-      const snapshot = await getDocs(userSchedulesQuery);
-      const items = snapshot.docs.map((docSnap) => mapDocToScheduleItem(docSnap));
-      setSchedules(sortSchedules(items));
-      setError(null);
-    } catch (err: any) {
-      console.error('Error refreshing schedules:', err);
-      setError(err?.message || 'Failed to refresh schedules');
-    } finally {
-      setLoading(false);
+  const error = useMemo(() => {
+    if (queryError) {
+      return (queryError as any)?.msg || (queryError as any)?.message || 'Failed to fetch schedules';
     }
-  }, [user?.id, schedulesCollection, mapDocToScheduleItem, sortSchedules]);
+    if (addMutation.error) {
+      return (addMutation.error as any)?.msg || (addMutation.error as any)?.message || 'Failed to create schedule';
+    }
+    if (updateMutation.error) {
+      return (updateMutation.error as any)?.msg || (updateMutation.error as any)?.message || 'Failed to update schedule';
+    }
+    if (deleteMutation.error) {
+      return (deleteMutation.error as any)?.msg || (deleteMutation.error as any)?.message || 'Failed to delete schedule';
+    }
+    return null;
+  }, [queryError, addMutation.error, updateMutation.error, deleteMutation.error]);
+
+  const loading = Boolean(user?.id) && isLoading;
 
   return {
     schedules,

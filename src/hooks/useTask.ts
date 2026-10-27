@@ -1,20 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  getFirestore,
-  collection,
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  query,
-  where,
-  serverTimestamp,
-} from '@react-native-firebase/firestore';
-import { firebaseCollections } from '../utils/constants';
+import { useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../context/AppContext';
+import { http } from '../utils/http';
 import {
   TaskItem,
   TaskFormData,
@@ -23,17 +10,16 @@ import {
 } from '../screens/tasks/types';
 import dayjs from 'dayjs';
 
-/**
- * Removes undefined fields from payload to prevent Firestore write errors.
- */
-const sanitizePayload = (obj: Record<string, any>): Record<string, any> => {
-  const clean: Record<string, any> = {};
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] !== undefined) {
-      clean[key] = obj[key];
-    }
-  });
-  return clean;
+export const taskKeys = {
+  all: ['tasks'] as const,
+  lists: () => [...taskKeys.all, 'list'] as const,
+  list: (userId?: string) => [...taskKeys.lists(), userId] as const,
+  details: () => [...taskKeys.all, 'detail'] as const,
+  detail: (id: string) => [...taskKeys.details(), id] as const,
+};
+
+export type TaskUpdateData = Partial<TaskFormData> & {
+  comments?: TaskComment[];
 };
 
 export interface UseTaskReturn {
@@ -41,7 +27,7 @@ export interface UseTaskReturn {
   loading: boolean;
   error: string | null;
   addTask: (taskData: TaskFormData) => Promise<string>;
-  updateTask: (id: string, taskData: Partial<TaskFormData>) => Promise<void>;
+  updateTask: (id: string, taskData: TaskUpdateData) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   toggleTaskComplete: (id: string) => Promise<void>;
   toggleChecklistItem: (taskId: string, itemId: string) => Promise<void>;
@@ -54,42 +40,11 @@ export interface UseTaskReturn {
 
 export const useTask = (): UseTaskReturn => {
   const { user } = useAppContext();
-  const [tasks, setTasks] = useState<TaskItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const db = useMemo(() => getFirestore(), []);
-  const tasksCollection = useMemo(
-    () => collection(db, firebaseCollections.tasks),
-    [db]
-  );
-
-  // Map Firestore document snapshot to typed TaskItem
-  const mapDocToTaskItem = useCallback((docSnap: any): TaskItem => {
-    const data = docSnap.data() || {};
-    return {
-      id: docSnap.id,
-      title: data.title || '',
-      clientName: data.clientName || '',
-      clientId: data.clientId,
-      project: data.project || '',
-      dueDate: data.dueDate || new Date().toISOString(),
-      priority: data.priority || 'Medium',
-      status: data.status || 'To Do',
-      assignedTo: data.assignedTo || 'Me',
-      description: data.description || '',
-      checklist: Array.isArray(data.checklist) ? data.checklist : [],
-      comments: Array.isArray(data.comments) ? data.comments : [],
-      userId: data.userId || '',
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    };
-  }, []);
-
-  // Sort tasks: Due date ascending, or created date
+  // Sort tasks: Due date ascending, with Done items at bottom
   const sortTasks = useCallback((items: TaskItem[]): TaskItem[] => {
     return [...items].sort((a, b) => {
-      // Done items at the bottom if comparing completion
       if (a.status === 'Done' && b.status !== 'Done') return 1;
       if (a.status !== 'Done' && b.status === 'Done') return -1;
 
@@ -101,95 +56,99 @@ export const useTask = (): UseTaskReturn => {
     });
   }, []);
 
-  // Real-time listener strictly scoped to authenticated user
-  useEffect(() => {
-    if (!user?.id) {
-      setTasks([]);
-      setLoading(false);
-      return;
-    }
+  // TanStack Query for fetching task list directly via HTTP
+  const {
+    data: rawTasks = [],
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery<TaskItem[]>({
+    queryKey: taskKeys.list(user?.id),
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const res = await http.get<TaskItem[]>('/tasks', {
+        params: { limit: 1000 },
+      });
+      return res.data || [];
+    },
+    enabled: Boolean(user?.id),
+    staleTime: 1000 * 60 * 2,
+  });
 
-    setLoading(true);
-    setError(null);
+  const tasks = useMemo(() => {
+    return sortTasks(rawTasks);
+  }, [rawTasks, sortTasks]);
 
-    const userTasksQuery = query(
-      tasksCollection,
-      where('userId', '==', user.id)
-    );
-
-    const unsubscribe = onSnapshot(
-      userTasksQuery,
-      (snapshot) => {
-        const items = snapshot.docs.map((docSnap) => mapDocToTaskItem(docSnap));
-        setTasks(sortTasks(items));
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Failed to listen to tasks:', err);
-        setError(err.message || 'Failed to fetch tasks');
-        setLoading(false);
+  // Mutation: Create task (POST /tasks)
+  const addMutation = useMutation({
+    mutationFn: async (taskData: TaskFormData) => {
+      const res = await http.post<TaskItem>('/tasks', taskData);
+      if (!res.data) {
+        throw new Error(res.msg || 'Failed to create task');
       }
-    );
+      return res.data;
+    },
+    onSuccess: (newTask) => {
+      queryClient.setQueryData<TaskItem[]>(taskKeys.list(user?.id), (old = []) => [
+        newTask,
+        ...old.filter((item) => item.id !== newTask.id),
+      ]);
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+  });
 
-    return () => {
-      unsubscribe();
-    };
-  }, [user?.id, tasksCollection, mapDocToTaskItem, sortTasks]);
+  // Mutation: Update task (PUT /tasks/:id)
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, taskData }: { id: string; taskData: TaskUpdateData }) => {
+      const res = await http.put<TaskItem>(`/tasks/${id}`, taskData);
+      if (!res.data) {
+        throw new Error(res.msg || 'Failed to update task');
+      }
+      return res.data;
+    },
+    onSuccess: (updatedTask) => {
+      queryClient.setQueryData<TaskItem[]>(taskKeys.list(user?.id), (old = []) =>
+        old.map((item) => (item.id === updatedTask.id ? updatedTask : item))
+      );
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+  });
 
-  // Create new task
+  // Mutation: Delete task (DELETE /tasks/:id)
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await http.delete<{ id: string }>(`/tasks/${id}`);
+      return res.data || { id };
+    },
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData<TaskItem[]>(taskKeys.list(user?.id), (old = []) =>
+        old.filter((item) => item.id !== deletedId)
+      );
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+  });
+
+  // Create task
   const addTask = useCallback(
     async (taskData: TaskFormData): Promise<string> => {
       if (!user?.id) {
         throw new Error('You must be signed in to add a task.');
       }
-
-      setError(null);
-      try {
-        const payload = sanitizePayload({
-          ...taskData,
-          checklist: taskData.checklist || [],
-          comments: [],
-          userId: user.id,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-
-        const docRef = await addDoc(tasksCollection, payload);
-        return docRef.id;
-      } catch (err: any) {
-        console.error('Error adding task to Firestore:', err);
-        const message = err?.message || 'Failed to create task';
-        setError(message);
-        throw err;
-      }
+      const created = await addMutation.mutateAsync(taskData);
+      return created.id;
     },
-    [user?.id, tasksCollection]
+    [user?.id, addMutation]
   );
 
-  // Update existing task
+  // Update task
   const updateTask = useCallback(
-    async (id: string, taskData: Partial<TaskFormData>): Promise<void> => {
+    async (id: string, taskData: TaskUpdateData): Promise<void> => {
       if (!user?.id) {
         throw new Error('You must be signed in to update a task.');
       }
-
-      setError(null);
-      try {
-        const docRef = doc(db, firebaseCollections.tasks, id);
-        const payload = sanitizePayload({
-          ...taskData,
-          updatedAt: serverTimestamp(),
-        });
-
-        await updateDoc(docRef, payload);
-      } catch (err: any) {
-        console.error('Error updating task in Firestore:', err);
-        const message = err?.message || 'Failed to update task';
-        setError(message);
-        throw err;
-      }
+      await updateMutation.mutateAsync({ id, taskData });
     },
-    [user?.id, db]
+    [user?.id, updateMutation]
   );
 
   // Delete task
@@ -198,19 +157,9 @@ export const useTask = (): UseTaskReturn => {
       if (!user?.id) {
         throw new Error('You must be signed in to delete a task.');
       }
-
-      setError(null);
-      try {
-        const docRef = doc(db, firebaseCollections.tasks, id);
-        await deleteDoc(docRef);
-      } catch (err: any) {
-        console.error('Error deleting task from Firestore:', err);
-        const message = err?.message || 'Failed to delete task';
-        setError(message);
-        throw err;
-      }
+      await deleteMutation.mutateAsync(id);
     },
-    [user?.id, db]
+    [user?.id, deleteMutation]
   );
 
   // Toggle complete
@@ -235,13 +184,9 @@ export const useTask = (): UseTaskReturn => {
         item.id === itemId ? { ...item, completed: !item.completed } : item
       );
 
-      const docRef = doc(db, firebaseCollections.tasks, taskId);
-      await updateDoc(docRef, {
-        checklist: updatedChecklist,
-        updatedAt: serverTimestamp(),
-      });
+      await updateTask(taskId, { checklist: updatedChecklist });
     },
-    [tasks, db]
+    [tasks, updateTask]
   );
 
   // Add checklist item
@@ -257,13 +202,9 @@ export const useTask = (): UseTaskReturn => {
         completed: false,
       };
 
-      const docRef = doc(db, firebaseCollections.tasks, taskId);
-      await updateDoc(docRef, {
-        checklist: [...task.checklist, newItem],
-        updatedAt: serverTimestamp(),
-      });
+      await updateTask(taskId, { checklist: [...task.checklist, newItem] });
     },
-    [tasks, db]
+    [tasks, updateTask]
   );
 
   // Delete checklist item
@@ -273,13 +214,9 @@ export const useTask = (): UseTaskReturn => {
       if (!task) return;
 
       const updatedChecklist = task.checklist.filter((item) => item.id !== itemId);
-      const docRef = doc(db, firebaseCollections.tasks, taskId);
-      await updateDoc(docRef, {
-        checklist: updatedChecklist,
-        updatedAt: serverTimestamp(),
-      });
+      await updateTask(taskId, { checklist: updatedChecklist });
     },
-    [tasks, db]
+    [tasks, updateTask]
   );
 
   // Add comment
@@ -296,58 +233,56 @@ export const useTask = (): UseTaskReturn => {
         authorName,
       };
 
-      const docRef = doc(db, firebaseCollections.tasks, taskId);
-      await updateDoc(docRef, {
+      await updateTask(taskId, {
         comments: [...(task.comments || []), newComment],
-        updatedAt: serverTimestamp(),
       });
     },
-    [tasks, db]
+    [tasks, updateTask]
   );
 
   // Get single task
   const getTask = useCallback(
     async (id: string): Promise<TaskItem | null> => {
+      const cached = queryClient.getQueryData<TaskItem[]>(taskKeys.list(user?.id));
+      const found = cached?.find((t) => t.id === id);
+      if (found) {
+        return found;
+      }
+
       try {
-        const docRef = doc(db, firebaseCollections.tasks, id);
-        const snap = await getDoc(docRef);
-        if (!snap.exists()) {
-          return null;
-        }
-        return mapDocToTaskItem(snap);
-      } catch (err: any) {
-        console.error('Error getting task from Firestore:', err);
+        const res = await http.get<TaskItem>(`/tasks/${id}`);
+        return res.data || null;
+      } catch (err) {
+        console.warn('Error fetching task by id:', err);
         return null;
       }
     },
-    [db, mapDocToTaskItem]
+    [queryClient, user?.id]
   );
 
   // Refresh
   const refresh = useCallback(async (): Promise<void> => {
-    if (!user?.id) {
-      setTasks([]);
-      setLoading(false);
-      return;
-    }
+    if (!user?.id) return;
+    await refetch();
+  }, [user?.id, refetch]);
 
-    try {
-      setLoading(true);
-      const userTasksQuery = query(
-        tasksCollection,
-        where('userId', '==', user.id)
-      );
-      const snapshot = await getDocs(userTasksQuery);
-      const items = snapshot.docs.map((docSnap) => mapDocToTaskItem(docSnap));
-      setTasks(sortTasks(items));
-      setError(null);
-    } catch (err: any) {
-      console.error('Error refreshing tasks:', err);
-      setError(err?.message || 'Failed to refresh tasks');
-    } finally {
-      setLoading(false);
+  const error = useMemo(() => {
+    if (queryError) {
+      return (queryError as any)?.msg || (queryError as any)?.message || 'Failed to fetch tasks';
     }
-  }, [user?.id, tasksCollection, mapDocToTaskItem, sortTasks]);
+    if (addMutation.error) {
+      return (addMutation.error as any)?.msg || (addMutation.error as any)?.message || 'Failed to create task';
+    }
+    if (updateMutation.error) {
+      return (updateMutation.error as any)?.msg || (updateMutation.error as any)?.message || 'Failed to update task';
+    }
+    if (deleteMutation.error) {
+      return (deleteMutation.error as any)?.msg || (deleteMutation.error as any)?.message || 'Failed to delete task';
+    }
+    return null;
+  }, [queryError, addMutation.error, updateMutation.error, deleteMutation.error]);
+
+  const loading = Boolean(user?.id) && isLoading;
 
   return {
     tasks,

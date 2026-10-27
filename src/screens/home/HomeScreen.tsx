@@ -33,7 +33,7 @@ export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { user } = useAppContext();
 
-  // Firebase Data Hooks
+  // Server Data Hooks (TanStack Query)
   const {
     clients,
     addClient,

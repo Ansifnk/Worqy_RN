@@ -8,12 +8,11 @@ import {
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { User as UserIcon, Mail } from 'lucide-react-native';
-import { getFirestore, doc, updateDoc } from '@react-native-firebase/firestore';
 import { BottomSheet } from '../../../components/BottomSheet';
 import { TextInput } from '../../../components/TextInput';
 import { Button } from '../../../components/Button';
 import { colors } from '../../../utils/colors';
-import { firebaseCollections } from '../../../utils/constants';
+import { http } from '../../../utils/http';
 import { useAppContext } from '../../../context/AppContext';
 
 interface EditProfileModalProps {
@@ -65,10 +64,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     try {
       setSubmitting(true);
 
-      // Update Firestore user document
-      const db = getFirestore();
-      const userRef = doc(db, firebaseCollections.users, user.id);
-      await updateDoc(userRef, { name: trimmedName });
+      // Update profile on server
+      await http.put('/auth/profile', { name: trimmedName });
 
       await refreshUser();
       Alert.alert('Success', 'Profile updated successfully.');
