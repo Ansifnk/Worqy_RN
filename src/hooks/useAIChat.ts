@@ -3,6 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../context/AppContext';
 import { http } from '../utils/http';
 import { ChatMessage, SendMessageResponse } from '../screens/chat/types';
+import { clientKeys } from './useClient';
+import { taskKeys } from './useTask';
+import { scheduleKeys } from './useSchedule';
+import { invoiceKeys } from './useInvoice';
 
 export const chatKeys = {
   all: ['chat'] as const,
@@ -92,6 +96,47 @@ export const useAIChat = (): UseAIChatReturn => {
           return [...filtered, data.userMessage, data.reply];
         },
       );
+
+      // Invalidate relevant query caches when tools were executed by AI
+      if (data.actions && data.actions.length > 0) {
+        const toolNames = data.actions.map((a) => (a.tool || '').toLowerCase());
+
+        const hasClient = toolNames.some(
+          (t) => t.includes('customer') || t.includes('client'),
+        );
+        const hasTask = toolNames.some((t) => t.includes('task'));
+        const hasSchedule = toolNames.some((t) => t.includes('schedule'));
+        const hasInvoice = toolNames.some((t) => t.includes('invoice'));
+
+        if (hasClient) {
+          queryClient.invalidateQueries({
+            queryKey: clientKeys.all,
+            refetchType: 'all',
+          });
+        }
+        if (hasTask) {
+          queryClient.invalidateQueries({
+            queryKey: taskKeys.all,
+            refetchType: 'all',
+          });
+        }
+        if (hasSchedule) {
+          queryClient.invalidateQueries({
+            queryKey: scheduleKeys.all,
+            refetchType: 'all',
+          });
+        }
+        if (hasInvoice) {
+          queryClient.invalidateQueries({
+            queryKey: invoiceKeys.all,
+            refetchType: 'all',
+          });
+          queryClient.invalidateQueries({
+            queryKey: clientKeys.all,
+            refetchType: 'all',
+          });
+        }
+      }
     },
     onError: (_err, _text, context) => {
       if (context?.previousMessages) {

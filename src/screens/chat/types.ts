@@ -7,7 +7,14 @@ export interface ChatMessage {
   isSending?: boolean;
 }
 
+export interface ChatAction {
+  tool: string;
+  result: any;
+}
+
 export interface SendMessageResponse {
   userMessage: ChatMessage;
   reply: ChatMessage;
+  actions?: ChatAction[];
 }
+
