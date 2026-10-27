@@ -4,6 +4,9 @@ import { useAppContext } from '../context/AppContext';
 import { http } from '../utils/http';
 import { ChatMessage, SendMessageResponse, ChatAction } from '../screens/chat/types';
 import { ScheduleItem } from '../screens/schedule/types';
+import { Invoice } from '../screens/invoices/types';
+import { ClientItem } from '../screens/clients/types';
+import { TaskItem } from '../screens/tasks/types';
 import { clientKeys } from './useClient';
 import { taskKeys } from './useTask';
 import { scheduleKeys } from './useSchedule';
@@ -14,34 +17,78 @@ export const chatKeys = {
   messages: (userId?: string) => [...chatKeys.all, 'messages', userId] as const,
 };
 
-export const extractScheduleFromActions = (
+export interface ExtractedEntities {
+  schedule?: ScheduleItem;
+  schedules?: ScheduleItem[];
+  invoice?: Invoice;
+  invoices?: Invoice[];
+  client?: ClientItem;
+  clients?: ClientItem[];
+  task?: TaskItem;
+  tasks?: TaskItem[];
+}
+
+export const extractEntitiesFromActions = (
   actions?: ChatAction[],
-): { schedule?: ScheduleItem; schedules?: ScheduleItem[] } => {
+): ExtractedEntities => {
   if (!actions || actions.length === 0) return {};
+
+  const entities: ExtractedEntities = {};
 
   for (const act of actions) {
     const tool = (act.tool || '').toLowerCase();
     const result = act.result;
     if (!result) continue;
 
+    // Schedules
     if (tool.includes('create_schedule') || tool.includes('update_schedule')) {
-      if (result.schedule) {
-        return { schedule: result.schedule };
+      if (result.schedule) entities.schedule = result.schedule;
+    }
+    if (tool.includes('get_schedules')) {
+      if (Array.isArray(result.schedules) && result.schedules.length > 0) {
+        entities.schedule = result.schedules[0];
+        entities.schedules = result.schedules;
       }
     }
 
-    if (tool.includes('get_schedules')) {
-      if (Array.isArray(result.schedules) && result.schedules.length > 0) {
-        return {
-          schedule: result.schedules[0],
-          schedules: result.schedules,
-        };
+    // Invoices
+    if (tool.includes('create_invoice') || tool.includes('update_invoice')) {
+      if (result.invoice) entities.invoice = result.invoice;
+    }
+    if (tool.includes('get_invoices')) {
+      if (Array.isArray(result.invoices) && result.invoices.length > 0) {
+        entities.invoice = result.invoices[0];
+        entities.invoices = result.invoices;
+      }
+    }
+
+    // Customers / Clients
+    if (tool.includes('create_customer') || tool.includes('update_customer')) {
+      if (result.customer) entities.client = result.customer;
+    }
+    if (tool.includes('get_customers')) {
+      if (Array.isArray(result.customers) && result.customers.length > 0) {
+        entities.client = result.customers[0];
+        entities.clients = result.customers;
+      }
+    }
+
+    // Tasks
+    if (tool.includes('create_task') || tool.includes('update_task')) {
+      if (result.task) entities.task = result.task;
+    }
+    if (tool.includes('get_tasks')) {
+      if (Array.isArray(result.tasks) && result.tasks.length > 0) {
+        entities.task = result.tasks[0];
+        entities.tasks = result.tasks;
       }
     }
   }
 
-  return {};
+  return entities;
 };
+
+export const extractScheduleFromActions = extractEntitiesFromActions;
 
 export const parseMessageMetadata = (msg: ChatMessage): ChatMessage => {
   if (!msg.content || typeof msg.content !== 'string') return msg;
@@ -53,6 +100,12 @@ export const parseMessageMetadata = (msg: ChatMessage): ChatMessage => {
   let actions = msg.actions;
   let schedule = msg.schedule;
   let schedules = msg.schedules;
+  let invoice = msg.invoice;
+  let invoices = msg.invoices;
+  let client = msg.client;
+  let clients = msg.clients;
+  let task = msg.task;
+  let tasks = msg.tasks;
 
   if (match) {
     cleanContent = msg.content.replace(metadataRegex, '').trim();
@@ -60,17 +113,29 @@ export const parseMessageMetadata = (msg: ChatMessage): ChatMessage => {
       const parsed = JSON.parse(match[1]);
       if (parsed.actions) {
         actions = parsed.actions;
-        const extracted = extractScheduleFromActions(parsed.actions);
+        const extracted = extractEntitiesFromActions(parsed.actions);
         if (extracted.schedule) schedule = extracted.schedule;
         if (extracted.schedules) schedules = extracted.schedules;
+        if (extracted.invoice) invoice = extracted.invoice;
+        if (extracted.invoices) invoices = extracted.invoices;
+        if (extracted.client) client = extracted.client;
+        if (extracted.clients) clients = extracted.clients;
+        if (extracted.task) task = extracted.task;
+        if (extracted.tasks) tasks = extracted.tasks;
       }
     } catch (e) {
       console.warn('Failed to parse chat message metadata:', e);
     }
-  } else if (actions && !schedule) {
-    const extracted = extractScheduleFromActions(actions);
-    if (extracted.schedule) schedule = extracted.schedule;
-    if (extracted.schedules) schedules = extracted.schedules;
+  } else if (actions) {
+    const extracted = extractEntitiesFromActions(actions);
+    if (!schedule && extracted.schedule) schedule = extracted.schedule;
+    if (!schedules && extracted.schedules) schedules = extracted.schedules;
+    if (!invoice && extracted.invoice) invoice = extracted.invoice;
+    if (!invoices && extracted.invoices) invoices = extracted.invoices;
+    if (!client && extracted.client) client = extracted.client;
+    if (!clients && extracted.clients) clients = extracted.clients;
+    if (!task && extracted.task) task = extracted.task;
+    if (!tasks && extracted.tasks) tasks = extracted.tasks;
   }
 
   return {
@@ -79,6 +144,12 @@ export const parseMessageMetadata = (msg: ChatMessage): ChatMessage => {
     actions,
     schedule,
     schedules,
+    invoice,
+    invoices,
+    client,
+    clients,
+    task,
+    tasks,
   };
 };
 
@@ -163,12 +234,18 @@ export const useAIChat = (): UseAIChatReturn => {
         (old = []) => {
           // Remove temporary sending message and add the server's persisted user + AI reply
           const filtered = old.filter((m) => !m.id.startsWith('temp-'));
-          const extracted = extractScheduleFromActions(data.actions);
+          const extracted = extractEntitiesFromActions(data.actions);
           const hydratedReply: ChatMessage = parseMessageMetadata({
             ...data.reply,
             actions: data.actions,
             schedule: extracted.schedule,
             schedules: extracted.schedules,
+            invoice: extracted.invoice,
+            invoices: extracted.invoices,
+            client: extracted.client,
+            clients: extracted.clients,
+            task: extracted.task,
+            tasks: extracted.tasks,
           });
           return [...filtered, data.userMessage, hydratedReply];
         },

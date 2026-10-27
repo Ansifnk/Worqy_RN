@@ -20,8 +20,15 @@ import { colors } from '../../utils/colors';
 import { useAppContext } from '../../context/AppContext';
 import { useAIChat, chatKeys } from '../../hooks/useAIChat';
 import { useSchedule } from '../../hooks/useSchedule';
+import { useInvoice } from '../../hooks/useInvoice';
+import { useClient } from '../../hooks/useClient';
+import { useTask } from '../../hooks/useTask';
 import { ScheduleItem, ScheduleFormData } from '../schedule/types';
+import { Invoice } from '../invoices/types';
+import { ClientItem, ClientFormData } from '../clients/types';
+import { TaskItem } from '../tasks/types';
 import ScheduleFormModal from '../schedule/components/ScheduleFormModal';
+import ClientFormModal from '../clients/components/ClientFormModal';
 import { ChatHeader } from './components/ChatHeader';
 import { ChatBubble } from './components/ChatBubble';
 import { TypingIndicator } from './components/TypingIndicator';
@@ -43,6 +50,9 @@ export const AIChatScreen: React.FC = () => {
   } = useAIChat();
 
   const { updateSchedule, deleteSchedule } = useSchedule();
+  const { deleteInvoice } = useInvoice();
+  const { updateClient, deleteClient } = useClient();
+  const { deleteTask, toggleTaskComplete } = useTask();
 
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
@@ -52,6 +62,10 @@ export const AIChatScreen: React.FC = () => {
   // Edit Schedule Modal state
   const [isScheduleModalVisible, setIsScheduleModalVisible] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<ScheduleItem | null>(null);
+
+  // Edit Client Modal state
+  const [isClientModalVisible, setIsClientModalVisible] = useState(false);
+  const [editingClient, setEditingClient] = useState<ClientItem | null>(null);
 
   // Auto-scroll logic: Instant jump on initial load (no animation), smooth scroll only for new messages
   useEffect(() => {
@@ -97,7 +111,7 @@ export const AIChatScreen: React.FC = () => {
     setInputText(prompt);
   }, []);
 
-  // Schedule Action Handlers
+  // ---------------- SCHEDULE HANDLERS ----------------
   const handleEditSchedule = useCallback((sched: ScheduleItem) => {
     setEditingSchedule(sched);
     setIsScheduleModalVisible(true);
@@ -185,6 +199,240 @@ export const AIChatScreen: React.FC = () => {
     [editingSchedule, updateSchedule, queryClient, user?.id],
   );
 
+  // ---------------- INVOICE HANDLERS ----------------
+  const handleEditInvoice = useCallback(
+    (inv: Invoice) => {
+      navigation.navigate('AddEditInvoice', { invoiceId: inv.id, isEdit: true });
+    },
+    [navigation],
+  );
+
+  const handleDeleteInvoice = useCallback(
+    (invoiceId: string, invoiceNumber: string) => {
+      Alert.alert(
+        'Delete Invoice',
+        `Are you sure you want to delete invoice "${invoiceNumber || ''}"?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deleteInvoice(invoiceId);
+                queryClient.setQueryData<ChatMessage[]>(
+                  chatKeys.messages(user?.id),
+                  (old = []) =>
+                    old.map((m) => {
+                      if (m.invoice?.id === invoiceId) {
+                        return { ...m, isDeletedInvoice: true };
+                      }
+                      if (m.invoices?.some((i) => i.id === invoiceId)) {
+                        return {
+                          ...m,
+                          invoices: m.invoices.filter((i) => i.id !== invoiceId),
+                          isDeletedInvoice: m.invoices.length === 1,
+                        };
+                      }
+                      return m;
+                    }),
+                );
+                Alert.alert('Deleted', 'Invoice has been removed.');
+              } catch (err: any) {
+                Alert.alert('Error', err?.message || 'Failed to delete invoice');
+              }
+            },
+          },
+        ],
+      );
+    },
+    [deleteInvoice, queryClient, user?.id],
+  );
+
+  const handleOpenInvoice = useCallback(
+    (inv: Invoice) => {
+      navigation.navigate('InvoiceDetail', { invoiceId: inv.id });
+    },
+    [navigation],
+  );
+
+  // ---------------- CLIENT HANDLERS ----------------
+  const handleEditClient = useCallback((cli: ClientItem) => {
+    setEditingClient(cli);
+    setIsClientModalVisible(true);
+  }, []);
+
+  const handleDeleteClient = useCallback(
+    (clientId: string, clientName: string) => {
+      Alert.alert(
+        'Delete Client',
+        `Are you sure you want to delete client "${clientName || ''}"?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deleteClient(clientId);
+                queryClient.setQueryData<ChatMessage[]>(
+                  chatKeys.messages(user?.id),
+                  (old = []) =>
+                    old.map((m) => {
+                      if (m.client?.id === clientId) {
+                        return { ...m, isDeletedClient: true };
+                      }
+                      if (m.clients?.some((c) => c.id === clientId)) {
+                        return {
+                          ...m,
+                          clients: m.clients.filter((c) => c.id !== clientId),
+                          isDeletedClient: m.clients.length === 1,
+                        };
+                      }
+                      return m;
+                    }),
+                );
+                Alert.alert('Deleted', 'Client has been removed.');
+              } catch (err: any) {
+                Alert.alert('Error', err?.message || 'Failed to delete client');
+              }
+            },
+          },
+        ],
+      );
+    },
+    [deleteClient, queryClient, user?.id],
+  );
+
+  const handleOpenClient = useCallback(
+    (cli: ClientItem) => {
+      navigation.navigate('ClientDetail', { clientId: cli.id });
+    },
+    [navigation],
+  );
+
+  const handleClientFormSubmit = useCallback(
+    async (formData: ClientFormData) => {
+      if (!editingClient) return;
+      try {
+        await updateClient(editingClient.id, formData);
+        queryClient.setQueryData<ChatMessage[]>(
+          chatKeys.messages(user?.id),
+          (old = []) =>
+            old.map((m) => {
+              if (m.client?.id === editingClient.id) {
+                return { ...m, client: { ...m.client, ...formData } };
+              }
+              if (m.clients) {
+                return {
+                  ...m,
+                  clients: m.clients.map((c) =>
+                    c.id === editingClient.id ? { ...c, ...formData } : c,
+                  ),
+                };
+              }
+              return m;
+            }),
+        );
+        setIsClientModalVisible(false);
+        setEditingClient(null);
+        Alert.alert('Client Updated', `"${formData.name}" has been updated.`);
+      } catch (err: any) {
+        Alert.alert('Error', err?.message || 'Failed to update client');
+      }
+    },
+    [editingClient, updateClient, queryClient, user?.id],
+  );
+
+  // ---------------- TASK HANDLERS ----------------
+  const handleToggleTaskComplete = useCallback(
+    async (taskId: string) => {
+      try {
+        await toggleTaskComplete(taskId);
+        queryClient.setQueryData<ChatMessage[]>(
+          chatKeys.messages(user?.id),
+          (old = []) =>
+            old.map((m) => {
+              if (m.task?.id === taskId) {
+                const newStatus = m.task.status === 'Done' ? 'To Do' : 'Done';
+                return { ...m, task: { ...m.task, status: newStatus } };
+              }
+              if (m.tasks) {
+                return {
+                  ...m,
+                  tasks: m.tasks.map((t) =>
+                    t.id === taskId
+                      ? { ...t, status: t.status === 'Done' ? 'To Do' : 'Done' }
+                      : t,
+                  ),
+                };
+              }
+              return m;
+            }),
+        );
+      } catch (err: any) {
+        Alert.alert('Error', err?.message || 'Failed to update task');
+      }
+    },
+    [toggleTaskComplete, queryClient, user?.id],
+  );
+
+  const handleEditTask = useCallback(
+    (tsk: TaskItem) => {
+      navigation.navigate('TaskDetail', { taskId: tsk.id });
+    },
+    [navigation],
+  );
+
+  const handleDeleteTask = useCallback(
+    (taskId: string, taskTitle: string) => {
+      Alert.alert(
+        'Delete Task',
+        `Are you sure you want to delete task "${taskTitle || ''}"?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deleteTask(taskId);
+                queryClient.setQueryData<ChatMessage[]>(
+                  chatKeys.messages(user?.id),
+                  (old = []) =>
+                    old.map((m) => {
+                      if (m.task?.id === taskId) {
+                        return { ...m, isDeletedTask: true };
+                      }
+                      if (m.tasks?.some((t) => t.id === taskId)) {
+                        return {
+                          ...m,
+                          tasks: m.tasks.filter((t) => t.id !== taskId),
+                          isDeletedTask: m.tasks.length === 1,
+                        };
+                      }
+                      return m;
+                    }),
+                );
+                Alert.alert('Deleted', 'Task has been removed.');
+              } catch (err: any) {
+                Alert.alert('Error', err?.message || 'Failed to delete task');
+              }
+            },
+          },
+        ],
+      );
+    },
+    [deleteTask, queryClient, user?.id],
+  );
+
+  const handleOpenTask = useCallback(
+    (tsk: TaskItem) => {
+      navigation.navigate('TaskDetail', { taskId: tsk.id });
+    },
+    [navigation],
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: ChatMessage }) => {
       return (
@@ -193,10 +441,34 @@ export const AIChatScreen: React.FC = () => {
           onEditSchedule={handleEditSchedule}
           onDeleteSchedule={handleDeleteSchedule}
           onOpenSchedule={handleOpenSchedule}
+          onEditInvoice={handleEditInvoice}
+          onDeleteInvoice={handleDeleteInvoice}
+          onOpenInvoice={handleOpenInvoice}
+          onEditClient={handleEditClient}
+          onDeleteClient={handleDeleteClient}
+          onOpenClient={handleOpenClient}
+          onToggleTaskComplete={handleToggleTaskComplete}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onOpenTask={handleOpenTask}
         />
       );
     },
-    [handleEditSchedule, handleDeleteSchedule, handleOpenSchedule],
+    [
+      handleEditSchedule,
+      handleDeleteSchedule,
+      handleOpenSchedule,
+      handleEditInvoice,
+      handleDeleteInvoice,
+      handleOpenInvoice,
+      handleEditClient,
+      handleDeleteClient,
+      handleOpenClient,
+      handleToggleTaskComplete,
+      handleEditTask,
+      handleDeleteTask,
+      handleOpenTask,
+    ],
   );
 
   const keyExtractor = useCallback((item: ChatMessage) => item.id, []);
@@ -309,6 +581,17 @@ export const AIChatScreen: React.FC = () => {
         initialData={editingSchedule}
         defaultDate={editingSchedule?.date}
         defaultStartTime={editingSchedule?.startTime}
+      />
+
+      {/* Edit Client Modal */}
+      <ClientFormModal
+        visible={isClientModalVisible}
+        onClose={() => {
+          setIsClientModalVisible(false);
+          setEditingClient(null);
+        }}
+        onSubmit={handleClientFormSubmit}
+        initialData={editingClient}
       />
     </View>
   );

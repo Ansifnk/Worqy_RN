@@ -5,13 +5,33 @@ import { Sparkles, Clock } from 'lucide-react-native';
 import { colors } from '../../../utils/colors';
 import { ChatMessage } from '../types';
 import { ScheduleItem } from '../../schedule/types';
+import { Invoice } from '../../invoices/types';
+import { ClientItem } from '../../clients/types';
+import { TaskItem } from '../../tasks/types';
 import { ChatScheduleCard } from './ChatScheduleCard';
+import { ChatInvoiceCard } from './ChatInvoiceCard';
+import { ChatClientCard } from './ChatClientCard';
+import { ChatTaskCard } from './ChatTaskCard';
 
 interface ChatBubbleProps {
   message: ChatMessage;
+  // Schedules
   onEditSchedule?: (schedule: ScheduleItem) => void;
   onDeleteSchedule?: (scheduleId: string, scheduleTitle: string) => void;
   onOpenSchedule?: (schedule: ScheduleItem) => void;
+  // Invoices
+  onEditInvoice?: (invoice: Invoice) => void;
+  onDeleteInvoice?: (invoiceId: string, invoiceNumber: string) => void;
+  onOpenInvoice?: (invoice: Invoice) => void;
+  // Clients
+  onEditClient?: (client: ClientItem) => void;
+  onDeleteClient?: (clientId: string, clientName: string) => void;
+  onOpenClient?: (client: ClientItem) => void;
+  // Tasks
+  onToggleTaskComplete?: (taskId: string) => void;
+  onEditTask?: (task: TaskItem) => void;
+  onDeleteTask?: (taskId: string, taskTitle: string) => void;
+  onOpenTask?: (task: TaskItem) => void;
 }
 
 export const ChatBubble: React.FC<ChatBubbleProps> = ({
@@ -19,6 +39,16 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   onEditSchedule,
   onDeleteSchedule,
   onOpenSchedule,
+  onEditInvoice,
+  onDeleteInvoice,
+  onOpenInvoice,
+  onEditClient,
+  onDeleteClient,
+  onOpenClient,
+  onToggleTaskComplete,
+  onEditTask,
+  onDeleteTask,
+  onOpenTask,
 }) => {
   const isUser = message.role === 'user';
   const timeFormatted = message.createdAt
@@ -49,6 +79,30 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
     schedulesToRender.push(message.schedule);
   }
 
+  // Determine invoices to display
+  const invoicesToRender: Invoice[] = [];
+  if (message.invoices && message.invoices.length > 0) {
+    invoicesToRender.push(...message.invoices);
+  } else if (message.invoice) {
+    invoicesToRender.push(message.invoice);
+  }
+
+  // Determine clients to display
+  const clientsToRender: ClientItem[] = [];
+  if (message.clients && message.clients.length > 0) {
+    clientsToRender.push(...message.clients);
+  } else if (message.client) {
+    clientsToRender.push(message.client);
+  }
+
+  // Determine tasks to display
+  const tasksToRender: TaskItem[] = [];
+  if (message.tasks && message.tasks.length > 0) {
+    tasksToRender.push(...message.tasks);
+  } else if (message.task) {
+    tasksToRender.push(message.task);
+  }
+
   return (
     <View style={styles.assistantContainer}>
       <View style={styles.assistantAvatar}>
@@ -69,6 +123,43 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
             onEdit={(s) => onEditSchedule?.(s)}
             onDelete={(id, title) => onDeleteSchedule?.(id, title)}
             onOpen={(s) => onOpenSchedule?.(s)}
+          />
+        ))}
+
+        {/* Invoice Cards if present */}
+        {invoicesToRender.map((inv, idx) => (
+          <ChatInvoiceCard
+            key={inv.id || `inv-${idx}`}
+            invoice={inv}
+            isDeleted={message.isDeletedInvoice}
+            onEdit={(i) => onEditInvoice?.(i)}
+            onDelete={(id, num) => onDeleteInvoice?.(id, num)}
+            onOpen={(i) => onOpenInvoice?.(i)}
+          />
+        ))}
+
+        {/* Client Cards if present */}
+        {clientsToRender.map((cli, idx) => (
+          <ChatClientCard
+            key={cli.id || `cli-${idx}`}
+            client={cli}
+            isDeleted={message.isDeletedClient}
+            onEdit={(c) => onEditClient?.(c)}
+            onDelete={(id, name) => onDeleteClient?.(id, name)}
+            onOpen={(c) => onOpenClient?.(c)}
+          />
+        ))}
+
+        {/* Task Cards if present */}
+        {tasksToRender.map((tsk, idx) => (
+          <ChatTaskCard
+            key={tsk.id || `tsk-${idx}`}
+            task={tsk}
+            isDeleted={message.isDeletedTask}
+            onToggleComplete={(id) => onToggleTaskComplete?.(id)}
+            onEdit={(t) => onEditTask?.(t)}
+            onDelete={(id, title) => onDeleteTask?.(id, title)}
+            onOpen={(t) => onOpenTask?.(t)}
           />
         ))}
 
