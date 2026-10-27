@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { User as UserIcon, Mail } from 'lucide-react-native';
-import { getAuth, updateProfile } from '@react-native-firebase/auth';
 import { getFirestore, doc, updateDoc } from '@react-native-firebase/firestore';
 import { BottomSheet } from '../../../components/BottomSheet';
 import { TextInput } from '../../../components/TextInput';
@@ -70,12 +69,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       const db = getFirestore();
       const userRef = doc(db, firebaseCollections.users, user.id);
       await updateDoc(userRef, { name: trimmedName });
-
-      // Update Firebase Auth display name if possible
-      const auth = getAuth();
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, { displayName: trimmedName });
-      }
 
       await refreshUser();
       Alert.alert('Success', 'Profile updated successfully.');

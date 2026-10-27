@@ -13,18 +13,15 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useForm, Controller } from 'react-hook-form';
-import type { RootStackParamList } from '../../navigations/AppNav';
+import { User as UserIcon, Mail, Lock } from 'lucide-react-native';
+import { navigationRef, type RootStackParamList } from '../../navigations/AppNav';
 import { colors } from '../../utils/colors';
-import { User, Mail, Lock } from 'lucide-react-native';
-import { useAppContext, User as AppUser } from '../../context/AppContext';
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from '@react-native-firebase/auth';
-import { getFirestore, doc, setDoc } from '@react-native-firebase/firestore';
-import { firebaseCollections } from '../../utils/constants';
+import { useAppContext, User } from '../../context/AppContext';
+import { http } from '../../utils/http';
+import { saveAuthSession } from '../../utils/authStorage';
 import AuthHeader from '../../components/AuthHeader';
 import TextInput from '../../components/TextInput';
 import Button from '../../components/Button';
-import SocialAuthButtons from '../../components/SocialAuthButtons';
-import { signInWithGoogle } from '../../utils/googleAuth';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
 
@@ -38,7 +35,6 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { setUser } = useAppContext();
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   const {
     control,
@@ -72,73 +68,58 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
 
     try {
       setLoading(true);
-      const auth = getAuth();
-      const userCredential = await createUserWithEmailAndPassword(auth, trimmedEmail, password);
-      const authUser = userCredential.user;
 
-      try {
-        await updateProfile(authUser, { displayName: trimmedName });
-      } catch (profileError) {
-        console.warn('Failed to update displayName:', profileError);
-      }
-
-      const db = getFirestore();
-      const userData: AppUser = {
-        id: authUser.uid,
+      const res = await http.post<{
+        accessToken: string;
+        account: {
+          userId: string;
+          email: string;
+          name: string;
+          role?: string;
+        };
+      }>('/auth/customer/register', {
         name: trimmedName,
-        email: authUser.email || trimmedEmail,
-      };
+        email: trimmedEmail,
+        password,
+        source: 'mobile',
+      });
 
-      await setDoc(doc(db, firebaseCollections.users, authUser.uid), userData);
+      const accessToken = res?.data?.accessToken;
+      const account = res?.data?.account;
 
-      setUser(userData);
-      navigation.replace('Main');
-    } catch (error: any) {
-      let errorMessage = 'Failed to create account. Please try again.';
-      if (error?.code === 'auth/email-already-in-use') {
-        errorMessage = 'This email address is already registered. Please sign in instead.';
-      } else if (error?.code === 'auth/invalid-email') {
-        errorMessage = 'Please enter a valid email address.';
-      } else if (error?.code === 'auth/weak-password') {
-        errorMessage = 'Password is too weak. Please use at least 6 characters.';
-      } else if (error?.code === 'auth/operation-not-allowed') {
-        errorMessage = 'Email/password sign up is not enabled in Firebase console.';
-      } else if (error?.message) {
-        errorMessage = error.message;
+      if (accessToken && account) {
+        const userData: User = {
+          id: account.userId || (account as any).id,
+          name: account.name || trimmedName,
+          email: account.email || trimmedEmail,
+        };
+
+        await saveAuthSession(accessToken, userData);
+        setUser(userData);
+
+        if (navigationRef.isReady()) {
+          navigationRef.reset({
+            index: 0,
+            routes: [{ name: 'Main' }],
+          });
+        } else {
+          navigation.replace('Main');
+        }
+      } else {
+        throw new Error(res?.msg || 'Failed to register');
       }
+    } catch (error: any) {
+      const errorMessage =
+        error?.msg || error?.message || 'Failed to create account. Please try again.';
       Alert.alert('Sign Up Failed', errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignUp = async () => {
-    try {
-      setGoogleLoading(true);
-      const result = await signInWithGoogle();
-
-      if (result.cancelled) {
-        return;
-      }
-
-      if (result.success && result.user) {
-        setUser(result.user);
-        navigation.replace('Main');
-      } else if (result.error) {
-        Alert.alert('Sign Up Failed', result.error);
-      }
-    } catch (error: any) {
-      Alert.alert('Sign Up Failed', error?.message || 'Failed to sign up with Google.');
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-
   const handleGoToLogin = () => {
     navigation.navigate('Login');
   };
-
-  const isFormDisabled = loading || googleLoading;
 
   return (
     <View style={styles.screen}>
@@ -191,8 +172,8 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
                   onBlur={onBlur}
                   error={errors.name?.message}
                   autoCapitalize="words"
-                  disabled={isFormDisabled}
-                  leftIcon={<User size={20} color={colors.textSecondary} strokeWidth={2} />}
+                  disabled={loading}
+                  leftIcon={<UserIcon size={20} color={colors.textSecondary} strokeWidth={2} />}
                 />
               )}
             />
@@ -218,7 +199,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
                   error={errors.email?.message}
                   autoCapitalize="none"
                   keyboardType="email-address"
-                  disabled={isFormDisabled}
+                  disabled={loading}
                   leftIcon={<Mail size={20} color={colors.textSecondary} strokeWidth={2} />}
                 />
               )}
@@ -245,7 +226,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
                   error={errors.password?.message}
                   autoCapitalize="none"
                   isPassword
-                  disabled={isFormDisabled}
+                  disabled={loading}
                   leftIcon={<Lock size={20} color={colors.textSecondary} strokeWidth={2} />}
                   rightAccessory={
                     strength ? (
@@ -264,19 +245,9 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
             <Button
               title="Sign up"
               loading={loading}
-              disabled={isFormDisabled}
+              disabled={loading}
               onPress={() => handleSubmit(onSubmit)()}
               style={styles.submitButton}
-            />
-
-            {/* Reusable Social Auth Buttons */}
-            <SocialAuthButtons
-              dividerText="or sign up with"
-              disabled={isFormDisabled}
-              googleLoading={googleLoading}
-              onPressGoogle={handleGoogleSignUp}
-              onPressApple={() => Alert.alert('Coming Soon', 'Apple sign-up will be available soon.')}
-              onPressFacebook={() => Alert.alert('Coming Soon', 'Facebook sign-up will be available soon.')}
             />
           </View>
 
@@ -286,6 +257,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               onPress={handleGoToLogin}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              disabled={loading}
             >
               <Text style={styles.footerLink}>Sign in</Text>
             </TouchableOpacity>
@@ -330,20 +302,19 @@ const styles = StyleSheet.create({
   },
   strengthBadge: {
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
+    paddingVertical: 2,
+    borderRadius: 6,
     backgroundColor: colors.surfaceSecondary,
-    marginRight: 8,
   },
   strengthText: {
     fontSize: 11,
     fontWeight: '700',
-    color: colors.primary,
+    textTransform: 'uppercase',
   },
 
   // Primary Button
   submitButton: {
-    marginTop: 10,
+    marginTop: 16,
   },
 
   // Footer Link
@@ -351,7 +322,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 24,
     marginBottom: 8,
   },
   footerText: {

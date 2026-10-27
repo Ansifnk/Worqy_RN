@@ -1,16 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import {
-  getAuth,
-  onAuthStateChanged,
-  signOut,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  deleteUser,
-  type User as FirebaseUser,
-} from '@react-native-firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, deleteDoc } from '@react-native-firebase/firestore';
-import { firebaseCollections } from '../utils/constants';
-import { signOutGoogle, signInWithGoogle } from '../utils/googleAuth';
+import { http, setOnUnauthorized, getAuthToken } from '../utils/http';
+import { loadAuthSession, saveAuthSession, clearAuthSession } from '../utils/authStorage';
 
 export interface User {
   id: string;
@@ -37,75 +27,77 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const fetchUserData = useCallback(async (authUser: FirebaseUser): Promise<User> => {
-    try {
-      const db = getFirestore();
-      const userDocRef = doc(db, firebaseCollections.users, authUser.uid);
-      const userSnap = await getDoc(userDocRef);
-
-      if (userSnap.exists()) {
-        const data = userSnap.data();
-        return {
-          id: authUser.uid,
-          name: data?.name,
-          email: data?.email,
-        };
-      }
-
-      // If document doesn't exist yet, populate and save
-      const fallbackUser: User = {
-        id: authUser.uid,
-        name: authUser.displayName || (authUser.email ? authUser.email.split('@')[0] : 'User'),
-        email: authUser.email || '',
-      };
-      await setDoc(userDocRef, fallbackUser);
-      return fallbackUser;
-    } catch (error) {
-      console.warn('Failed to load user document from Firestore:', error);
-      return {
-        id: authUser.uid,
-        name: authUser.displayName || (authUser.email ? authUser.email.split('@')[0] : 'User'),
-        email: authUser.email || '',
-      };
-    }
-  }, []);
-
+  // Restore session from AsyncStorage on app launch
   useEffect(() => {
-    const auth = getAuth();
     let isMounted = true;
 
-    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+    const restoreSession = async () => {
       try {
-        if (authUser) {
-          const loadedUser = await fetchUserData(authUser);
+        const { token, user: storedUser } = await loadAuthSession();
+
+        if (token && storedUser) {
           if (isMounted) {
-            setUser(loadedUser);
+            setUser(storedUser);
+          }
+
+          // Validate and refresh profile with backend server
+          try {
+            const res = await http.get('/auth/me');
+            const account = res?.data?.account;
+            if (account && isMounted) {
+              const freshUser: User = {
+                id: account.userId || account.id || storedUser.id,
+                name: account.name || storedUser.name,
+                email: account.email || storedUser.email,
+              };
+              setUser(freshUser);
+              await saveAuthSession(token, freshUser);
+            }
+          } catch (apiError: any) {
+            // If token expired (401), clear invalid session
+            if (apiError?.status === 401 && isMounted) {
+              await clearAuthSession();
+              setUser(null);
+            }
           }
         } else {
           if (isMounted) {
             setUser(null);
           }
         }
-      } catch (error) {
-        console.error('Error handling auth state change:', error);
+      } catch (err) {
+        console.warn('Error restoring auth session:', err);
+        if (isMounted) {
+          setUser(null);
+        }
       } finally {
         if (isMounted) {
           setLoading(false);
         }
       }
+    };
+
+    restoreSession();
+
+    // Hook auto-signout when HTTP requests receive 401 Unauthorized
+    setOnUnauthorized(() => {
+      clearAuthSession();
+      setUser(null);
     });
 
     return () => {
       isMounted = false;
-      unsubscribe();
     };
-  }, [fetchUserData]);
+  }, []);
 
   const signOutUser = useCallback(async () => {
     try {
-      await signOutGoogle();
-      const auth = getAuth();
-      await signOut(auth);
+      try {
+        await http.post('/auth/logout');
+      } catch {
+        // Ignore network errors during logout
+      }
+      await clearAuthSession();
       setUser(null);
     } catch (error) {
       console.error('Error signing out:', error);
@@ -113,77 +105,37 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const deleteAccount = useCallback(async (password?: string) => {
+  const deleteAccount = useCallback(async () => {
     try {
-      const auth = getAuth();
-      const currentUser = auth.currentUser;
-      const currentUserId = user?.id || currentUser?.uid;
-
-      if (!currentUser || !currentUserId) {
-        throw new Error('No user is currently authenticated.');
-      }
-
-      // 1. If password was provided (for email/password users), re-authenticate with password
-      if (password && currentUser.email) {
-        const credential = EmailAuthProvider.credential(currentUser.email, password);
-        await reauthenticateWithCredential(currentUser, credential);
-      }
-
-      // 2. Fetch existing user document
-      const db = getFirestore();
-      const userDocRef = doc(db, firebaseCollections.users, currentUserId);
-      const deletedUserDocRef = doc(db, firebaseCollections.deletedUsers, currentUserId);
-
-      const userSnap = await getDoc(userDocRef);
-      const userData = userSnap.exists()
-        ? userSnap.data()
-        : { id: currentUserId, name: user?.name || '', email: user?.email || '' };
-
-      // 3. Move user document to DELETED_USERS collection
-      await setDoc(deletedUserDocRef, {
-        ...userData,
-        deletedAt: new Date().toISOString(),
-        deletedTimestamp: Date.now(),
-      });
-
-      // 4. Remove from active USERS collection
-      await deleteDoc(userDocRef);
-
-      // 5. Delete Firebase Auth user account with re-auth fallback if required
-      try {
-        await deleteUser(currentUser);
-      } catch (authError: any) {
-        if (authError?.code === 'auth/requires-recent-login') {
-          // Re-authenticate with Google for Google users
-          const googleResult = await signInWithGoogle();
-          if (googleResult.success && auth.currentUser) {
-            await deleteUser(auth.currentUser);
-          } else {
-            throw new Error('Please re-authenticate with Google to confirm account deletion.');
-          }
-        } else {
-          throw authError;
-        }
-      }
-
-      // 6. Sign out from Google session
-      await signOutGoogle();
-
+      // Clear local session upon account deletion
+      await clearAuthSession();
       setUser(null);
     } catch (error) {
       console.error('Error deleting account:', error);
       throw error;
     }
-  }, [user]);
+  }, []);
 
   const refreshUser = useCallback(async () => {
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      const updatedUser = await fetchUserData(currentUser);
-      setUser(updatedUser);
+    try {
+      const token = getAuthToken();
+      if (!token) return;
+
+      const res = await http.get('/auth/me');
+      const account = res?.data?.account;
+      if (account) {
+        const updatedUser: User = {
+          id: account.userId || account.id || '',
+          name: account.name || 'User',
+          email: account.email || '',
+        };
+        setUser(updatedUser);
+        await saveAuthSession(token, updatedUser);
+      }
+    } catch (error) {
+      console.warn('Failed to refresh user profile:', error);
     }
-  }, [fetchUserData]);
+  }, []);
 
   return (
     <AppContext.Provider value={{ user, setUser, loading, signOutUser, deleteAccount, refreshUser }}>
@@ -201,4 +153,3 @@ export const useAppContext = (): AppContextType => {
 };
 
 export default AppContext;
-
