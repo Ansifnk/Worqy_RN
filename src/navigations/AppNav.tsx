@@ -7,6 +7,7 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import BottomTabNav, { BottomTabParamList } from './BottomTabNav';
+import AIChatScreen from '../screens/chat/AIChatScreen';
 import LoginScreen from '../screens/login/LoginScreen';
 import SignupScreen from '../screens/signup/SignupScreen';
 import WelcomeScreen from '../screens/welcome/WelcomeScreen';
@@ -24,6 +25,7 @@ export type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
   Main: NavigatorScreenParams<BottomTabParamList> | undefined;
+  AIChat: undefined;
   TaskDetail: { taskId?: string; isNew?: boolean } | undefined;
   InvoiceDetail: { invoiceId: string } | undefined;
   AddEditInvoice: { invoiceId?: string; isEdit?: boolean } | undefined;
@@ -82,6 +84,13 @@ export const AppNav: React.FC = () => {
         {user ? (
           <>
             <Stack.Screen name="Main" component={BottomTabNav} />
+            <Stack.Screen
+              name="AIChat"
+              component={AIChatScreen}
+              options={{
+                animation: 'slide_from_bottom',
+              }}
+            />
             <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
             <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} />
             <Stack.Screen name="AddEditInvoice" component={AddEditInvoiceScreen} />

@@ -3,14 +3,13 @@ import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/b
 import CustomTabBar from './components/CustomTabBar';
 import HomeScreen from '../screens/home/HomeScreen';
 import ClientsScreen from '../screens/clients/ClientsScreen';
-import AIChatScreen from '../screens/chat/AIChatScreen';
 import TasksScreen from '../screens/tasks/TasksScreen';
 import InvoicesScreen from '../screens/invoices/InvoicesScreen';
 
 export type BottomTabParamList = {
   Home: undefined;
   Clients: undefined;
-  AIChat: undefined;
+  AIChatTab: undefined;
   Tasks: undefined;
   Invoices: undefined;
 };
@@ -18,6 +17,8 @@ export type BottomTabParamList = {
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
 const renderTabBar = (props: BottomTabBarProps) => <CustomTabBar {...props} />;
+
+const EmptyScreen = () => null;
 
 export const BottomTabNav: React.FC = () => {
   return (
@@ -38,9 +39,20 @@ export const BottomTabNav: React.FC = () => {
         options={{ tabBarLabel: 'Clients' }}
       />
       <Tab.Screen
-        name="AIChat"
-        component={AIChatScreen}
+        name="AIChatTab"
+        component={EmptyScreen}
         options={{ tabBarLabel: 'AI' }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            const parent = navigation.getParent();
+            if (parent) {
+              (parent as any).navigate('AIChat');
+            } else {
+              (navigation as any).navigate('AIChat');
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="Tasks"

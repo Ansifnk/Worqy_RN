@@ -37,6 +37,7 @@ const TabIcon: React.FC<TabIconProps> = ({ name, focused, color, size = 22 }) =>
     case 'Profile':
       return <FileText size={size} color={color} strokeWidth={strokeWidth} />;
     case 'AIChat':
+    case 'AIChatTab':
       return <Sparkles size={24} color={colors.white} strokeWidth={2.2} />;
     default:
       return <Home size={size} color={color} strokeWidth={strokeWidth} />;
@@ -68,7 +69,7 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
-          const isAIChat = route.name === 'AIChat';
+          const isAIChat = route.name === 'AIChat' || route.name === 'AIChatTab';
 
           if (
             typeof options.tabBarStyle === 'object' &&
@@ -92,6 +93,16 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
           const currentColor = isFocused ? activeColor : inactiveColor;
 
           const onPress = () => {
+            if (isAIChat) {
+              const parent = navigation.getParent();
+              if (parent) {
+                (parent as any).navigate('AIChat');
+              } else {
+                (navigation as any).navigate('AIChat');
+              }
+              return;
+            }
+
             const event = navigation.emit({
               type: 'tabPress',
               target: route.key,
@@ -149,7 +160,7 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
                     ]}
                     numberOfLines={1}
                   >
-                    {labelText === 'AIChat' ? 'AI' : labelText}
+                    {labelText === 'AIChat' || labelText === 'AIChatTab' ? 'AI' : labelText}
                   </Text>
                 </View>
               </TouchableOpacity>

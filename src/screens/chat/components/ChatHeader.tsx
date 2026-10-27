@@ -1,17 +1,30 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { Sparkles, Trash2 } from 'lucide-react-native';
+import { Sparkles, Trash2, ArrowLeft } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 import { colors } from '../../../utils/colors';
 
 interface ChatHeaderProps {
   onClearChat: () => void;
   messageCount: number;
+  onBack?: () => void;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
   onClearChat,
   messageCount,
+  onBack,
 }) => {
+  const navigation = useNavigation<any>();
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigation.goBack();
+    }
+  };
+
   const handleClearPress = () => {
     if (messageCount === 0) return;
     Alert.alert(
@@ -27,9 +40,19 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   return (
     <View style={styles.headerContainer}>
       <View style={styles.leftSection}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={handleBack}
+          activeOpacity={0.7}
+          accessibilityLabel="Go back"
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <ArrowLeft size={22} color={colors.text} />
+        </TouchableOpacity>
+
         <View style={styles.avatarWrapper}>
           <View style={styles.avatar}>
-            <Sparkles size={20} color={colors.white} />
+            <Sparkles size={18} color={colors.white} />
           </View>
           <View style={styles.onlineDot} />
         </View>
@@ -72,6 +95,15 @@ const styles = StyleSheet.create({
   leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
   avatarWrapper: {
     position: 'relative',

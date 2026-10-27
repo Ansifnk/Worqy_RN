@@ -36,15 +36,36 @@ export const AIChatScreen: React.FC = () => {
 
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
+  const initialScrollDone = useRef(false);
+  const prevMessagesCount = useRef(0);
 
-  // Auto-scroll to bottom when new messages arrive or when typing indicator appears
+  // Auto-scroll logic: Instant jump on initial load (no animation), smooth scroll only for new messages
   useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+    if (messages.length === 0) {
+      initialScrollDone.current = false;
+      prevMessagesCount.current = 0;
+      return;
     }
-  }, [messages.length, isReplying]);
+
+    if (!initialScrollDone.current) {
+      // Immediate scroll with NO animation on initial load
+      flatListRef.current?.scrollToEnd({ animated: false });
+      const timer = setTimeout(() => {
+        initialScrollDone.current = true;
+      }, 300);
+      return () => clearTimeout(timer);
+    } else if (messages.length > prevMessagesCount.current) {
+      // Smooth scroll only when a new message arrives during conversation
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }
+    prevMessagesCount.current = messages.length;
+  }, [messages.length]);
+
+  useEffect(() => {
+    if (isReplying && initialScrollDone.current) {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [isReplying]);
 
   const handleSend = useCallback(async () => {
     const trimmed = inputText.trim();
@@ -105,8 +126,9 @@ export const AIChatScreen: React.FC = () => {
             }
             ListFooterComponent={isReplying ? <TypingIndicator /> : undefined}
             onContentSizeChange={() => {
-              if (messages.length > 0) {
-                flatListRef.current?.scrollToEnd({ animated: true });
+              if (messages.length === 0) return;
+              if (!initialScrollDone.current) {
+                flatListRef.current?.scrollToEnd({ animated: false });
               }
             }}
             keyboardShouldPersistTaps="handled"
