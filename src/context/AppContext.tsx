@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { http, setOnUnauthorized, getAuthToken } from '../utils/http';
 import { loadAuthSession, saveAuthSession, clearAuthSession } from '../utils/authStorage';
+import { queryClient } from '../utils/queryClient';
 
 export interface User {
   id: string;
@@ -82,6 +83,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     // Hook auto-signout when HTTP requests receive 401 Unauthorized
     setOnUnauthorized(() => {
       clearAuthSession();
+      queryClient.clear();
       setUser(null);
     });
 
@@ -98,6 +100,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         // Ignore network errors during logout
       }
       await clearAuthSession();
+      queryClient.clear();
       setUser(null);
     } catch (error) {
       console.error('Error signing out:', error);
@@ -109,6 +112,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     try {
       // Clear local session upon account deletion
       await clearAuthSession();
+      queryClient.clear();
       setUser(null);
     } catch (error) {
       console.error('Error deleting account:', error);

@@ -1,33 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  getFirestore,
-  collection,
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  query,
-  where,
-  serverTimestamp,
-} from '@react-native-firebase/firestore';
-import { firebaseCollections } from '../utils/constants';
+import { useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../context/AppContext';
+import { http } from '../utils/http';
 import { ClientItem, ClientFormData } from '../screens/clients/types';
 
-/**
- * Removes undefined fields from payload to prevent Firestore write errors.
- */
-const sanitizePayload = (obj: Record<string, any>): Record<string, any> => {
-  const clean: Record<string, any> = {};
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] !== undefined) {
-      clean[key] = obj[key];
-    }
-  });
-  return clean;
+export const clientKeys = {
+  all: ['clients'] as const,
+  lists: () => [...clientKeys.all, 'list'] as const,
+  list: (userId?: string) => [...clientKeys.lists(), userId] as const,
+  details: () => [...clientKeys.all, 'detail'] as const,
+  detail: (id: string) => [...clientKeys.details(), id] as const,
 };
 
 export interface UseClientReturn {
@@ -43,162 +25,123 @@ export interface UseClientReturn {
 
 export const useClient = (): UseClientReturn => {
   const { user } = useAppContext();
-  const [clients, setClients] = useState<ClientItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const db = useMemo(() => getFirestore(), []);
-  const clientsCollection = useMemo(
-    () => collection(db, firebaseCollections.clients),
-    [db]
-  );
-
-  // Parse document snapshot into typed ClientItem
-  const mapDocToClientItem = useCallback((docSnap: any): ClientItem => {
-    const data = docSnap.data() || {};
-    return {
-      id: docSnap.id,
-      name: data.name || '',
-      clientType: data.clientType || 'Company',
-      companyName: data.companyName,
-      profilePic: data.profilePic,
-      phone: data.phone,
-      email: data.email,
-      website: data.website,
-      address: data.address,
-      contactPerson: data.contactPerson,
-      notes: data.notes,
-      tags: Array.isArray(data.tags) ? data.tags : [],
-      status: data.status || 'Active',
-      clientSource: data.clientSource,
-      category:
-        data.category ||
-        data.companyName ||
-        (data.clientType === 'Company' ? 'Enterprise' : 'Personal Client'),
-      logoType: data.logoType || 'custom',
-      userId: data.userId,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    };
-  }, []);
-
-  // Sort helper to display latest created/updated clients first
+  // Helper to sort clients with latest created/updated first
   const sortClients = useCallback((items: ClientItem[]): ClientItem[] => {
     return [...items].sort((a, b) => {
       const timeA =
         a.createdAt?.toMillis?.() ??
-        (typeof a.createdAt === 'number' ? a.createdAt : 0);
+        (typeof a.createdAt === 'string'
+          ? new Date(a.createdAt).getTime()
+          : typeof a.createdAt === 'number'
+          ? a.createdAt
+          : 0);
       const timeB =
         b.createdAt?.toMillis?.() ??
-        (typeof b.createdAt === 'number' ? b.createdAt : 0);
+        (typeof b.createdAt === 'string'
+          ? new Date(b.createdAt).getTime()
+          : typeof b.createdAt === 'number'
+          ? b.createdAt
+          : 0);
       if (timeA !== timeB) return timeB - timeA;
       return a.name.localeCompare(b.name);
     });
   }, []);
 
-  // Real-time listener strictly scoped to the authenticated user
-  useEffect(() => {
-    if (!user?.id) {
-      setClients([]);
-      setLoading(false);
-      return;
-    }
+  // TanStack Query for fetching client list directly via HTTP
+  const {
+    data: rawClients = [],
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery<ClientItem[]>({
+    queryKey: clientKeys.list(user?.id),
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const res = await http.get<ClientItem[]>('/clients', {
+        params: { limit: 1000 },
+      });
+      return res.data || [];
+    },
+    enabled: Boolean(user?.id),
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
 
-    setLoading(true);
-    setError(null);
+  const clients = useMemo(() => {
+    return sortClients(rawClients);
+  }, [rawClients, sortClients]);
 
-    const userClientsQuery = query(
-      clientsCollection,
-      where('userId', '==', user.id)
-    );
-
-    const unsubscribe = onSnapshot(
-      userClientsQuery,
-      (snapshot) => {
-        const items = snapshot.docs.map((docSnap) => mapDocToClientItem(docSnap));
-        setClients(sortClients(items));
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Failed to listen to clients:', err);
-        setError(err.message || 'Failed to fetch clients');
-        setLoading(false);
+  // Mutation: Create client (POST /clients)
+  const addMutation = useMutation({
+    mutationFn: async (newClientData: ClientFormData) => {
+      const res = await http.post<ClientItem>('/clients', newClientData);
+      if (!res.data) {
+        throw new Error(res.msg || 'Failed to create client');
       }
-    );
+      return res.data;
+    },
+    onSuccess: (newClient) => {
+      queryClient.setQueryData<ClientItem[]>(clientKeys.list(user?.id), (old = []) => [
+        newClient,
+        ...old.filter((item) => item.id !== newClient.id),
+      ]);
+      queryClient.invalidateQueries({ queryKey: clientKeys.all });
+    },
+  });
 
-    return () => {
-      unsubscribe();
-    };
-  }, [user?.id, clientsCollection, mapDocToClientItem, sortClients]);
+  // Mutation: Update client (PUT /clients/:id)
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, clientData }: { id: string; clientData: Partial<ClientFormData> }) => {
+      const res = await http.put<ClientItem>(`/clients/${id}`, clientData);
+      if (!res.data) {
+        throw new Error(res.msg || 'Failed to update client');
+      }
+      return res.data;
+    },
+    onSuccess: (updatedClient) => {
+      queryClient.setQueryData<ClientItem[]>(clientKeys.list(user?.id), (old = []) =>
+        old.map((item) => (item.id === updatedClient.id ? updatedClient : item))
+      );
+      queryClient.invalidateQueries({ queryKey: clientKeys.all });
+    },
+  });
 
-  // Create new client in firebaseCollections.clients
+  // Mutation: Delete client (DELETE /clients/:id)
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await http.delete<{ id: string }>(`/clients/${id}`);
+      return res.data || { id };
+    },
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData<ClientItem[]>(clientKeys.list(user?.id), (old = []) =>
+        old.filter((item) => item.id !== deletedId)
+      );
+      queryClient.invalidateQueries({ queryKey: clientKeys.all });
+    },
+  });
+
+  // Create client
   const addClient = useCallback(
     async (clientData: ClientFormData): Promise<string> => {
       if (!user?.id) {
         throw new Error('You must be signed in to add a client.');
       }
-
-      setError(null);
-      try {
-        const category =
-          clientData.companyName?.trim() ||
-          (clientData.clientType === 'Company' ? 'Enterprise' : 'Personal Client');
-
-        const newClientPayload = sanitizePayload({
-          ...clientData,
-          category,
-          userId: user.id,
-          logoType: 'custom',
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-
-        const docRef = await addDoc(clientsCollection, newClientPayload);
-        return docRef.id;
-      } catch (err: any) {
-        console.error('Error adding client to Firestore:', err);
-        const message = err?.message || 'Failed to create client';
-        setError(message);
-        throw err;
-      }
+      const created = await addMutation.mutateAsync(clientData);
+      return created.id;
     },
-    [user?.id, clientsCollection]
+    [user?.id, addMutation]
   );
 
-  // Update existing client
+  // Update client
   const updateClient = useCallback(
     async (id: string, clientData: Partial<ClientFormData>): Promise<void> => {
       if (!user?.id) {
         throw new Error('You must be signed in to update a client.');
       }
-
-      setError(null);
-      try {
-        const clientDocRef = doc(db, firebaseCollections.clients, id);
-
-        const category =
-          clientData.companyName?.trim() ||
-          (clientData.clientType === 'Company'
-            ? 'Enterprise'
-            : clientData.clientType === 'Individual'
-            ? 'Personal Client'
-            : undefined);
-
-        const updatePayload = sanitizePayload({
-          ...clientData,
-          ...(category ? { category } : {}),
-          updatedAt: serverTimestamp(),
-        });
-
-        await updateDoc(clientDocRef, updatePayload);
-      } catch (err: any) {
-        console.error('Error updating client in Firestore:', err);
-        const message = err?.message || 'Failed to update client';
-        setError(message);
-        throw err;
-      }
+      await updateMutation.mutateAsync({ id, clientData });
     },
-    [user?.id, db]
+    [user?.id, updateMutation]
   );
 
   // Delete client
@@ -207,64 +150,54 @@ export const useClient = (): UseClientReturn => {
       if (!user?.id) {
         throw new Error('You must be signed in to delete a client.');
       }
-
-      setError(null);
-      try {
-        const clientDocRef = doc(db, firebaseCollections.clients, id);
-        await deleteDoc(clientDocRef);
-      } catch (err: any) {
-        console.error('Error deleting client from Firestore:', err);
-        const message = err?.message || 'Failed to delete client';
-        setError(message);
-        throw err;
-      }
+      await deleteMutation.mutateAsync(id);
     },
-    [user?.id, db]
+    [user?.id, deleteMutation]
   );
 
-  // Get single client by id
+  // Get single client by id (from cache or server fallback GET /clients/:id)
   const getClient = useCallback(
     async (id: string): Promise<ClientItem | null> => {
+      const cached = queryClient.getQueryData<ClientItem[]>(clientKeys.list(user?.id));
+      const found = cached?.find((c) => c.id === id);
+      if (found) {
+        return found;
+      }
+
       try {
-        const clientDocRef = doc(db, firebaseCollections.clients, id);
-        const snap = await getDoc(clientDocRef);
-        if (!snap.exists()) {
-          return null;
-        }
-        return mapDocToClientItem(snap);
-      } catch (err: any) {
-        console.error('Error getting client from Firestore:', err);
+        const res = await http.get<ClientItem>(`/clients/${id}`);
+        return res.data || null;
+      } catch (err) {
+        console.warn('Error fetching client by id:', err);
         return null;
       }
     },
-    [db, mapDocToClientItem]
+    [queryClient, user?.id]
   );
 
   // Manual refresh trigger
   const refresh = useCallback(async (): Promise<void> => {
-    if (!user?.id) {
-      setClients([]);
-      setLoading(false);
-      return;
-    }
+    if (!user?.id) return;
+    await refetch();
+  }, [user?.id, refetch]);
 
-    try {
-      setLoading(true);
-      const userClientsQuery = query(
-        clientsCollection,
-        where('userId', '==', user.id)
-      );
-      const snapshot = await getDocs(userClientsQuery);
-      const items = snapshot.docs.map((docSnap) => mapDocToClientItem(docSnap));
-      setClients(sortClients(items));
-      setError(null);
-    } catch (err: any) {
-      console.error('Error refreshing clients:', err);
-      setError(err?.message || 'Failed to refresh clients');
-    } finally {
-      setLoading(false);
+  const error = useMemo(() => {
+    if (queryError) {
+      return (queryError as any)?.msg || (queryError as any)?.message || 'Failed to fetch clients';
     }
-  }, [user?.id, clientsCollection, mapDocToClientItem, sortClients]);
+    if (addMutation.error) {
+      return (addMutation.error as any)?.msg || (addMutation.error as any)?.message || 'Failed to create client';
+    }
+    if (updateMutation.error) {
+      return (updateMutation.error as any)?.msg || (updateMutation.error as any)?.message || 'Failed to update client';
+    }
+    if (deleteMutation.error) {
+      return (deleteMutation.error as any)?.msg || (deleteMutation.error as any)?.message || 'Failed to delete client';
+    }
+    return null;
+  }, [queryError, addMutation.error, updateMutation.error, deleteMutation.error]);
+
+  const loading = Boolean(user?.id) && isLoading;
 
   return {
     clients,
