@@ -2,6 +2,7 @@ import { ScheduleItem } from '../schedule/types';
 import { Invoice } from '../invoices/types';
 import { ClientItem } from '../clients/types';
 import { TaskItem } from '../tasks/types';
+import { ProjectItem } from '../projects/types';
 
 export interface ChatAction {
   tool: string;
@@ -24,10 +25,13 @@ export interface ChatMessage {
   clients?: ClientItem[];
   task?: TaskItem;
   tasks?: TaskItem[];
+  project?: ProjectItem;
+  projects?: ProjectItem[];
   isDeletedSchedule?: boolean;
   isDeletedInvoice?: boolean;
   isDeletedClient?: boolean;
   isDeletedTask?: boolean;
+  isDeletedProject?: boolean;
 }
 
 export interface SendMessageResponse {

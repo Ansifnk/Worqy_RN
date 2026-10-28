@@ -2,13 +2,13 @@ import React from 'react';
 import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import CustomTabBar from './components/CustomTabBar';
 import HomeScreen from '../screens/home/HomeScreen';
-import ClientsScreen from '../screens/clients/ClientsScreen';
+import { ProjectsAndClientsScreen } from '../screens/projects/ProjectsAndClientsScreen';
 import TasksScreen from '../screens/tasks/TasksScreen';
 import InvoicesScreen from '../screens/invoices/InvoicesScreen';
 
 export type BottomTabParamList = {
   Home: undefined;
-  Clients: undefined;
+  Projects: undefined;
   AIChatTab: undefined;
   Tasks: undefined;
   Invoices: undefined;
@@ -34,9 +34,9 @@ export const BottomTabNav: React.FC = () => {
         options={{ tabBarLabel: 'Home' }}
       />
       <Tab.Screen
-        name="Clients"
-        component={ClientsScreen}
-        options={{ tabBarLabel: 'Clients' }}
+        name="Projects"
+        component={ProjectsAndClientsScreen}
+        options={{ tabBarLabel: 'Projects' }}
       />
       <Tab.Screen
         name="AIChatTab"

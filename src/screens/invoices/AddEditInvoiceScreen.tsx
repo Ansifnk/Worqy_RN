@@ -23,11 +23,14 @@ import {
   Check,
   ChevronDown,
   User,
+  Briefcase,
 } from 'lucide-react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { colors } from '../../utils/colors';
 import { useInvoice } from '../../hooks/useInvoice';
 import { useClient } from '../../hooks/useClient';
+import { useProject } from '../../hooks/useProject';
+import { SelectDropdown } from '../../components/SelectDropdown';
 import {
   InvoiceStatus,
   InvoiceItem,
@@ -55,6 +58,7 @@ export const AddEditInvoiceScreen: React.FC = () => {
 
   const { invoices, addInvoice, updateInvoice } = useInvoice();
   const { clients } = useClient();
+  const { projects } = useProject();
 
   const existingInvoice = useMemo(
     () => (invoiceId ? invoices.find((inv) => inv.id === invoiceId) : null),
@@ -66,6 +70,8 @@ export const AddEditInvoiceScreen: React.FC = () => {
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientId, setClientId] = useState('');
+  const [projectId, setProjectId] = useState('');
+  const [projectName, setProjectName] = useState('');
   const [issueDate, setIssueDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [dueDate, setDueDate] = useState(dayjs().add(14, 'day').format('YYYY-MM-DD'));
   const [paymentTerms, setPaymentTerms] = useState('Net 14 days');
@@ -89,6 +95,8 @@ export const AddEditInvoiceScreen: React.FC = () => {
       setClientName(existingInvoice.clientName || '');
       setClientEmail(existingInvoice.clientEmail || '');
       setClientId(existingInvoice.clientId || '');
+      setProjectId(existingInvoice.projectId || '');
+      setProjectName(existingInvoice.projectName || '');
       setIssueDate(existingInvoice.issueDate || dayjs().format('YYYY-MM-DD'));
       setDueDate(existingInvoice.dueDate || dayjs().add(14, 'day').format('YYYY-MM-DD'));
       setPaymentTerms(existingInvoice.paymentTerms || 'Net 14 days');
@@ -109,6 +117,10 @@ export const AddEditInvoiceScreen: React.FC = () => {
         setClientId(route.params.prefillClientId);
         setClientName(route.params.prefillClientName || '');
         setClientEmail(route.params.prefillClientEmail || '');
+      }
+      if (route.params?.prefillProjectId) {
+        setProjectId(route.params.prefillProjectId);
+        setProjectName(route.params.prefillProject || '');
       }
     }
   }, [existingInvoice, invoices.length, route.params]);
@@ -221,6 +233,8 @@ export const AddEditInvoiceScreen: React.FC = () => {
       clientName: clientName.trim(),
       clientEmail: clientEmail.trim(),
       clientId: clientId || undefined,
+      projectId: projectId || undefined,
+      projectName: projectName || undefined,
       issueDate,
       dueDate,
       paymentTerms,
@@ -397,6 +411,34 @@ export const AddEditInvoiceScreen: React.FC = () => {
                 placeholderTextColor="#A8A29E"
                 keyboardType="email-address"
                 autoCapitalize="none"
+              />
+            </View>
+
+            {/* Optional Project Association */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Associated Project (Optional)</Text>
+              <SelectDropdown
+                placeholder="Select Project..."
+                options={[
+                  { label: 'None (No Project)', value: '', description: 'Not linked to any project' },
+                  ...projects.map((p) => ({
+                    label: p.name + (p.clientName ? ` (${p.clientName})` : ''),
+                    value: p.id,
+                    description: p.status,
+                  })),
+                ]}
+                value={projectId}
+                onChange={(val) => {
+                  setProjectId(val);
+                  const p = projects.find((item) => item.id === val);
+                  setProjectName(p?.name || '');
+                  if (p?.clientId && !clientId) {
+                    setClientId(p.clientId);
+                    setClientName(p.clientName || clientName);
+                  }
+                }}
+                leftIcon={<Briefcase size={18} color="#78716C" />}
+                sheetTitle="Select Project"
               />
             </View>
           </View>

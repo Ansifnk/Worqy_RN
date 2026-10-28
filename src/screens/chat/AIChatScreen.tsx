@@ -29,6 +29,8 @@ import { ClientItem, ClientFormData } from '../clients/types';
 import { TaskItem } from '../tasks/types';
 import ScheduleFormModal from '../schedule/components/ScheduleFormModal';
 import ClientFormModal from '../clients/components/ClientFormModal';
+import { ProjectItem, ProjectFormData } from '../projects/types';
+import { useProject } from '../../hooks/useProject';
 import { ChatHeader } from './components/ChatHeader';
 import { ChatBubble } from './components/ChatBubble';
 import { TypingIndicator } from './components/TypingIndicator';
@@ -53,6 +55,7 @@ export const AIChatScreen: React.FC = () => {
   const { deleteInvoice } = useInvoice();
   const { updateClient, deleteClient } = useClient();
   const { deleteTask, toggleTaskComplete } = useTask();
+  const { updateProject, deleteProject } = useProject();
 
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
@@ -433,6 +436,57 @@ export const AIChatScreen: React.FC = () => {
     [navigation],
   );
 
+  const handleEditProject = useCallback((project: ProjectItem) => {
+    navigation.navigate('AddEditProject', { projectId: project.id, isEdit: true });
+  }, [navigation]);
+
+  const handleDeleteProject = useCallback(
+    (projectId: string, projectName: string) => {
+      Alert.alert(
+        'Delete Project',
+        `Are you sure you want to delete "${projectName}"?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deleteProject(projectId);
+                queryClient.setQueryData<ChatMessage[]>(
+                  chatKeys.messages(user?.id),
+                  (old = []) =>
+                    old.map((m) => {
+                      if (m.project?.id === projectId) {
+                        return { ...m, isDeletedProject: true };
+                      }
+                      if (m.projects) {
+                        return {
+                          ...m,
+                          projects: m.projects.filter((p) => p.id !== projectId),
+                        };
+                      }
+                      return m;
+                    }),
+                );
+              } catch (err: any) {
+                Alert.alert('Error', err?.message || 'Failed to delete project');
+              }
+            },
+          },
+        ],
+      );
+    },
+    [deleteProject, queryClient, user?.id],
+  );
+
+  const handleOpenProject = useCallback(
+    (project: ProjectItem) => {
+      navigation.navigate('ProjectDetail', { projectId: project.id });
+    },
+    [navigation],
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: ChatMessage }) => {
       return (
@@ -451,6 +505,9 @@ export const AIChatScreen: React.FC = () => {
           onEditTask={handleEditTask}
           onDeleteTask={handleDeleteTask}
           onOpenTask={handleOpenTask}
+          onEditProject={handleEditProject}
+          onDeleteProject={handleDeleteProject}
+          onOpenProject={handleOpenProject}
         />
       );
     },
@@ -468,6 +525,9 @@ export const AIChatScreen: React.FC = () => {
       handleEditTask,
       handleDeleteTask,
       handleOpenTask,
+      handleEditProject,
+      handleDeleteProject,
+      handleOpenProject,
     ],
   );
 

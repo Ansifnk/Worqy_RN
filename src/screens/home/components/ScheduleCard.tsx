@@ -12,6 +12,8 @@ export interface ScheduleItem {
   endTime?: string;
   subtitle?: string;
   clientName?: string;
+  projectId?: string;
+  projectName?: string;
   notes?: string;
   type?: string;
 }
@@ -72,8 +74,9 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
 
   const displaySubtitle =
     item.subtitle ||
-    item.clientName ||
-    (item.type ? `${item.type} session` : 'Event');
+    (item.clientName && item.projectName
+      ? `${item.clientName} • ${item.projectName}`
+      : item.clientName || item.projectName || (item.type ? `${item.type} session` : 'Event'));
 
   return (
     <View style={styles.rowContainer}>

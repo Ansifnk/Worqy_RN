@@ -32,6 +32,7 @@ import {
 import { colors } from '../../utils/colors';
 import { useTask } from '../../hooks/useTask';
 import { useClient } from '../../hooks/useClient';
+import { useProject } from '../../hooks/useProject';
 import { TaskPriority, TaskStatus, ChecklistItem, TaskFormData } from './types';
 import TaskChecklistSection from './components/TaskChecklistSection';
 import { getPriorityColors } from './components/TaskItemCard';
@@ -57,6 +58,7 @@ export const TaskDetailScreen: React.FC = () => {
   } = useTask();
 
   const { clients } = useClient();
+  const { projects } = useProject();
 
   const existingTask = useMemo(() => tasks.find((t) => t.id === taskId), [tasks, taskId]);
 
@@ -65,6 +67,7 @@ export const TaskDetailScreen: React.FC = () => {
   const [clientName, setClientName] = useState('');
   const [clientId, setClientId] = useState('');
   const [project, setProject] = useState('');
+  const [projectId, setProjectId] = useState('');
   const [dueDate, setDueDate] = useState<string>(new Date().toISOString());
   const [priority, setPriority] = useState<TaskPriority>('High');
   const [status, setStatus] = useState<TaskStatus>('In Progress');
@@ -80,7 +83,8 @@ export const TaskDetailScreen: React.FC = () => {
       setTitle(existingTask.title || '');
       setClientName(existingTask.clientName || '');
       setClientId(existingTask.clientId || '');
-      setProject(existingTask.project || '');
+      setProject(existingTask.projectName || existingTask.project || '');
+      setProjectId(existingTask.projectId || '');
       setDueDate(existingTask.dueDate || new Date().toISOString());
       setPriority(existingTask.priority || 'Medium');
       setStatus(existingTask.status || 'To Do');
@@ -91,7 +95,8 @@ export const TaskDetailScreen: React.FC = () => {
       setTitle('');
       setClientName(route.params?.prefillClientName || '');
       setClientId(route.params?.prefillClientId || '');
-      setProject('');
+      setProject(route.params?.prefillProject || '');
+      setProjectId(route.params?.prefillProjectId || '');
       setDueDate(new Date().toISOString());
       setPriority('High');
       setStatus('In Progress');
@@ -238,21 +243,46 @@ export const TaskDetailScreen: React.FC = () => {
     Alert.alert('Select Client', 'Choose a client for this task', clientOptions as any);
   };
 
-  // Edit Project name
+  // Edit Project selection
   const handleProjectPress = () => {
-    Alert.prompt
-      ? Alert.prompt(
-        'Project Name',
-        'Enter the associated project name:',
-        (text) => {
-          const val = text.trim();
-          if (isNew) setProject(val);
-          else if (existingTask) updateTask(existingTask.id, { project: val });
+    const projectOptions = [
+      {
+        text: 'None (No Project)',
+        onPress: () => {
+          if (isNew) {
+            setProjectId('');
+            setProject('');
+          } else if (existingTask) {
+            updateTask(existingTask.id, { projectId: '', project: '', projectName: '' });
+          }
         },
-        'plain-text',
-        isNew ? project : existingTask?.project || ''
-      )
-      : null;
+      },
+      ...projects.map((p) => ({
+        text: p.name + (p.clientName ? ` (${p.clientName})` : ''),
+        onPress: () => {
+          if (isNew) {
+            setProjectId(p.id);
+            setProject(p.name);
+            if (p.clientId && !clientId) {
+              setClientId(p.clientId);
+              setClientName(p.clientName || '');
+            }
+          } else if (existingTask) {
+            updateTask(existingTask.id, {
+              projectId: p.id,
+              projectName: p.name,
+              project: p.name,
+              ...(p.clientId && !existingTask.clientId
+                ? { clientId: p.clientId, clientName: p.clientName }
+                : {}),
+            });
+          }
+        },
+      })),
+      { text: 'Cancel', style: 'cancel' },
+    ];
+
+    Alert.alert('Select Project', 'Choose an existing project for this task', projectOptions as any);
   };
 
   // Checklist handlers
@@ -301,6 +331,8 @@ export const TaskDetailScreen: React.FC = () => {
         clientName: clientName.trim() || 'Internal',
         clientId: clientId || undefined,
         project: project.trim() || undefined,
+        projectId: projectId || undefined,
+        projectName: project.trim() || undefined,
         dueDate,
         priority,
         status,
@@ -577,27 +609,22 @@ export const TaskDetailScreen: React.FC = () => {
             </TouchableOpacity>
 
             {/* Project Row */}
-            <View style={styles.attributeRow}>
+            <TouchableOpacity
+              style={styles.attributeRow}
+              onPress={handleProjectPress}
+              activeOpacity={0.7}
+            >
               <View style={styles.attrLeft}>
                 <FileText size={18} color="#6B7280" />
                 <Text style={styles.attrLabel}>Project</Text>
               </View>
-              {/* {isNew ? (
-                <TextInput
-                  style={styles.projectInput}
-                  placeholder="Add a project"
-                  placeholderTextColor="#A8A29E"
-                  value={project}
-                  onChangeText={setProject}
-                />
-              ) : (
-                <TouchableOpacity onPress={handleProjectPress} activeOpacity={0.7}>
-                  <Text style={styles.attrValue}>
-                    {existingTask?.project || 'Tap to set project'}
-                  </Text>
-                </TouchableOpacity>
-              )} */}
-            </View>
+              <View style={styles.attrRightRow}>
+                <Text style={styles.attrValue}>
+                  {(isNew ? project : existingTask?.projectName || existingTask?.project) || 'Select Project'}
+                </Text>
+                <ChevronDown size={14} color="#6B7280" />
+              </View>
+            </TouchableOpacity>
           </View>
 
           {/* Description Section */}
@@ -844,6 +871,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  attrRightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   attrLabel: {
     fontSize: 14,

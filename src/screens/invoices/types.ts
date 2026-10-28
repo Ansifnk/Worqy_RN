@@ -15,6 +15,8 @@ export interface InvoiceFormData {
   clientId?: string;
   clientName: string;
   clientEmail?: string;
+  projectId?: string;
+  projectName?: string;
   issueDate: string; // ISO string or 'YYYY-MM-DD'
   dueDate: string;   // ISO string or 'YYYY-MM-DD'
   paymentTerms: string; // e.g., 'Net 14 days', 'Due on receipt', etc.

@@ -19,6 +19,8 @@ export interface TaskFormData {
   clientName?: string;
   clientId?: string;
   project?: string;
+  projectId?: string;
+  projectName?: string;
   dueDate: string; // ISO string format
   priority: TaskPriority;
   status: TaskStatus;

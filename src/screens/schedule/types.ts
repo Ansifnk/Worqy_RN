@@ -8,6 +8,8 @@ export interface ScheduleFormData {
   type: ScheduleType;
   clientId?: string;
   clientName?: string;
+  projectId?: string;
+  projectName?: string;
   notes?: string;
 }
 

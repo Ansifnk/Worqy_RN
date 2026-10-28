@@ -7,10 +7,12 @@ import { ScheduleItem } from '../screens/schedule/types';
 import { Invoice } from '../screens/invoices/types';
 import { ClientItem } from '../screens/clients/types';
 import { TaskItem } from '../screens/tasks/types';
+import { ProjectItem } from '../screens/projects/types';
 import { clientKeys } from './useClient';
 import { taskKeys } from './useTask';
 import { scheduleKeys } from './useSchedule';
 import { invoiceKeys } from './useInvoice';
+import { projectKeys } from './useProject';
 
 export const chatKeys = {
   all: ['chat'] as const,
@@ -26,6 +28,8 @@ export interface ExtractedEntities {
   clients?: ClientItem[];
   task?: TaskItem;
   tasks?: TaskItem[];
+  project?: ProjectItem;
+  projects?: ProjectItem[];
 }
 
 export const extractEntitiesFromActions = (
@@ -83,6 +87,17 @@ export const extractEntitiesFromActions = (
         entities.tasks = result.tasks;
       }
     }
+
+    // Projects
+    if (tool.includes('create_project') || tool.includes('update_project')) {
+      if (result.project) entities.project = result.project;
+    }
+    if (tool.includes('get_projects')) {
+      if (Array.isArray(result.projects) && result.projects.length > 0) {
+        entities.project = result.projects[0];
+        entities.projects = result.projects;
+      }
+    }
   }
 
   return entities;
@@ -106,6 +121,8 @@ export const parseMessageMetadata = (msg: ChatMessage): ChatMessage => {
   let clients = msg.clients;
   let task = msg.task;
   let tasks = msg.tasks;
+  let project = msg.project;
+  let projects = msg.projects;
 
   if (match) {
     cleanContent = msg.content.replace(metadataRegex, '').trim();
@@ -122,6 +139,8 @@ export const parseMessageMetadata = (msg: ChatMessage): ChatMessage => {
         if (extracted.clients) clients = extracted.clients;
         if (extracted.task) task = extracted.task;
         if (extracted.tasks) tasks = extracted.tasks;
+        if (extracted.project) project = extracted.project;
+        if (extracted.projects) projects = extracted.projects;
       }
     } catch (e) {
       console.warn('Failed to parse chat message metadata:', e);
@@ -136,6 +155,8 @@ export const parseMessageMetadata = (msg: ChatMessage): ChatMessage => {
     if (!clients && extracted.clients) clients = extracted.clients;
     if (!task && extracted.task) task = extracted.task;
     if (!tasks && extracted.tasks) tasks = extracted.tasks;
+    if (!project && extracted.project) project = extracted.project;
+    if (!projects && extracted.projects) projects = extracted.projects;
   }
 
   return {
@@ -150,6 +171,8 @@ export const parseMessageMetadata = (msg: ChatMessage): ChatMessage => {
     clients,
     task,
     tasks,
+    project,
+    projects,
   };
 };
 
@@ -246,6 +269,8 @@ export const useAIChat = (): UseAIChatReturn => {
             clients: extracted.clients,
             task: extracted.task,
             tasks: extracted.tasks,
+            project: extracted.project,
+            projects: extracted.projects,
           });
           return [...filtered, data.userMessage, hydratedReply];
         },
@@ -258,6 +283,7 @@ export const useAIChat = (): UseAIChatReturn => {
         const hasClient = toolNames.some(
           (t) => t.includes('customer') || t.includes('client'),
         );
+        const hasProject = toolNames.some((t) => t.includes('project'));
         const hasTask = toolNames.some((t) => t.includes('task'));
         const hasSchedule = toolNames.some((t) => t.includes('schedule'));
         const hasInvoice = toolNames.some((t) => t.includes('invoice'));
@@ -265,6 +291,12 @@ export const useAIChat = (): UseAIChatReturn => {
         if (hasClient) {
           queryClient.invalidateQueries({
             queryKey: clientKeys.all,
+            refetchType: 'all',
+          });
+        }
+        if (hasProject) {
+          queryClient.invalidateQueries({
+            queryKey: projectKeys.all,
             refetchType: 'all',
           });
         }

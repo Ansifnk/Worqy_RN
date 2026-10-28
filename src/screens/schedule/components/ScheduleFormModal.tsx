@@ -27,6 +27,7 @@ import { SelectDropdown, SelectOption } from '../../../components/SelectDropdown
 import { Button } from '../../../components/Button';
 import { ScheduleFormData, ScheduleItem, ScheduleType } from '../types';
 import { useClient } from '../../../hooks/useClient';
+import { useProject } from '../../../hooks/useProject';
 import { formatDateToISOString } from './ScheduleDateStrip';
 
 interface ScheduleFormModalProps {
@@ -78,6 +79,7 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
 }) => {
   const isEditing = !!initialData;
   const { clients } = useClient();
+  const { projects } = useProject();
 
   // DatePicker modal visibility states
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -94,6 +96,8 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
       type: 'Meeting',
       clientId: '',
       clientName: '',
+      projectId: '',
+      projectName: '',
       notes: '',
     };
   }, [defaultDate, defaultStartTime]);
@@ -114,6 +118,7 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
   const selectedStartTime = watch('startTime');
   const selectedEndTime = watch('endTime');
   const selectedClientId = watch('clientId');
+  const selectedProjectId = watch('projectId');
 
   // Populate form on open or when initialData changes
   useEffect(() => {
@@ -129,6 +134,8 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
           type: initialData.type || 'Meeting',
           clientId: initialData.clientId || '',
           clientName: initialData.clientName || '',
+          projectId: initialData.projectId || '',
+          projectName: initialData.projectName || '',
           notes: initialData.notes || '',
         });
       } else {
@@ -140,6 +147,8 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
           type: 'Meeting',
           clientId: '',
           clientName: '',
+          projectId: '',
+          projectName: '',
           notes: '',
         });
       }
@@ -176,6 +185,41 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
     } else {
       const found = clients.find((c) => c.id === clientId);
       setValue('clientName', found?.companyName || found?.name || '', { shouldValidate: true });
+    }
+  };
+
+  // Build project options for dropdown
+  const projectOptions = useMemo<SelectOption[]>(() => {
+    const options: SelectOption[] = [
+      {
+        label: 'None / No Project',
+        value: '',
+        description: 'Not linked to any project',
+      },
+    ];
+
+    projects.forEach((p) => {
+      options.push({
+        label: p.name + (p.clientName ? ` (${p.clientName})` : ''),
+        value: p.id,
+        description: p.status,
+      });
+    });
+
+    return options;
+  }, [projects]);
+
+  const handleProjectChange = (val: string) => {
+    setValue('projectId', val, { shouldValidate: true });
+    if (!val) {
+      setValue('projectName', '', { shouldValidate: true });
+    } else {
+      const p = projects.find((item) => item.id === val);
+      setValue('projectName', p?.name || '', { shouldValidate: true });
+      if (p?.clientId && !selectedClientId) {
+        setValue('clientId', p.clientId, { shouldValidate: true });
+        setValue('clientName', p.clientName || '', { shouldValidate: true });
+      }
     }
   };
 
@@ -420,6 +464,19 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
             onChange={handleClientChange}
             leftIcon={<Users size={18} color={colors.textSecondary} />}
             sheetTitle="Select Associated Client"
+          />
+        </View>
+
+        {/* 5b. Project Dropdown */}
+        <View style={styles.section}>
+          <SelectDropdown
+            label="Associated Project (Optional)"
+            placeholder="Link to an existing project"
+            options={projectOptions}
+            value={selectedProjectId}
+            onChange={handleProjectChange}
+            leftIcon={<Briefcase size={18} color={colors.textSecondary} />}
+            sheetTitle="Select Associated Project"
           />
         </View>
 

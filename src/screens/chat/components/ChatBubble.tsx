@@ -8,10 +8,12 @@ import { ScheduleItem } from '../../schedule/types';
 import { Invoice } from '../../invoices/types';
 import { ClientItem } from '../../clients/types';
 import { TaskItem } from '../../tasks/types';
+import { ProjectItem } from '../../projects/types';
 import { ChatScheduleCard } from './ChatScheduleCard';
 import { ChatInvoiceCard } from './ChatInvoiceCard';
 import { ChatClientCard } from './ChatClientCard';
 import { ChatTaskCard } from './ChatTaskCard';
+import { ChatProjectCard } from './ChatProjectCard';
 import { ChatMarkdownText } from './ChatMarkdownText';
 
 interface ChatBubbleProps {
@@ -33,6 +35,10 @@ interface ChatBubbleProps {
   onEditTask?: (task: TaskItem) => void;
   onDeleteTask?: (taskId: string, taskTitle: string) => void;
   onOpenTask?: (task: TaskItem) => void;
+  // Projects
+  onEditProject?: (project: ProjectItem) => void;
+  onDeleteProject?: (projectId: string, projectName: string) => void;
+  onOpenProject?: (project: ProjectItem) => void;
 }
 
 export const ChatBubble: React.FC<ChatBubbleProps> = ({
@@ -50,6 +56,9 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   onEditTask,
   onDeleteTask,
   onOpenTask,
+  onEditProject,
+  onDeleteProject,
+  onOpenProject,
 }) => {
   const isUser = message.role === 'user';
   const timeFormatted = message.createdAt
@@ -102,6 +111,14 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
     tasksToRender.push(...message.tasks);
   } else if (message.task) {
     tasksToRender.push(message.task);
+  }
+
+  // Determine projects to display
+  const projectsToRender: ProjectItem[] = [];
+  if (message.projects && message.projects.length > 0) {
+    projectsToRender.push(...message.projects);
+  } else if (message.project) {
+    projectsToRender.push(message.project);
   }
 
   return (
@@ -161,6 +178,18 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
             onEdit={(t) => onEditTask?.(t)}
             onDelete={(id, title) => onDeleteTask?.(id, title)}
             onOpen={(t) => onOpenTask?.(t)}
+          />
+        ))}
+
+        {/* Project Cards if present */}
+        {projectsToRender.map((prj, idx) => (
+          <ChatProjectCard
+            key={prj.id || `prj-${idx}`}
+            project={prj}
+            isDeleted={message.isDeletedProject}
+            onEdit={(p) => onEditProject?.(p)}
+            onDelete={(id, name) => onDeleteProject?.(id, name)}
+            onOpen={(p) => onOpenProject?.(p)}
           />
         ))}
 

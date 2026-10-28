@@ -16,6 +16,7 @@ import {
   MoreHorizontal,
   Calendar,
   Clock,
+  Briefcase,
   FileText,
   Download,
   Send,
@@ -245,6 +246,16 @@ export const InvoiceDetailScreen: React.FC = () => {
             </View>
             <Text style={styles.metaValue}>{invoice.paymentTerms || 'Net 14 days'}</Text>
           </View>
+
+          {invoice.projectName ? (
+            <View style={styles.metaRow}>
+              <View style={styles.metaLabelGroup}>
+                <Briefcase size={18} color="#78716C" />
+                <Text style={styles.metaLabel}>Project</Text>
+              </View>
+              <Text style={styles.metaValue}>{invoice.projectName}</Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Financial Summary Box */}

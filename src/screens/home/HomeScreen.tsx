@@ -18,6 +18,7 @@ import { colors } from '../../utils/colors';
 import { useClient } from '../../hooks/useClient';
 import { useSchedule } from '../../hooks/useSchedule';
 import { useTask } from '../../hooks/useTask';
+import { useProject } from '../../hooks/useProject';
 import HomeHeader from './components/HomeHeader';
 import HeroProductivityCard from './components/HeroProductivityCard';
 import QuickActionsSection from './components/QuickActionsSection';
@@ -53,6 +54,11 @@ export const HomeScreen: React.FC = () => {
     refresh: refreshTasks,
   } = useTask();
 
+  const {
+    projects,
+    refresh: refreshProjects,
+  } = useProject();
+
   // Modal visibility states for Quick Actions / FAB
   const [isClientModalVisible, setIsClientModalVisible] = useState(false);
   const [isScheduleModalVisible, setIsScheduleModalVisible] = useState(false);
@@ -68,13 +74,14 @@ export const HomeScreen: React.FC = () => {
         refreshClients(),
         refreshSchedules(),
         refreshTasks(),
+        refreshProjects(),
       ]);
     } catch (e) {
       console.warn('Failed to refresh home data:', e);
     } finally {
       setRefreshing(false);
     }
-  }, [refreshClients, refreshSchedules, refreshTasks]);
+  }, [refreshClients, refreshSchedules, refreshTasks, refreshProjects]);
 
   // Today's schedules from Firebase
   const todaySchedules = useMemo(() => {
@@ -184,9 +191,14 @@ export const HomeScreen: React.FC = () => {
     );
   };
 
+  const handleAddProject = () => {
+    navigation.navigate('AddEditProject');
+  };
+
   // FAB Press handler
   const handleFabPress = () => {
     Alert.alert('Create New', 'Choose an action to create in your workspace:', [
+      { text: 'Add Project', onPress: handleAddProject },
       { text: 'Add Client', onPress: handleAddClient },
       { text: 'Add Task', onPress: handleAddTask },
       { text: 'Add Invoice', onPress: handleAddInvoice },

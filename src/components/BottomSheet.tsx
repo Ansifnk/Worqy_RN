@@ -140,8 +140,9 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     >
       <StatusBar barStyle="light-content" />
 
-      {/* Dimmed backdrop */}
+      {/* Dimmed visual backdrop */}
       <Animated.View
+        pointerEvents="none"
         style={[
           styles.backdrop,
           {
@@ -151,21 +152,21 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             }),
           },
         ]}
+      />
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.keyboardAvoid}
       >
+        {/* Dismissable backdrop area strictly above the sheet container */}
         <TouchableOpacity
-          style={StyleSheet.absoluteFill}
+          style={styles.backdropDismissArea}
           activeOpacity={1}
           onPress={handleClose}
           accessibilityRole="button"
           accessibilityLabel="Dismiss sheet"
         />
-      </Animated.View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardAvoid}
-        pointerEvents="box-none"
-      >
         <Animated.View
           style={[
             styles.sheetContainer,
@@ -222,6 +223,10 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     backgroundColor: '#0F172A',
     zIndex: 1,
+  },
+  backdropDismissArea: {
+    flex: 1,
+    width: '100%',
   },
   keyboardAvoid: {
     flex: 1,

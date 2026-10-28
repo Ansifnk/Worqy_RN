@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Home, Users, Calendar, FileText, CheckSquare, Sparkles } from 'lucide-react-native';
+import { Home, Users, Calendar, FileText, CheckSquare, Sparkles, FolderKanban } from 'lucide-react-native';
 import { colors } from '../../utils/colors';
 
 interface TabIconProps {
@@ -24,6 +24,8 @@ const TabIcon: React.FC<TabIconProps> = ({ name, focused, color, size = 22 }) =>
   switch (name) {
     case 'Home':
       return <Home size={size} color={color} strokeWidth={strokeWidth} fill={focused ? color : 'none'} />;
+    case 'Projects':
+      return <FolderKanban size={size} color={color} strokeWidth={strokeWidth} />;
     case 'Clients':
     case 'Explore':
       return <Users size={size} color={color} strokeWidth={strokeWidth} fill={focused ? color : 'none'} />;

@@ -37,7 +37,7 @@ export const InvoiceItemCard: React.FC<InvoiceItemCardProps> = ({
               {item.invoiceNumber}
             </Text>
             <Text style={styles.clientName} numberOfLines={1}>
-              {item.clientName}
+              {item.projectName ? `${item.clientName} • ${item.projectName}` : item.clientName}
             </Text>
           </View>
 

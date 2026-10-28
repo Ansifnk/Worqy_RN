@@ -15,6 +15,8 @@ import TaskDetailScreen from '../screens/tasks/TaskDetailScreen';
 import InvoiceDetailScreen from '../screens/invoices/InvoiceDetailScreen';
 import AddEditInvoiceScreen from '../screens/invoices/AddEditInvoiceScreen';
 import ClientDetailScreen from '../screens/clients/ClientDetailScreen';
+import { ProjectDetailScreen } from '../screens/projects/ProjectDetailScreen';
+import { AddEditProjectScreen } from '../screens/projects/AddEditProjectScreen';
 import ScheduleScreen from '../screens/schedule/ScheduleScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import { useAppContext } from '../context/AppContext';
@@ -30,6 +32,8 @@ export type RootStackParamList = {
   InvoiceDetail: { invoiceId: string } | undefined;
   AddEditInvoice: { invoiceId?: string; isEdit?: boolean } | undefined;
   ClientDetail: { clientId: string };
+  ProjectDetail: { projectId: string };
+  AddEditProject: { projectId?: string; isEdit?: boolean; initialData?: any } | undefined;
   Schedule: { date?: string; scheduleId?: string } | undefined;
   Profile: undefined;
 };
@@ -95,6 +99,8 @@ export const AppNav: React.FC = () => {
             <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} />
             <Stack.Screen name="AddEditInvoice" component={AddEditInvoiceScreen} />
             <Stack.Screen name="ClientDetail" component={ClientDetailScreen} />
+            <Stack.Screen name="ProjectDetail" component={ProjectDetailScreen} />
+            <Stack.Screen name="AddEditProject" component={AddEditProjectScreen} />
             <Stack.Screen name="Schedule" component={ScheduleScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
           </>

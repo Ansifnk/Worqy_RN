@@ -67,7 +67,10 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
   const isDone = item.status === 'Done';
   const priorityTheme = getPriorityColors(item.priority);
   const formattedDate = formatDueDate(item.dueDate);
-  const subtitle = item.clientName || item.project || 'General';
+  const projectName = item.projectName || item.project;
+  const subtitle = item.clientName && projectName
+    ? `${item.clientName} • ${projectName}`
+    : item.clientName || projectName || 'General';
 
   return (
     <View style={styles.card}>
