@@ -262,7 +262,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 label="Company Name"
-                placeholder="e.g. Acme Corp LLC"
+                placeholder=""
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}

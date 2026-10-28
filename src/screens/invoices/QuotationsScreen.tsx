@@ -42,44 +42,6 @@ export interface QuotationItem {
   notes?: string;
 }
 
-const INITIAL_QUOTES: QuotationItem[] = [
-  {
-    id: 'q1',
-    quotationNumber: 'QTN-2026-001',
-    clientName: 'Acme Corporation',
-    projectName: 'Mobile App Redesign',
-    amount: 145000,
-    currency: '₹',
-    status: 'Sent',
-    issueDate: '2026-10-24',
-    validUntil: '2026-11-24',
-    notes: 'Includes Figma mockups and full React Native front-end architecture.',
-  },
-  {
-    id: 'q2',
-    quotationNumber: 'QTN-2026-002',
-    clientName: 'Starlight Media',
-    projectName: 'Brand Identity & Web Portal',
-    amount: 85000,
-    currency: '₹',
-    status: 'Accepted',
-    issueDate: '2026-10-18',
-    validUntil: '2026-11-18',
-    notes: 'Client agreed to milestone 1 terms.',
-  },
-  {
-    id: 'q3',
-    quotationNumber: 'QTN-2026-003',
-    clientName: 'Fintech Spark',
-    projectName: 'Backend API Integration',
-    amount: 220000,
-    currency: '₹',
-    status: 'Draft',
-    issueDate: '2026-10-28',
-    validUntil: '2026-11-28',
-    notes: 'Draft estimate awaiting final scope alignment.',
-  },
-];
 
 interface QuotationsScreenProps {
   embedded?: boolean;
@@ -89,7 +51,7 @@ export const QuotationsScreen: React.FC<QuotationsScreenProps> = ({ embedded = f
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
 
-  const [quotes, setQuotes] = useState<QuotationItem[]>(INITIAL_QUOTES);
+  const [quotes, setQuotes] = useState<QuotationItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<QuoteStatus>('All');
   const [refreshing, setRefreshing] = useState(false);
@@ -130,31 +92,31 @@ export const QuotationsScreen: React.FC<QuotationsScreenProps> = ({ embedded = f
   const handleAddQuotation = () => {
     Alert.prompt
       ? Alert.prompt(
-          'New Quotation',
-          'Enter client name for this quote:',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Create',
-              onPress: (clientName?: string) => {
-                if (!clientName?.trim()) return;
-                const newQ: QuotationItem = {
-                  id: String(Date.now()),
-                  quotationNumber: `QTN-2026-00${quotes.length + 1}`,
-                  clientName: clientName.trim(),
-                  projectName: 'New Project Proposal',
-                  amount: 50000,
-                  currency: '₹',
-                  status: 'Draft',
-                  issueDate: new Date().toISOString().split('T')[0],
-                  validUntil: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-                };
-                setQuotes((prev) => [newQ, ...prev]);
-              },
+        'New Quotation',
+        'Enter client name for this quote:',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Create',
+            onPress: (clientName?: string) => {
+              if (!clientName?.trim()) return;
+              const newQ: QuotationItem = {
+                id: String(Date.now()),
+                quotationNumber: `QTN-2026-00${quotes.length + 1}`,
+                clientName: clientName.trim(),
+                projectName: 'New Project Proposal',
+                amount: 50000,
+                currency: '₹',
+                status: 'Draft',
+                issueDate: new Date().toISOString().split('T')[0],
+                validUntil: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+              };
+              setQuotes((prev) => [newQ, ...prev]);
             },
-          ],
-          'plain-text'
-        )
+          },
+        ],
+        'plain-text'
+      )
       : Alert.alert('New Quotation', 'Create a new quotation from template or client profile.');
   };
 

@@ -19,7 +19,7 @@ import {
   Sparkles,
   FolderKanban,
   CalendarCheck,
-  Receipt,
+  Wallet,
 } from 'lucide-react-native';
 import { colors } from '../../utils/colors';
 
@@ -106,7 +106,7 @@ const TabIcon: React.FC<TabIconProps> = ({ name, focused, color, size = 22 }) =>
       return <CheckSquare size={size} color={color} strokeWidth={strokeWidth} />;
     case 'Finance':
     case 'Invoices':
-      return <Receipt size={size} color={color} strokeWidth={strokeWidth} />;
+      return <Wallet size={size} color={color} strokeWidth={strokeWidth} />;
     case 'Pages':
     case 'Profile':
       return <FileText size={size} color={color} strokeWidth={strokeWidth} />;
