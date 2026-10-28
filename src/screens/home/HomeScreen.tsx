@@ -195,18 +195,6 @@ export const HomeScreen: React.FC = () => {
     navigation.navigate('AddEditProject');
   };
 
-  // FAB Press handler
-  const handleFabPress = () => {
-    Alert.alert('Create New', 'Choose an action to create in your workspace:', [
-      { text: 'Add Project', onPress: handleAddProject },
-      { text: 'Add Client', onPress: handleAddClient },
-      { text: 'Add Task', onPress: handleAddTask },
-      { text: 'Add Invoice', onPress: handleAddInvoice },
-      { text: 'Add Schedule', onPress: handleAddSchedule },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
-  };
-
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="dark-content" />
@@ -369,21 +357,6 @@ export const HomeScreen: React.FC = () => {
         </View>
       </ScrollView>
 
-      {/* Floating Action Button */}
-      <TouchableOpacity
-        style={[
-          styles.fab,
-          {
-            bottom: Math.max(insets.bottom + 16, 24),
-          },
-        ]}
-        onPress={handleFabPress}
-        activeOpacity={0.85}
-        accessibilityRole="button"
-        accessibilityLabel="Create new item"
-      >
-        <Plus size={24} color={colors.white} strokeWidth={2.6} />
-      </TouchableOpacity>
 
       {/* Add Client Modal */}
       <ClientFormModal
@@ -509,19 +482,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.primary,
   },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#134E4A', // Matches hero dark-teal tone
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
-    elevation: 8,
-  },
+
 });

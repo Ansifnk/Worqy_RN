@@ -1,15 +1,73 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import Svg, { Path } from 'react-native-svg';
 import { Home, Users, Calendar, FileText, CheckSquare, Sparkles, FolderKanban } from 'lucide-react-native';
 import { colors } from '../../utils/colors';
+
+const BULGE_HEIGHT = 25;
+const R_DOME = 36;
+const R_FILLET = 18;
+const Y_PEAK = 1.5;
+
+const getBulgePaths = (
+  width: number,
+  height: number,
+  centerRatio = 0.5,
+  bulgeHeight = BULGE_HEIGHT,
+  rDome = R_DOME,
+  rFillet = R_FILLET,
+  yPeak = Y_PEAK,
+) => {
+  const cX = width * centerRatio;
+  const yBar = bulgeHeight;
+  const yC = yPeak + rDome;
+  const yF = yBar - rFillet;
+  const dy = yF - yC;
+  const dist = rDome + rFillet;
+
+  if (Math.abs(dy) >= dist) {
+    return {
+      topBorderPath: `M 0 ${yBar} L ${width} ${yBar}`,
+      fillPath: `M 0 ${yBar} L ${width} ${yBar} L ${width} ${yBar + height} L 0 ${yBar + height} Z`,
+    };
+  }
+
+  const dx = Math.sqrt(dist * dist - dy * dy);
+  const xFLeft = cX - dx;
+  const xFRight = cX + dx;
+  const tLeftX = cX + (xFLeft - cX) * (rDome / dist);
+  const tLeftY = yC + (yF - yC) * (rDome / dist);
+  const tRightX = cX + (xFRight - cX) * (rDome / dist);
+  const tRightY = yC + (yF - yC) * (rDome / dist);
+
+  const topBorderPath = [
+    `M 0 ${yBar.toFixed(2)}`,
+    `L ${xFLeft.toFixed(2)} ${yBar.toFixed(2)}`,
+    `A ${rFillet} ${rFillet} 0 0 0 ${tLeftX.toFixed(2)} ${tLeftY.toFixed(2)}`,
+    `A ${rDome} ${rDome} 0 0 1 ${tRightX.toFixed(2)} ${tRightY.toFixed(2)}`,
+    `A ${rFillet} ${rFillet} 0 0 0 ${xFRight.toFixed(2)} ${yBar.toFixed(2)}`,
+    `L ${width.toFixed(2)} ${yBar.toFixed(2)}`,
+  ].join(' ');
+
+  const totalH = yBar + height;
+  const fillPath = [
+    topBorderPath,
+    `L ${width.toFixed(2)} ${totalH.toFixed(2)}`,
+    `L 0 ${totalH.toFixed(2)}`,
+    'Z',
+  ].join(' ');
+
+  return { topBorderPath, fillPath };
+};
 
 interface TabIconProps {
   name: string;
@@ -53,7 +111,24 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
   insets: propInsets,
 }) => {
   const safeAreaInsets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
   const bottomInset = Math.max(propInsets?.bottom ?? 0, safeAreaInsets.bottom);
+  const estimatedHeight = 56 + Math.max(bottomInset, Platform.OS === 'ios' ? 14 : 10);
+
+  const [barLayout, setBarLayout] = useState({
+    width: windowWidth,
+    height: estimatedHeight,
+  });
+
+  const aiTabIndex = state.routes.findIndex(
+    (r) => r.name === 'AIChat' || r.name === 'AIChatTab'
+  );
+  const centerRatio =
+    aiTabIndex >= 0 ? (aiTabIndex + 0.5) / state.routes.length : 0.5;
+
+  const { topBorderPath, fillPath } = useMemo(() => {
+    return getBulgePaths(barLayout.width, barLayout.height, centerRatio);
+  }, [barLayout.width, barLayout.height, centerRatio]);
 
   return (
     <View
@@ -66,7 +141,43 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
           ),
         },
       ]}
+      onLayout={(e) => {
+        const { width, height } = e.nativeEvent.layout;
+        if (width > 0 && height > 0) {
+          setBarLayout((prev) =>
+            prev.width === width && prev.height === height
+              ? prev
+              : { width, height }
+          );
+        }
+      }}
     >
+      {/* Seamless Bulged Bar Background */}
+      <View
+        style={[
+          styles.svgWrapper,
+          {
+            top: -BULGE_HEIGHT,
+            width: barLayout.width,
+            height: barLayout.height + BULGE_HEIGHT,
+          },
+        ]}
+        pointerEvents="none"
+      >
+        <Svg
+          width={barLayout.width}
+          height={barLayout.height + BULGE_HEIGHT}
+        >
+          <Path d={fillPath} fill={colors.surface} />
+          <Path
+            d={topBorderPath}
+            fill="none"
+            stroke={colors.border}
+            strokeWidth={1}
+          />
+        </Svg>
+      </View>
+
       <View style={styles.barContainer}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -86,8 +197,8 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
             options.tabBarLabel !== undefined
               ? options.tabBarLabel
               : options.title !== undefined
-              ? options.title
-              : route.name;
+                ? options.title
+                : route.name;
 
           const labelText = typeof label === 'string' ? label : route.name;
           const activeColor = colors.primary;
@@ -247,16 +358,31 @@ export default CustomTabBar;
 
 const styles = StyleSheet.create({
   barWrapper: {
-    backgroundColor: colors.surface,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
     paddingTop: 6,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 8,
     overflow: 'visible',
+    position: 'relative',
+    ...Platform.select({
+      ios: {
+        backgroundColor: 'transparent',
+      },
+      android: {
+        backgroundColor: colors.surface,
+        elevation: 8,
+      },
+    }),
+  },
+  svgWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+      },
+    }),
   },
   barContainer: {
     flexDirection: 'row',
@@ -295,13 +421,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 4,
-    borderColor: colors.surface,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 8,
   },
   bulgedButtonInnerFocused: {
     backgroundColor: colors.primaryDark,

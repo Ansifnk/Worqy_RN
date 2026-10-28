@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
-import { Bell, User } from 'lucide-react-native';
+import { Bell, Settings, User } from 'lucide-react-native';
 import { colors } from '../../../utils/colors';
 
 interface HomeHeaderProps {
@@ -56,7 +56,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
 
       {/* Top Right Actions: Notification + Profile Button */}
       <View style={styles.headerRightActions}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.iconButton}
           onPress={onNotificationPress}
           activeOpacity={0.7}
@@ -65,7 +65,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
         >
           <Bell size={21} color={colors.text} strokeWidth={2} />
           <View style={styles.notificationDot} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity
           style={styles.iconButton}
@@ -74,7 +74,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Profile"
         >
-          <User size={21} color={colors.text} strokeWidth={2} />
+          <Settings size={21} color={colors.text} strokeWidth={2} />
         </TouchableOpacity>
       </View>
     </View>
