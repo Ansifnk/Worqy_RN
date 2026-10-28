@@ -12,6 +12,7 @@ import { ChatScheduleCard } from './ChatScheduleCard';
 import { ChatInvoiceCard } from './ChatInvoiceCard';
 import { ChatClientCard } from './ChatClientCard';
 import { ChatTaskCard } from './ChatTaskCard';
+import { ChatMarkdownText } from './ChatMarkdownText';
 
 interface ChatBubbleProps {
   message: ChatMessage;
@@ -59,7 +60,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
     return (
       <View style={styles.userContainer}>
         <View style={styles.userBubble}>
-          <Text style={styles.userText}>{message.content}</Text>
+          <ChatMarkdownText content={message.content} style={styles.userText} isUser={true} />
           <View style={styles.userMeta}>
             <Text style={styles.userTime}>{timeFormatted}</Text>
             {message.isSending && (
@@ -111,7 +112,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
       <View style={styles.assistantBubble}>
         {Boolean(message.content) && (
-          <Text style={styles.assistantText}>{message.content}</Text>
+          <ChatMarkdownText content={message.content} style={styles.assistantText} />
         )}
 
         {/* Schedule Cards if present */}
