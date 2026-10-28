@@ -140,7 +140,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           {/* Reusable Auth Header */}
           <AuthHeader
             title="Welcome Back"
-            subtitle="Sign in to continue to Worqy"
+            subtitle="Sign in to continue to Wyzo"
             onBack={() => navigation.goBack()}
           />
 

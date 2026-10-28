@@ -1,5 +1,5 @@
 {
-  "name": "Worqy",
+  "name": "Wyzo",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -13,8 +13,6 @@
   "dependencies": {
     "@react-native-async-storage/async-storage": "^3.1.1",
     "@react-native-community/datetimepicker": "^9.2.2",
-    "@react-native-firebase/app": "^27.1.0",
-    "@react-native-firebase/firestore": "^27.1.0",
     "@react-native-menu/menu": "^2.0.0",
     "@react-native/new-app-screen": "0.88.0",
     "@react-navigation/bottom-tabs": "^7.21.0",

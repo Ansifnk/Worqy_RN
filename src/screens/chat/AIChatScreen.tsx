@@ -550,7 +550,7 @@ export const AIChatScreen: React.FC = () => {
         {loading && messages.length === 0 ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={styles.loadingText}>Connecting to Worqy AI...</Text>
+            <Text style={styles.loadingText}>Connecting to Wyzo AI...</Text>
           </View>
         ) : (
           <FlatList

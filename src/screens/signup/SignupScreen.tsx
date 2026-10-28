@@ -147,7 +147,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
         >
           {/* Reusable Auth Header */}
           <AuthHeader
-            title="Join Worqy"
+            title="Join Wyzo"
             subtitle="Create your workspace account"
             onBack={() => navigation.goBack()}
           />

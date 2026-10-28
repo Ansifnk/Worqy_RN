@@ -1,4 +1,4 @@
-package app.teckito.worqy
+package com.teckito.wyzo
 
 import android.app.Application
 import com.facebook.react.PackageList

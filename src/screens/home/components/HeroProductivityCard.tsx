@@ -64,7 +64,7 @@ export default HeroProductivityCard;
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: '#134E4A', // Deep Worqy teal tone for premium contrast
+    backgroundColor: '#134E4A', // Deep Wyzo teal tone for premium contrast
     borderRadius: 24,
     paddingHorizontal: 22,
     paddingTop: 24,

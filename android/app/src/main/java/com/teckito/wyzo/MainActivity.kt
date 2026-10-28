@@ -1,4 +1,4 @@
-package app.teckito.worqy
+package com.teckito.wyzo
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -14,7 +14,7 @@ class MainActivity : ReactActivity() {
    * Returns the name of the main component registered from JavaScript. This is used to schedule
    * rendering of the component.
    */
-  override fun getMainComponentName(): String = "Worqy"
+  override fun getMainComponentName(): String = "Wyzo"
 
 
 override fun onCreate(savedInstanceState: Bundle?) {

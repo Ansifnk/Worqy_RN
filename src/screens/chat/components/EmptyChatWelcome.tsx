@@ -29,9 +29,9 @@ const PROMPT_SUGGESTIONS = [
   },
   {
     icon: HelpCircle,
-    title: 'What can Worqy AI do?',
+    title: 'What can Wyzo AI do?',
     subtitle: 'Learn about features and capabilities',
-    prompt: 'What can you help me with in Worqy?',
+    prompt: 'What can you help me with in Wyzo?',
   },
 ];
 
@@ -48,7 +48,7 @@ export const EmptyChatWelcome: React.FC<EmptyChatWelcomeProps> = ({
 
         <Text style={styles.greetingTitle}>Hi {userName} 👋</Text>
         <Text style={styles.greetingSubtitle}>
-          I'm your Worqy AI Assistant. Ask me anything about your tasks, clients,
+          I'm your Wyzo AI Assistant. Ask me anything about your tasks, clients,
           invoices, and productivity.
         </Text>
       </View>

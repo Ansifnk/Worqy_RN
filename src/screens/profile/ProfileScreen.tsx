@@ -128,7 +128,7 @@ export const ProfileScreen: React.FC = () => {
             {user?.name || 'Ansif'}
           </Text>
           <Text style={styles.userEmail} numberOfLines={1}>
-            {user?.email || 'ansif@worqy.io'}
+            {user?.email || 'ansif@wyzo.io'}
           </Text>
         </View>
       </View>
@@ -230,7 +230,7 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#134E4A', // Worqy deep primaryDark tone
+    backgroundColor: '#134E4A', // Wyzo deep primaryDark tone
   },
   headerContainer: {
     backgroundColor: '#134E4A',

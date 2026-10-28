@@ -35,7 +35,7 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
     #endif
     
     reactNativeFactory?.startReactNative(
-      withModuleName: "Worqy",
+      withModuleName: "Wyzo",
       in: window,
       connectionOptions: connectionOptions
     )

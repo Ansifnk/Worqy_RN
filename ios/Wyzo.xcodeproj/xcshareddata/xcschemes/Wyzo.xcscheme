@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "Worqy.app"
-               BlueprintName = "Worqy"
-               ReferencedContainer = "container:Worqy.xcodeproj">
+               BuildableName = "Wyzo.app"
+               BlueprintName = "Wyzo"
+               ReferencedContainer = "container:Wyzo.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "WorqyTests.xctest"
-               BlueprintName = "WorqyTests"
-               ReferencedContainer = "container:Worqy.xcodeproj">
+               BuildableName = "WyzoTests.xctest"
+               BlueprintName = "WyzoTests"
+               ReferencedContainer = "container:Wyzo.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Worqy.app"
-            BlueprintName = "Worqy"
-            ReferencedContainer = "container:Worqy.xcodeproj">
+            BuildableName = "Wyzo.app"
+            BlueprintName = "Wyzo"
+            ReferencedContainer = "container:Wyzo.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Worqy.app"
-            BlueprintName = "Worqy"
-            ReferencedContainer = "container:Worqy.xcodeproj">
+            BuildableName = "Wyzo.app"
+            BlueprintName = "Wyzo"
+            ReferencedContainer = "container:Wyzo.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

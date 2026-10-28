@@ -5,9 +5,9 @@ import type { User } from '../context/AppContext';
 // Create a named storage instance as requested
 const storage = createAsyncStorage('appDB');
 
-const TOKEN_KEY = '@worqy_auth_token';
-const REFRESH_TOKEN_KEY = '@worqy_refresh_token';
-const USER_KEY = '@worqy_auth_user';
+const TOKEN_KEY = '@wyzo_auth_token';
+const REFRESH_TOKEN_KEY = '@wyzo_refresh_token';
+const USER_KEY = '@wyzo_auth_user';
 
 /**
  * Saves auth token, optional refresh token, and user profile into persistent storage

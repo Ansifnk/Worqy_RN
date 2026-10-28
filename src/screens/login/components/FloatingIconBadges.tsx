@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -5,
     right: 22,
-    backgroundColor: '#24865B', // Worqy success green
+    backgroundColor: '#24865B', // Wyzo success green
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -5,
     right: 22,
-    backgroundColor: '#70B7A8', // Worqy mint sage
+    backgroundColor: '#70B7A8', // Wyzo mint sage
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: '#176B67', // Worqy primary teal
+    backgroundColor: '#176B67', // Wyzo primary teal
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#176B67', // Worqy primary teal
+    backgroundColor: '#176B67', // Wyzo primary teal
     borderWidth: 2,
     borderColor: '#DCEFE7', // Soft seafoam green-touch white
     alignItems: 'center',

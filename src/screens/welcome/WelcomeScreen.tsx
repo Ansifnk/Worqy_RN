@@ -66,7 +66,7 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
         {/* Brand Header */}
         <View style={styles.header}>
           <Text style={styles.brandPrimary}>
-            Worqy <Text style={styles.brandAccent}>Spaces</Text>
+            Wyzo <Text style={styles.brandAccent}>Spaces</Text>
           </Text>
         </View>
 

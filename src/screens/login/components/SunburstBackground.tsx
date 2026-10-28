@@ -8,7 +8,7 @@ interface SunburstBackgroundProps {
   centerY: number;
 }
 
-// Ray colors adhering strictly to Worqy's brand palette:
+// Ray colors adhering strictly to Wyzo's brand palette:
 // Alternating off-white, delicate green-touch white, soft mint, seafoam, and emerald teal
 const RAY_COLORS = [
   '#70B7A8', // Soft Mint Sage

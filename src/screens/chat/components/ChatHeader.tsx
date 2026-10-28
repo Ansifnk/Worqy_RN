@@ -58,7 +58,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         </View>
 
         <View style={styles.infoWrapper}>
-          <Text style={styles.title}>Worqy AI</Text>
+          <Text style={styles.title}>Wyzo AI</Text>
           <View style={styles.statusRow}>
             <Text style={styles.statusText}>Smart Assistant • Active</Text>
           </View>
