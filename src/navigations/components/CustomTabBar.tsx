@@ -10,7 +10,17 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Svg, { Path } from 'react-native-svg';
-import { Home, Users, Calendar, FileText, CheckSquare, Sparkles, FolderKanban } from 'lucide-react-native';
+import {
+  Home,
+  Users,
+  Calendar,
+  FileText,
+  CheckSquare,
+  Sparkles,
+  FolderKanban,
+  CalendarCheck,
+  Receipt,
+} from 'lucide-react-native';
 import { colors } from '../../utils/colors';
 
 const BULGE_HEIGHT = 25;
@@ -82,17 +92,21 @@ const TabIcon: React.FC<TabIconProps> = ({ name, focused, color, size = 22 }) =>
   switch (name) {
     case 'Home':
       return <Home size={size} color={color} strokeWidth={strokeWidth} fill={focused ? color : 'none'} />;
+    case 'Work':
     case 'Projects':
       return <FolderKanban size={size} color={color} strokeWidth={strokeWidth} />;
     case 'Clients':
     case 'Explore':
       return <Users size={size} color={color} strokeWidth={strokeWidth} fill={focused ? color : 'none'} />;
+    case 'Planner':
     case 'Schedule':
     case 'Bookings':
-      return <Calendar size={size} color={color} strokeWidth={strokeWidth} />;
+      return <CalendarCheck size={size} color={color} strokeWidth={strokeWidth} />;
     case 'Tasks':
       return <CheckSquare size={size} color={color} strokeWidth={strokeWidth} />;
+    case 'Finance':
     case 'Invoices':
+      return <Receipt size={size} color={color} strokeWidth={strokeWidth} />;
     case 'Pages':
     case 'Profile':
       return <FileText size={size} color={color} strokeWidth={strokeWidth} />;

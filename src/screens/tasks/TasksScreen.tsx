@@ -21,7 +21,11 @@ import TaskFilterTabs, { FilterStatus } from './components/TaskFilterTabs';
 import TaskItemCard from './components/TaskItemCard';
 import { CheckCircle2 } from 'lucide-react-native';
 
-export const TasksScreen: React.FC = () => {
+interface TasksScreenProps {
+  embedded?: boolean;
+}
+
+export const TasksScreen: React.FC<TasksScreenProps> = ({ embedded = false }) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
 
@@ -156,7 +160,7 @@ export const TasksScreen: React.FC = () => {
   );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: embedded ? 0 : insets.top }]}>
       <StatusBar barStyle="dark-content" />
 
       {/* Header */}

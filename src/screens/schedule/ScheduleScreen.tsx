@@ -32,7 +32,11 @@ const DEFAULT_TIMELINE_HOURS = [
   '04:00 PM',
 ];
 
-export const ScheduleScreen: React.FC = () => {
+interface ScheduleScreenProps {
+  embedded?: boolean;
+}
+
+export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({ embedded = false }) => {
   const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const initialParamDate = route.params?.date;
@@ -155,7 +159,7 @@ export const ScheduleScreen: React.FC = () => {
   };
 
   return (
-    <View style={[styles.screen, { paddingTop: Math.max(insets.top, 12) }]}>
+    <View style={[styles.screen, { paddingTop: embedded ? 0 : Math.max(insets.top, 12) }]}>
       <StatusBar barStyle="dark-content" />
 
       {/* Screen Header */}

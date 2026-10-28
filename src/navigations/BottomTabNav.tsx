@@ -3,15 +3,15 @@ import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/b
 import CustomTabBar from './components/CustomTabBar';
 import HomeScreen from '../screens/home/HomeScreen';
 import { ProjectsAndClientsScreen } from '../screens/projects/ProjectsAndClientsScreen';
-import TasksScreen from '../screens/tasks/TasksScreen';
-import InvoicesScreen from '../screens/invoices/InvoicesScreen';
+import { TasksAndScheduleScreen } from '../screens/tasks/TasksAndScheduleScreen';
+import { FinanceScreen } from '../screens/invoices/FinanceScreen';
 
 export type BottomTabParamList = {
   Home: undefined;
-  Projects: undefined;
+  Work: { initialTab?: 'projects' | 'clients' } | undefined;
   AIChatTab: undefined;
-  Tasks: undefined;
-  Invoices: undefined;
+  Planner: { initialTab?: 'tasks' | 'schedule' } | undefined;
+  Finance: { initialTab?: 'invoices' | 'quotations' } | undefined;
 };
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -34,9 +34,9 @@ export const BottomTabNav: React.FC = () => {
         options={{ tabBarLabel: 'Home' }}
       />
       <Tab.Screen
-        name="Projects"
+        name="Work"
         component={ProjectsAndClientsScreen}
-        options={{ tabBarLabel: 'Projects' }}
+        options={{ tabBarLabel: 'Work' }}
       />
       <Tab.Screen
         name="AIChatTab"
@@ -55,14 +55,14 @@ export const BottomTabNav: React.FC = () => {
         })}
       />
       <Tab.Screen
-        name="Tasks"
-        component={TasksScreen}
-        options={{ tabBarLabel: 'Tasks' }}
+        name="Planner"
+        component={TasksAndScheduleScreen}
+        options={{ tabBarLabel: 'Planner' }}
       />
       <Tab.Screen
-        name="Invoices"
-        component={InvoicesScreen}
-        options={{ tabBarLabel: 'Invoices' }}
+        name="Finance"
+        component={FinanceScreen}
+        options={{ tabBarLabel: 'Finance' }}
       />
     </Tab.Navigator>
   );

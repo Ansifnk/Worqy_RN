@@ -134,19 +134,19 @@ export const HomeScreen: React.FC = () => {
 
   // Navigation to main tabs
   const handleViewAllSchedule = () => {
-    navigation.navigate('Schedule');
+    navigation.navigate('Planner', { initialTab: 'schedule' });
   };
 
   const handleViewAllClients = () => {
-    navigation.navigate('Clients');
+    navigation.navigate('Work', { initialTab: 'clients' });
   };
 
-  const handleSchedulePress = (item: ScheduleItem) => {
-    navigation.navigate('Schedule');
+  const handleSchedulePress = (_item: ScheduleItem) => {
+    navigation.navigate('Planner', { initialTab: 'schedule' });
   };
 
   const handleClientPress = (item: ClientItem) => {
-    navigation.navigate('Clients');
+    navigation.navigate('ClientDetail', { clientId: item.id });
   };
 
   const handleDeleteSchedule = (item: ScheduleItem) => {

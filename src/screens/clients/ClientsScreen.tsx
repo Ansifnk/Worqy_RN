@@ -20,7 +20,11 @@ import { ClientItem, ClientFormData } from './types';
 import { useClient } from '../../hooks/useClient';
 import { LoadingView } from '../../components/LoadingView';
 
-export const ClientsScreen: React.FC = () => {
+interface ClientsScreenProps {
+  embedded?: boolean;
+}
+
+export const ClientsScreen: React.FC<ClientsScreenProps> = ({ embedded = false }) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const { clients, loading, error, addClient, updateClient, deleteClient, refresh } = useClient();
@@ -143,7 +147,7 @@ export const ClientsScreen: React.FC = () => {
   );
 
   return (
-    <View style={[styles.screen, { paddingTop: Math.max(insets.top, 12) }]}>
+    <View style={[styles.screen, { paddingTop: embedded ? 0 : Math.max(insets.top, 12) }]}>
       <StatusBar barStyle="dark-content" />
 
       {/* Header with Title and Add Button */}

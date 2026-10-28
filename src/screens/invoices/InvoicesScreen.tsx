@@ -21,7 +21,11 @@ import InvoiceItemCard from './components/InvoiceItemCard';
 import { LoadingView } from '../../components/LoadingView';
 import { ActionMenuItem } from '../../components/ThreeDotsMenu';
 
-export const InvoicesScreen: React.FC = () => {
+interface InvoicesScreenProps {
+  embedded?: boolean;
+}
+
+export const InvoicesScreen: React.FC<InvoicesScreenProps> = ({ embedded = false }) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
 
@@ -195,7 +199,7 @@ export const InvoicesScreen: React.FC = () => {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: embedded ? 0 : insets.top }]}>
       <StatusBar barStyle="dark-content" />
 
       {/* Top Header */}
