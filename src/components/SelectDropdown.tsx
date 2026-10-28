@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 54,
-    borderRadius: 27,
+    borderRadius: 10,
     backgroundColor: '#EEF5F2',
     borderWidth: 1,
     borderColor: colors.border,

@@ -68,6 +68,7 @@ export const TextInput = forwardRef<React.ElementRef<typeof RNTextInput>, TextIn
     };
 
     const isSecure = isPassword ? !showPassword : (secureTextEntry ?? false);
+    const isMultiline = Boolean(restProps.multiline);
 
     return (
       <View style={[styles.container, containerStyle]}>
@@ -76,13 +77,23 @@ export const TextInput = forwardRef<React.ElementRef<typeof RNTextInput>, TextIn
         <View
           style={[
             styles.inputContainer,
+            isMultiline ? styles.inputContainerMultiline : null,
             isFocused ? styles.inputContainerFocused : null,
             error ? styles.inputContainerError : null,
             disabled ? styles.inputContainerDisabled : null,
             inputContainerStyle,
           ]}
         >
-          {leftIcon ? <View style={styles.leftIconContainer}>{leftIcon}</View> : null}
+          {leftIcon ? (
+            <View
+              style={[
+                styles.leftIconContainer,
+                isMultiline ? styles.leftIconContainerMultiline : null,
+              ]}
+            >
+              {leftIcon}
+            </View>
+          ) : null}
 
           <RNTextInput
             ref={ref}
@@ -93,6 +104,7 @@ export const TextInput = forwardRef<React.ElementRef<typeof RNTextInput>, TextIn
             onBlur={handleBlur}
             style={[
               styles.input,
+              isMultiline ? styles.inputMultiline : null,
               isPassword || rightIcon || rightAccessory ? styles.inputWithRightElement : null,
               inputStyle,
               style,
@@ -152,7 +164,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 54,
-    borderRadius: 27,
+    borderRadius: 10,
     backgroundColor: '#EEF5F2',
     borderWidth: 1,
     borderColor: colors.border,
@@ -168,10 +180,19 @@ const styles = StyleSheet.create({
   inputContainerDisabled: {
     opacity: 0.6,
   },
+  inputContainerMultiline: {
+    height: 100,
+    borderRadius: 10,
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+  },
   leftIconContainer: {
     marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  leftIconContainerMultiline: {
+    paddingTop: 2,
   },
   rightIconContainer: {
     marginLeft: 8,
@@ -192,6 +213,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     height: '100%',
     paddingVertical: 0,
+  },
+  inputMultiline: {
+    height: '100%',
+    textAlignVertical: 'top',
+    paddingTop: 0,
   },
   inputWithRightElement: {
     paddingRight: 6,

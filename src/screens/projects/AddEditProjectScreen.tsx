@@ -225,138 +225,129 @@ export const AddEditProjectScreen: React.FC = () => {
         >
           {/* Card 1: Project Scope */}
           <View style={styles.card}>
-            <Text style={styles.cardHeader}>Project Details</Text>
 
             {/* Project Name */}
-            <View style={styles.inputGroup}>
-              <Controller
-                control={control}
-                name="name"
-                rules={{ required: 'Project name is required' }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    label="Project Name *"
-                    placeholder="e.g. Website Redesign, Mobile App v2"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    error={errors.name?.message}
-                    leftIcon={<Briefcase size={18} color={colors.textSecondary} />}
-                  />
-                )}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="name"
+              rules={{ required: 'Project name is required' }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  label="Project Name *"
+                  placeholder="e.g. Website Redesign, Mobile App v2"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.name?.message}
+                  leftIcon={<Briefcase size={18} color={colors.textSecondary} />}
+                />
+              )}
+            />
 
             {/* Description */}
-            <View style={styles.inputGroup}>
-              <Controller
-                control={control}
-                name="description"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    label="Description & Scope"
-                    placeholder="Key deliverables, goals, milestones..."
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    multiline
-                    numberOfLines={4}
-                    leftIcon={<AlignLeft size={18} color={colors.textSecondary} />}
-                  />
-                )}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="description"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  label="Description & Scope"
+                  placeholder="Key deliverables, goals, milestones..."
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  multiline
+                  numberOfLines={4}
+                  leftIcon={<AlignLeft size={18} color={colors.textSecondary} />}
+                  containerStyle={styles.lastCardField}
+                />
+              )}
+            />
           </View>
 
           {/* Card 2: Association & Status */}
-          <View style={styles.card}>
-            <Text style={styles.cardHeader}>Association & Status</Text>
 
-            {/* Client Selector (Optional) */}
-            <View style={styles.inputGroup}>
-              <SelectDropdown
-                label="Associated Client (Optional)"
-                placeholder="Select Client..."
-                options={clientOptions}
-                value={selectedClientId || ''}
-                onChange={handleClientChange}
-                leftIcon={<Users size={18} color={colors.textSecondary} />}
-                sheetTitle="Select Project Client"
-              />
-            </View>
+          {/* Client Selector (Optional) */}
+          <SelectDropdown
+            label="Associated Client (Optional)"
+            placeholder="Select Client..."
+            options={clientOptions}
+            value={selectedClientId || ''}
+            onChange={handleClientChange}
+            leftIcon={<Users size={18} color={colors.textSecondary} />}
+            sheetTitle="Select Project Client"
+          />
 
-            {/* Status Selector */}
-            <View style={styles.inputGroup}>
-              <SelectDropdown
-                label="Project Status"
-                placeholder="Select Status..."
-                options={STATUS_OPTIONS}
-                value={selectedStatus}
-                onChange={(val) => setValue('status', val as ProjectStatus, { shouldValidate: true })}
-                leftIcon={<Activity size={18} color={colors.textSecondary} />}
-                sheetTitle="Select Project Status"
-              />
-            </View>
-          </View>
+          {/* Status Selector */}
+          <SelectDropdown
+            label="Project Status"
+            placeholder="Select Status..."
+            options={STATUS_OPTIONS}
+            value={selectedStatus}
+            onChange={(val) => setValue('status', val as ProjectStatus, { shouldValidate: true })}
+            leftIcon={<Activity size={18} color={colors.textSecondary} />}
+            sheetTitle="Select Project Status"
+            containerStyle={styles.lastCardField}
+          />
 
           {/* Card 3: Timeline & Budget */}
           <View style={styles.card}>
-            <Text style={styles.cardHeader}>Timeline & Budget</Text>
-
             {/* Date Row: Start Date & End Date */}
             <View style={styles.dateRow}>
               {/* Start Date */}
-              <View style={styles.dateCol}>
-                <Text style={styles.label}>Start Date</Text>
-                <TouchableOpacity
-                  style={styles.dateButton}
-                  onPress={() => setIsStartDatePickerOpen(true)}
-                  activeOpacity={0.7}
-                >
-                  <Calendar size={16} color={colors.primary} />
-                  <Text style={styles.dateText}>
-                    {selectedStartDate ? dayjs(selectedStartDate).format('DD MMM YYYY') : 'Set Start'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={styles.dateCol}
+                onPress={() => setIsStartDatePickerOpen(true)}
+                activeOpacity={0.7}
+              >
+                <View pointerEvents="none">
+                  <TextInput
+                    label="Start Date"
+                    placeholder="Set Start Date"
+                    value={selectedStartDate ? dayjs(selectedStartDate).format('DD MMM YYYY') : ''}
+                    leftIcon={<Calendar size={18} color={colors.textSecondary} />}
+                    editable={false}
+                  />
+                </View>
+              </TouchableOpacity>
 
               {/* End Date */}
-              <View style={styles.dateCol}>
-                <Text style={styles.label}>Target End Date</Text>
-                <TouchableOpacity
-                  style={styles.dateButton}
-                  onPress={() => setIsEndDatePickerOpen(true)}
-                  activeOpacity={0.7}
-                >
-                  <Calendar size={16} color={colors.primary} />
-                  <Text style={styles.dateText}>
-                    {selectedEndDate ? dayjs(selectedEndDate).format('DD MMM YYYY') : 'Set End'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={styles.dateCol}
+                onPress={() => setIsEndDatePickerOpen(true)}
+                activeOpacity={0.7}
+              >
+                <View pointerEvents="none">
+                  <TextInput
+                    label="Target End Date"
+                    placeholder="Set Target Date"
+                    value={selectedEndDate ? dayjs(selectedEndDate).format('DD MMM YYYY') : ''}
+                    leftIcon={<Calendar size={18} color={colors.textSecondary} />}
+                    editable={false}
+                  />
+                </View>
+              </TouchableOpacity>
             </View>
 
             {/* Budget in INR */}
-            <View style={styles.inputGroup}>
-              <Controller
-                control={control}
-                name="budget"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    label="Budget (₹ INR)"
-                    placeholder="e.g. 50000"
-                    keyboardType="numeric"
-                    value={value !== undefined && value !== null ? String(value) : ''}
-                    onChangeText={(val) => {
-                      const cleaned = val.replace(/[^0-9]/g, '');
-                      onChange(cleaned ? Number(cleaned) : undefined);
-                    }}
-                    onBlur={onBlur}
-                    leftIcon={<IndianRupee size={18} color={colors.textSecondary} />}
-                  />
-                )}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="budget"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  label="Budget (₹ INR)"
+                  placeholder="e.g. 50000"
+                  keyboardType="numeric"
+                  value={value !== undefined && value !== null ? String(value) : ''}
+                  onChangeText={(val) => {
+                    const cleaned = val.replace(/[^0-9]/g, '');
+                    onChange(cleaned ? Number(cleaned) : undefined);
+                  }}
+                  onBlur={onBlur}
+                  leftIcon={<IndianRupee size={18} color={colors.textSecondary} />}
+                  containerStyle={styles.lastCardField}
+                />
+              )}
+            />
           </View>
 
           {/* Action Buttons */}
@@ -462,17 +453,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
+
+
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 1,
+
   },
   cardHeader: {
     fontSize: 15,
@@ -480,38 +464,16 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     marginBottom: 14,
   },
-  inputGroup: {
-    marginBottom: 14,
-  },
   dateRow: {
+    marginTop: 16,
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 14,
   },
   dateCol: {
     flex: 1,
   },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 6,
-  },
-  dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  dateText: {
-    fontSize: 13,
-    color: colors.text,
-    fontWeight: '500',
+  lastCardField: {
+    marginBottom: 0,
   },
   bottomActions: {
     flexDirection: 'row',

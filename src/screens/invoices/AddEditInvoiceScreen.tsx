@@ -396,7 +396,6 @@ export const AddEditInvoiceScreen: React.FC = () => {
                 style={styles.textInput}
                 value={clientName}
                 onChangeText={setClientName}
-                placeholder="e.g. Bricado"
                 placeholderTextColor="#A8A29E"
               />
             </View>
@@ -407,7 +406,6 @@ export const AddEditInvoiceScreen: React.FC = () => {
                 style={styles.textInput}
                 value={clientEmail}
                 onChangeText={setClientEmail}
-                placeholder="hello@bricado.com"
                 placeholderTextColor="#A8A29E"
                 keyboardType="email-address"
                 autoCapitalize="none"

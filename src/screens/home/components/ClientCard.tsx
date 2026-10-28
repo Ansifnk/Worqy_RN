@@ -32,14 +32,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
 }) => {
   // Infer logo type or fallback
   const logoType =
-    item.badgeType ||
-    (item.name.toLowerCase().includes('bricado')
-      ? 'bricado'
-      : item.name.toLowerCase().includes('nkt')
-      ? 'nkt'
-      : item.name.toLowerCase().includes('britauria')
-      ? 'britauria'
-      : 'custom');
+    item.badgeType || 'custom';
 
   const subtitle =
     item.companyName ||
