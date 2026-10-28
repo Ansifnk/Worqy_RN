@@ -71,13 +71,14 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
 
       const res = await http.post<{
         accessToken: string;
+        refreshToken?: string;
         account: {
           userId: string;
           email: string;
           name: string;
           role?: string;
         };
-      }>('/auth/client/register', {
+      }>('/auth/user/register', {
         name: trimmedName,
         email: trimmedEmail,
         password,
@@ -85,6 +86,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
       });
 
       const accessToken = res?.data?.accessToken;
+      const refreshToken = res?.data?.refreshToken;
       const account = res?.data?.account;
 
       if (accessToken && account) {
@@ -94,7 +96,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
           email: account.email || trimmedEmail,
         };
 
-        await saveAuthSession(accessToken, userData);
+        await saveAuthSession(accessToken, userData, refreshToken);
         setUser(userData);
 
         if (navigationRef.isReady()) {

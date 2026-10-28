@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { http, setOnUnauthorized, getAuthToken } from '../utils/http';
-import { loadAuthSession, saveAuthSession, clearAuthSession } from '../utils/authStorage';
+import { http, setOnUnauthorized, setOnTokenRefreshed, getAuthToken } from '../utils/http';
+import { loadAuthSession, saveAuthSession, saveTokens, clearAuthSession } from '../utils/authStorage';
 import { queryClient } from '../utils/queryClient';
 
 export interface User {
@@ -32,9 +32,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   useEffect(() => {
     let isMounted = true;
 
+    // Listen for automatic token updates and persist them
+    setOnTokenRefreshed(async ({ accessToken, refreshToken }) => {
+      await saveTokens(accessToken, refreshToken);
+    });
+
     const restoreSession = async () => {
       try {
-        const { token, user: storedUser } = await loadAuthSession();
+        const { token, refreshToken, user: storedUser } = await loadAuthSession();
 
         if (token && storedUser) {
           if (isMounted) {
@@ -42,6 +47,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           }
 
           // Validate and refresh profile with backend server
+          // (if access token has expired, http automatically uses refreshToken)
           try {
             const res = await http.get('/auth/me');
             const account = res?.data?.account;
@@ -52,10 +58,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
                 email: account.email || storedUser.email,
               };
               setUser(freshUser);
-              await saveAuthSession(token, freshUser);
+              const currentToken = getAuthToken() || token;
+              await saveAuthSession(currentToken, freshUser, refreshToken);
             }
           } catch (apiError: any) {
-            // If token expired (401), clear invalid session
+            // If token expired and refresh failed (401), clear invalid session
             if (apiError?.status === 401 && isMounted) {
               await clearAuthSession();
               setUser(null);
@@ -80,7 +87,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     restoreSession();
 
-    // Hook auto-signout when HTTP requests receive 401 Unauthorized
+    // Hook auto-signout when HTTP requests receive 401 Unauthorized and refresh fails
     setOnUnauthorized(() => {
       clearAuthSession();
       queryClient.clear();

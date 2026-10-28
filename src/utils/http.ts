@@ -41,8 +41,13 @@ export const DEFAULT_BASE_URL = isDev ? 'http://172.20.10.4:8000/api' : 'http://
 
 let currentBaseUrl: string = DEFAULT_BASE_URL;
 let authToken: string | null = null;
+let refreshToken: string | null = null;
 let tokenGetter: (() => Promise<string | null> | string | null) | null = null;
 let unauthorizedHandler: (() => void) | null = null;
+let tokenRefreshedHandler:
+  | ((tokens: { accessToken: string; refreshToken?: string }) => Promise<void> | void)
+  | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 
 export const setBaseUrl = (url: string) => {
   currentBaseUrl = url.replace(/\/+$/, '');
@@ -58,6 +63,20 @@ export const setAuthToken = (token: string | null) => {
 
 export const getAuthToken = (): string | null => {
   return authToken;
+};
+
+export const setRefreshToken = (token: string | null) => {
+  refreshToken = token;
+};
+
+export const getRefreshToken = (): string | null => {
+  return refreshToken;
+};
+
+export const setOnTokenRefreshed = (
+  handler: (tokens: { accessToken: string; refreshToken?: string }) => Promise<void> | void,
+) => {
+  tokenRefreshedHandler = handler;
 };
 
 export const setTokenGetter = (
@@ -95,6 +114,68 @@ const buildUrl = (path: string, params?: Record<string, any>): string => {
   }
 
   return url;
+};
+
+const executeTokenRefresh = async (): Promise<string | null> => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      const refreshUrl = buildUrl('/auth/refresh-token');
+      const res = await fetch(refreshUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      const resData = await res.json().catch(() => null);
+
+      if (!res.ok || !resData?.data?.accessToken) {
+        throw new Error(resData?.msg || 'Failed to refresh token');
+      }
+
+      const newAccessToken: string = resData.data.accessToken;
+      const newRefreshToken: string | undefined = resData.data.refreshToken;
+
+      authToken = newAccessToken;
+      if (newRefreshToken) {
+        refreshToken = newRefreshToken;
+      }
+
+      if (tokenRefreshedHandler) {
+        try {
+          await tokenRefreshedHandler({
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+          });
+        } catch (e) {
+          console.warn('Error in tokenRefreshedHandler:', e);
+        }
+      }
+
+      return newAccessToken;
+    } catch (err) {
+      authToken = null;
+      refreshToken = null;
+      if (unauthorizedHandler) {
+        unauthorizedHandler();
+      }
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 };
 
 const handleRequest = async <T = any>(
@@ -190,6 +271,32 @@ const handleRequest = async <T = any>(
     }
 
     if (!response.ok) {
+      const isAuthRoute =
+        path.includes('/auth/login') ||
+        path.includes('/auth/refresh-token') ||
+        path.includes('/auth/register');
+
+      // Attempt automatic token refresh on 401 for non-auth requests
+      if (
+        response.status === 401 &&
+        !isAuthRoute &&
+        !(options as any)._retry &&
+        refreshToken
+      ) {
+        const newAccessToken = await executeTokenRefresh();
+        if (newAccessToken) {
+          const retryOptions: RequestOptions = {
+            ...options,
+            headers: {
+              ...(customHeaders as Record<string, string>),
+              Authorization: `Bearer ${newAccessToken}`,
+            },
+          };
+          (retryOptions as any)._retry = true;
+          return handleRequest<T>(path, retryOptions);
+        }
+      }
+
       if (response.status === 401 && unauthorizedHandler) {
         unauthorizedHandler();
       }
@@ -305,6 +412,9 @@ export const http = {
   getBaseUrl,
   setAuthToken,
   getAuthToken,
+  setRefreshToken,
+  getRefreshToken,
+  setOnTokenRefreshed,
   setTokenGetter,
   setOnUnauthorized,
   getErrorMessage,
