@@ -7,6 +7,14 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  subscriptionPlanId?: string | null;
+  subscriptionStatus?: string | null;
+  subscriptionStartsAt?: string | null;
+  subscriptionEndsAt?: string | null;
+  trialEndsAt?: string | null;
+  hasUsedTrial?: boolean;
+  subscriptionPlan?: any | null;
+  isSubscribed?: boolean;
 }
 
 export interface AppContextType {
@@ -56,6 +64,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
                 id: account.userId || account.id || storedUser.id,
                 name: account.name || storedUser.name,
                 email: account.email || storedUser.email,
+                subscriptionPlanId: account.subscriptionPlanId ?? storedUser.subscriptionPlanId ?? null,
+                subscriptionStatus: account.subscriptionStatus ?? storedUser.subscriptionStatus ?? null,
+                subscriptionStartsAt: account.subscriptionStartsAt ?? storedUser.subscriptionStartsAt ?? null,
+                subscriptionEndsAt: account.subscriptionEndsAt ?? storedUser.subscriptionEndsAt ?? null,
+                trialEndsAt: account.trialEndsAt ?? storedUser.trialEndsAt ?? null,
+                hasUsedTrial: account.hasUsedTrial ?? storedUser.hasUsedTrial ?? false,
+                subscriptionPlan: account.subscriptionPlan ?? storedUser.subscriptionPlan ?? null,
+                isSubscribed: Boolean(account.isSubscribed),
               };
               setUser(freshUser);
               const currentToken = getAuthToken() || token;
@@ -139,6 +155,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           id: account.userId || account.id || '',
           name: account.name || 'User',
           email: account.email || '',
+          subscriptionPlanId: account.subscriptionPlanId ?? null,
+          subscriptionStatus: account.subscriptionStatus ?? null,
+          subscriptionStartsAt: account.subscriptionStartsAt ?? null,
+          subscriptionEndsAt: account.subscriptionEndsAt ?? null,
+          trialEndsAt: account.trialEndsAt ?? null,
+          hasUsedTrial: account.hasUsedTrial ?? false,
+          subscriptionPlan: account.subscriptionPlan ?? null,
+          isSubscribed: Boolean(account.isSubscribed),
         };
         setUser(updatedUser);
         await saveAuthSession(token, updatedUser);

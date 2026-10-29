@@ -19,6 +19,8 @@ import { ProjectDetailScreen } from '../screens/projects/ProjectDetailScreen';
 import { AddEditProjectScreen } from '../screens/projects/AddEditProjectScreen';
 import ScheduleScreen from '../screens/schedule/ScheduleScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
+import SubscriptionPlansScreen from '../screens/subscription/SubscriptionPlansScreen';
+import SubscriptionDetailScreen from '../screens/subscription/SubscriptionDetailScreen';
 import { useAppContext } from '../context/AppContext';
 import { colors } from '../utils/colors';
 
@@ -36,6 +38,8 @@ export type RootStackParamList = {
   AddEditProject: { projectId?: string; isEdit?: boolean; initialData?: any } | undefined;
   Schedule: { date?: string; scheduleId?: string } | undefined;
   Profile: undefined;
+  SubscriptionPlans: { isMandatory?: boolean } | undefined;
+  SubscriptionDetail: undefined;
 };
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
@@ -54,10 +58,17 @@ export const AppNav: React.FC = () => {
 
     if (!loading && navigationRef.isReady()) {
       if (user) {
-        navigationRef.reset({
-          index: 0,
-          routes: [{ name: 'Main' }],
-        });
+        if (!user.isSubscribed) {
+          navigationRef.reset({
+            index: 0,
+            routes: [{ name: 'SubscriptionPlans', params: { isMandatory: true } }],
+          });
+        } else {
+          navigationRef.reset({
+            index: 0,
+            routes: [{ name: 'Main' }],
+          });
+        }
       } else {
         navigationRef.reset({
           index: 0,
@@ -75,11 +86,17 @@ export const AppNav: React.FC = () => {
     );
   }
 
+  const initialRoute = user
+    ? user.isSubscribed
+      ? 'Main'
+      : 'SubscriptionPlans'
+    : 'Welcome';
+
   return (
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
-        key={user ? 'authenticated' : 'unauthenticated'}
-        initialRouteName={user ? 'Main' : 'Welcome'}
+        key={user ? `auth-${user.id}-${user.isSubscribed ? 'sub' : 'unsub'}` : 'unauthenticated'}
+        initialRouteName={initialRoute}
         screenOptions={{
           headerShown: false,
           animation: 'slide_from_right',
@@ -88,6 +105,12 @@ export const AppNav: React.FC = () => {
         {user ? (
           <>
             <Stack.Screen name="Main" component={BottomTabNav} />
+            <Stack.Screen
+              name="SubscriptionPlans"
+              component={SubscriptionPlansScreen}
+              initialParams={{ isMandatory: !user.isSubscribed }}
+            />
+            <Stack.Screen name="SubscriptionDetail" component={SubscriptionDetailScreen} />
             <Stack.Screen
               name="AIChat"
               component={AIChatScreen}

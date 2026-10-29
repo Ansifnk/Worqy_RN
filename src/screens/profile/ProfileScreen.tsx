@@ -19,8 +19,10 @@ import {
   FileText,
   LogOut,
   Trash2,
+  Sparkles,
 } from 'lucide-react-native';
 import { useAppContext } from '../../context/AppContext';
+import { useSubscription } from '../../hooks/useSubscription';
 import { colors } from '../../utils/colors';
 import EditProfileModal from './components/EditProfileModal';
 import DeleteAccountModal from './components/DeleteAccountModal';
@@ -29,6 +31,7 @@ export const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const { user, signOutUser } = useAppContext();
+  const { subscription } = useSubscription();
 
   const [isEditProfileVisible, setIsEditProfileVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -144,6 +147,59 @@ export const ProfileScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
+          {/* Subscription Banner Card */}
+          <TouchableOpacity
+            style={styles.subscriptionBanner}
+            onPress={() => {
+              if (subscription?.isSubscribed) {
+                navigation.navigate('SubscriptionDetail');
+              } else {
+                navigation.navigate('SubscriptionPlans', { isMandatory: false });
+              }
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={styles.subBannerLeft}>
+              <View style={styles.subIconWrapper}>
+                <Sparkles size={20} color={colors.white} strokeWidth={2.4} />
+              </View>
+              <View style={styles.subTextWrapper}>
+                <View style={styles.subTitleRow}>
+                  <Text style={styles.subPlanTitle}>
+                    {subscription?.plan?.name || user?.subscriptionPlan?.name || 'No Active Plan'}
+                  </Text>
+                  <View
+                    style={[
+                      styles.subStatusBadge,
+                      {
+                        backgroundColor: subscription?.isSubscribed ? '#DCFCE7' : '#FEF3C7',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.subStatusBadgeText,
+                        {
+                          color: subscription?.isSubscribed ? '#15803D' : '#B45309',
+                        },
+                      ]}
+                    >
+                      {subscription?.subscriptionStatus || 'INACTIVE'}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.subPlanSubtitle}>
+                  {subscription?.isSubscribed
+                    ? subscription?.daysRemaining !== undefined && subscription.daysRemaining !== null
+                      ? `${subscription.daysRemaining} days remaining · Tap to view details`
+                      : 'Active subscription · Tap to manage'
+                    : 'Tap to choose a plan and unlock all features'}
+                </Text>
+              </View>
+            </View>
+            <ChevronRight size={20} color={colors.textSecondary} strokeWidth={2.2} />
+          </TouchableOpacity>
+
           {/* Main Actions Card (Edit Profile & Terms) */}
           <View style={styles.cardGroup}>
             {/* Edit Profile Item */}
@@ -433,5 +489,60 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#DC2626',
     letterSpacing: -0.2,
+  },
+  subscriptionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+  },
+  subBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+    marginRight: 8,
+  },
+  subIconWrapper: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  subTextWrapper: {
+    flex: 1,
+  },
+  subTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  subPlanTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+    letterSpacing: -0.3,
+  },
+  subStatusBadge: {
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+  },
+  subStatusBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  subPlanSubtitle: {
+    fontSize: 12.5,
+    color: colors.textSecondary,
+    marginTop: 3,
   },
 });
