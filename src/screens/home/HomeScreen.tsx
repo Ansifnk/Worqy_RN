@@ -83,12 +83,12 @@ export const HomeScreen: React.FC = () => {
     }
   }, [refreshClients, refreshSchedules, refreshTasks, refreshProjects]);
 
-  // Today's schedules from Firebase
+  // Today's schedules
   const todaySchedules = useMemo(() => {
     return schedules.filter((item) => dayjs(item.date).isSame(dayjs(), 'day'));
   }, [schedules]);
 
-  // Recent clients from Firebase (latest 3)
+  // Recent clients (latest 3)
   const recentClients = useMemo(() => {
     return clients.slice(0, 3);
   }, [clients]);
@@ -225,7 +225,7 @@ export const HomeScreen: React.FC = () => {
           onProfilePress={handleProfilePress}
         />
 
-        {/* Hero Productivity Card with live Firebase statistics */}
+        {/* Hero Productivity Card with live workspace statistics */}
         <HeroProductivityCard
           tasksCount={activeTasksCount}
           meetingsCount={todayMeetingsCount}

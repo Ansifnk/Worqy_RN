@@ -44,3 +44,18 @@ export interface UserSubscription {
     invoices: number;
   };
 }
+
+export interface RazorpayOrderPayload {
+  orderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+  plan: SubscriptionPlan;
+}
+
+export interface RazorpayVerificationPayload {
+  planId: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}

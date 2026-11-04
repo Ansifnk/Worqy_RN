@@ -212,7 +212,7 @@ export const TaskDetailScreen: React.FC = () => {
     ]);
   };
 
-  // Client picker from firebaseCollections.clients
+  // Client picker from clients list
   const handleClientPress = () => {
     const clientOptions = [
       {

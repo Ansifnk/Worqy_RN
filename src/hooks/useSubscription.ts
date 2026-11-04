@@ -3,12 +3,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../context/AppContext';
 import { http } from '../utils/http';
 import { SubscriptionPlan, UserSubscription } from '../screens/subscription/types';
+import { openRazorpayCheckout } from '../utils/razorpay';
 
 export const subscriptionKeys = {
   all: ['subscription'] as const,
   current: (userId?: string) => [...subscriptionKeys.all, 'current', userId] as const,
   plans: () => [...subscriptionKeys.all, 'plans'] as const,
 };
+
+export interface SubscribeResult {
+  success: boolean;
+  subscription?: UserSubscription;
+  cancelled?: boolean;
+  message?: string;
+}
 
 export interface UseSubscriptionReturn {
   subscription: UserSubscription | null;
@@ -17,6 +25,7 @@ export interface UseSubscriptionReturn {
   plansLoading: boolean;
   error: string | null;
   subscribe: (planId: string) => Promise<UserSubscription>;
+  subscribeWithRazorpay: (plan: SubscriptionPlan) => Promise<SubscribeResult>;
   cancel: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -108,6 +117,81 @@ export const useSubscription = (): UseSubscriptionReturn => {
     [subscribeMutation]
   );
 
+  const subscribeWithRazorpay = useCallback(
+    async (plan: SubscriptionPlan): Promise<SubscribeResult> => {
+      const isTrial = plan.isTrial || (plan.price === 0 && (plan.trialDays ?? 0) > 0);
+
+      // Free trial or zero price plan -> direct activation without payment gateway
+      if (isTrial) {
+        const sub = await subscribe(plan.id);
+        return { success: true, subscription: sub };
+      }
+
+      // Step 1: Create Order on backend
+      const orderRes = await http.post('/subscription-plans/create-order', {
+        planId: plan.id,
+      });
+
+      if (!orderRes?.data || !orderRes.data.orderId) {
+        throw new Error(orderRes?.msg || 'Failed to initiate checkout order.');
+      }
+
+      const orderData = orderRes.data;
+      const keyId = orderData.keyId || orderData.key || orderData.razorpayKeyId;
+      if (!keyId) {
+        throw new Error('Payment gateway configuration is missing key ID.');
+      }
+
+      // Step 2: Open native Razorpay checkout
+      let paymentRes;
+      try {
+        paymentRes = await openRazorpayCheckout(
+          {
+            orderId: orderData.orderId,
+            amount: orderData.amount ?? Math.round(plan.price * 100),
+            currency: orderData.currency || 'INR',
+            keyId,
+          },
+          plan.name,
+          {
+            name: user?.name,
+            email: user?.email,
+            mobile: user?.mobile,
+          }
+        );
+      } catch (err: any) {
+        // User cancelled payment sheet or closed modal
+        if (err?.code === 0 || err?.description?.toLowerCase().includes('cancelled')) {
+          return { success: false, cancelled: true };
+        }
+        throw new Error(err?.description || err?.message || 'Payment cancelled or failed');
+      }
+
+      // Step 3: Verify payment signature on backend
+      const verifyRes = await http.post('/subscription-plans/verify-payment', {
+        planId: plan.id,
+        razorpay_order_id: paymentRes.razorpay_order_id,
+        razorpay_payment_id: paymentRes.razorpay_payment_id,
+        razorpay_signature: paymentRes.razorpay_signature,
+      });
+
+      const updatedSubscription = verifyRes?.data as UserSubscription;
+
+      // Update query cache and refresh current user profile
+      queryClient.setQueryData(subscriptionKeys.current(user?.id), updatedSubscription);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: subscriptionKeys.all }),
+        refreshUser(),
+      ]);
+      return {
+        success: true,
+        subscription: updatedSubscription,
+        message: verifyRes?.msg || 'Subscription activated successfully!',
+      };
+    },
+    [subscribe, user, queryClient, refreshUser]
+  );
+
   const cancel = useCallback(async (): Promise<void> => {
     await cancelMutation.mutateAsync();
   }, [cancelMutation]);
@@ -129,6 +213,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
     plansLoading,
     error: errorMessage,
     subscribe,
+    subscribeWithRazorpay,
     cancel,
     refresh,
   };

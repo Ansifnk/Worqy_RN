@@ -7,6 +7,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  mobile?: string | null;
   subscriptionPlanId?: string | null;
   subscriptionStatus?: string | null;
   subscriptionStartsAt?: string | null;

@@ -37,7 +37,7 @@ export const SubscriptionPlansScreen: React.FC = () => {
     plans,
     subscription,
     plansLoading,
-    subscribe,
+    subscribeWithRazorpay,
     refresh,
   } = useSubscription();
 
@@ -66,20 +66,28 @@ export const SubscriptionPlansScreen: React.FC = () => {
 
   const handleSelectPlan = async (plan: SubscriptionPlan) => {
     const isTrial = plan.isTrial || (plan.price === 0 && (plan.trialDays ?? 0) > 0);
+    const currencySymbol = plan.currency?.toUpperCase() === 'USD' ? '$' : '₹';
     const title = isTrial ? `Start ${plan.name} Trial?` : `Choose ${plan.name}?`;
     const message = isTrial
       ? `You will get instant access to ${plan.name} with free trial benefits.`
-      : `Select ${plan.name} for ${plan.currency} ${plan.price}${plan.billingCycle ? ` (${plan.billingCycle.toLowerCase()})` : ''}.`;
+      : `Proceed to Razorpay secure checkout for ${currencySymbol}${plan.price}${
+          plan.billingCycle ? ` (${plan.billingCycle.toLowerCase()})` : ''
+        }.`;
 
     Alert.alert(title, message, [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: isTrial ? 'Start Trial' : 'Confirm',
+        text: isTrial ? 'Start Trial' : 'Proceed to Pay',
         style: 'default',
         onPress: async () => {
           try {
             setSubmittingPlanId(plan.id);
-            await subscribe(plan.id);
+            const result = await subscribeWithRazorpay(plan);
+
+            // User cancelled or closed the Razorpay payment sheet
+            if (result.cancelled) {
+              return;
+            }
 
             Alert.alert(
               'Subscription Activated! 🎉',
@@ -101,7 +109,7 @@ export const SubscriptionPlansScreen: React.FC = () => {
               ]
             );
           } catch (err: any) {
-            Alert.alert('Subscription Failed', err?.message || 'Failed to activate plan.');
+            Alert.alert('Payment Failed', err?.message || 'Failed to complete transaction.');
           } finally {
             setSubmittingPlanId(null);
           }
@@ -241,12 +249,12 @@ export const SubscriptionPlansScreen: React.FC = () => {
 
         {/* Footer Payment & Security Assurance */}
         <View style={styles.footerSection}>
-          <Text style={styles.footerText}>Secure 256-bit SSL encrypted checkout</Text>
+          <Text style={styles.footerText}>Secure 256-bit SSL encrypted checkout powered by Razorpay</Text>
           <View style={styles.paymentMethodsRow}>
-            <Text style={styles.paymentBadge}>PayPal</Text>
-            <Text style={styles.paymentBadge}>afterpay</Text>
-            <Text style={styles.paymentBadge}>VISA</Text>
-            <Text style={styles.paymentBadge}>Mastercard</Text>
+            <Text style={styles.paymentBadge}>Razorpay</Text>
+            <Text style={styles.paymentBadge}>UPI</Text>
+            <Text style={styles.paymentBadge}>Cards</Text>
+            <Text style={styles.paymentBadge}>NetBanking</Text>
           </View>
         </View>
       </ScrollView>

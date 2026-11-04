@@ -12,17 +12,16 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EE2CA45674006654EF /* SceneDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		A810963FEAF6116706BEBEB8 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 2684F61E4D02F96CD283369A /* FirebaseCore */; };
-		D340A78035CDA5E4B5D257F5 /* Pods_Wyzo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B244E1AC2EF58FE59D791B6 /* Pods_Wyzo.framework */; };
+		EEEE1C11C1087004B2451C64 /* libPods-Wyzo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0563DF91664F7733F1F6BAB8 /* libPods-Wyzo.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0563DF91664F7733F1F6BAB8 /* libPods-Wyzo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Wyzo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* Wyzo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wyzo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Wyzo/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Wyzo/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = Wyzo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-Wyzo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Wyzo.debug.xcconfig"; path = "Target Support Files/Pods-Wyzo/Pods-Wyzo.debug.xcconfig"; sourceTree = "<group>"; };
-		4B244E1AC2EF58FE59D791B6 /* Pods_Wyzo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Wyzo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5709B34CF0A7D63546082F79 /* Pods-Wyzo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Wyzo.release.xcconfig"; path = "Target Support Files/Pods-Wyzo/Pods-Wyzo.release.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Wyzo/AppDelegate.swift; sourceTree = "<group>"; };
 		761780EE2CA45674006654EF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = Wyzo/SceneDelegate.swift; sourceTree = "<group>"; };
@@ -35,8 +34,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D340A78035CDA5E4B5D257F5 /* Pods_Wyzo.framework in Frameworks */,
-				A810963FEAF6116706BEBEB8 /* FirebaseCore in Frameworks */,
+				EEEE1C11C1087004B2451C64 /* libPods-Wyzo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,7 +58,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				4B244E1AC2EF58FE59D791B6 /* Pods_Wyzo.framework */,
+				0563DF91664F7733F1F6BAB8 /* libPods-Wyzo.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -117,17 +115,12 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
 				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
-				44936922E25B47D88D9D3D1E /* [RNFB] Embed Firebase SPM Frameworks */,
-				D3AB7C34AF23E04316EB8F48 /* [RNFB] Remove duplicate Firebase/Google SPM binary xcframework signature files */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = Wyzo;
-			packageProductDependencies = (
-				2684F61E4D02F96CD283369A /* FirebaseCore */,
-			);
 			productName = Wyzo;
 			productReference = 13B07F961A680F5B00A75B9A /* Wyzo.app */;
 			productType = "com.apple.product-type.application";
@@ -154,9 +147,6 @@
 				Base,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
-			packageReferences = (
-				ECB02FC8EBFEE4AD838F1A71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -204,39 +194,14 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Wyzo/Pods-Wyzo-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Wyzo/Pods-Wyzo-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Wyzo/Pods-Wyzo-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
-		};
-		44936922E25B47D88D9D3D1E /* [RNFB] Embed Firebase SPM Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${BUILT_PRODUCTS_DIR}/PackageFrameworks",
-			);
-			name = "[RNFB] Embed Firebase SPM Frameworks";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "set -euo pipefail\n\napp_frameworks_dir=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\nmkdir -p \"${app_frameworks_dir}\"\n\nembed_frameworks_from() {\n  local source_dir=\"$1\"\n  [ -d \"${source_dir}\" ] || return 0\n\n  find \"${source_dir}\" -maxdepth 1 -type d -name \"*.framework\" -print0 | while IFS= read -r -d '' framework; do\n    framework_name=\"$(basename \"${framework}\")\"\n    destination=\"${app_frameworks_dir}/${framework_name}\"\n\n    if [ -e \"${destination}\" ]; then\n      continue\n    fi\n\n    # Xcode's Archive action writes EVERY SKIP_INSTALL=YES product into\n    # ${OBJROOT}/UninstalledProducts/${PLATFORM_NAME} -- not just Swift\n    # Package products. With CocoaPods + `use_frameworks!` (required for\n    # SPM mode), that folder also contains every pod's .framework,\n    # including STATIC ones (Expo modules, the Pods_<target> umbrella,\n    # ...). Embedding a static framework into the app bundle makes App\n    # Store validation fail with \"Invalid bundle structure ... binary\n    # file is not permitted\". Only ever embed real dynamic libraries.\n    #\n    # Internal binary name matches the .framework folder name minus the\n    # extension for every CocoaPods/SPM-built framework (all this script\n    # handles).\n    binary_name=\"${framework_name%.framework}\"\n    # Deliberate tradeoff: match `file -b` prose for \"dynamically linked\"\n    # rather than inspecting Mach-O magic bytes. Locale-independent in\n    # practice on Apple's `file`, but still a CLI string match.\n    file_description=\"\"\n    if [ -f \"${framework}/${binary_name}\" ]; then\n      file_description=\"$(file -b \"${framework}/${binary_name}\")\"\n    fi\n    # Do not use `file ... | grep -q` here. Under this script's\n    # `set -o pipefail`, `grep -q` exits after the first matching line of\n    # a multi-line universal-binary description, `file` receives SIGPIPE,\n    # and the otherwise-successful pipeline becomes false.\n    if [[ \"${file_description}\" != *\"dynamically linked\"* ]]; then\n      echo \"Skipping ${framework_name}: binary missing or not dynamically linked\"\n      continue\n    fi\n\n    echo \"Embedding Firebase SPM framework ${framework_name} (from ${source_dir})\"\n    rsync -av --delete \\\n      --filter \"- Headers\" \\\n      --filter \"- PrivateHeaders\" \\\n      --filter \"- Modules\" \\\n      \"${framework}\" \\\n      \"${app_frameworks_dir}\"\n\n    if [ -n \"${EXPANDED_CODE_SIGN_IDENTITY:-}\" ] && [ \"${CODE_SIGNING_REQUIRED:-}\" != \"NO\" ] && [ \"${CODE_SIGNING_ALLOWED:-}\" != \"NO\" ]; then\n      /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" ${OTHER_CODE_SIGN_FLAGS:-} --preserve-metadata=identifier,entitlements \"${destination}\"\n    fi\n  done\n}\n\n# Regular (simulator/device) builds put every Swift Package product for\n# the whole scheme's dependency graph into one shared folder.\nembed_frameworks_from \"${BUILT_PRODUCTS_DIR}/PackageFrameworks\"\n\n# Xcode's Archive action (ONLY_ACTIVE_ARCH=NO, DEPLOYMENT_POSTPROCESSING=YES)\n# never populates PackageFrameworks. It stages build products under\n# ${OBJROOT}/UninstalledProducts/${PLATFORM_NAME} instead -- and that\n# folder is NOT SPM-only: Archive writes every SKIP_INSTALL=YES product\n# there, which under CocoaPods + use_frameworks! (required for SPM mode)\n# includes every pod .framework (dynamic Firebase SPM products and static\n# pods alike). Without this fallback, Archive embeds zero Firebase SPM\n# frameworks and the app crashes at launch (missing-library dyld). The\n# filter inside embed_frameworks_from keeps only dynamically linked\n# binaries so static CocoaPods frameworks are not copied into the app\n# bundle (App Store \"Invalid bundle structure\").\nembed_frameworks_from \"${OBJROOT}/UninstalledProducts/${PLATFORM_NAME}\"\n";
 		};
 		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -260,25 +225,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D3AB7C34AF23E04316EB8F48 /* [RNFB] Remove duplicate Firebase/Google SPM binary xcframework signature files */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "[RNFB] Remove duplicate Firebase/Google SPM binary xcframework signature files";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "rm -f \"${CONFIGURATION_BUILD_DIR}\"/GoogleAppMeasurement.xcframework-ios.signature\nrm -f \"${CONFIGURATION_BUILD_DIR}\"/GoogleAppMeasurementIdentitySupport.xcframework-ios.signature\nrm -f \"${CONFIGURATION_BUILD_DIR}\"/GoogleAdsOnDeviceConversion.xcframework-ios.signature\nrm -f \"${CONFIGURATION_BUILD_DIR}\"/FirebaseAnalytics.xcframework-ios.signature\nrm -f \"${CONFIGURATION_BUILD_DIR}\"/FirebaseFirestoreInternal.xcframework-ios.signature\nrm -f \"${CONFIGURATION_BUILD_DIR}\"/absl.xcframework-ios.signature\nrm -f \"${CONFIGURATION_BUILD_DIR}\"/grpc.xcframework-ios.signature\nrm -f \"${CONFIGURATION_BUILD_DIR}\"/grpcpp.xcframework-ios.signature\nrm -f \"${CONFIGURATION_BUILD_DIR}\"/openssl_grpc.xcframework-ios.signature\n";
-		};
 		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -287,13 +233,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Wyzo/Pods-Wyzo-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Wyzo/Pods-Wyzo-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -607,25 +549,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		ECB02FC8EBFEE4AD838F1A71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
-			requirement = {
-				kind = exactVersion;
-				version = 13.1.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		2684F61E4D02F96CD283369A /* FirebaseCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = ECB02FC8EBFEE4AD838F1A71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseCore;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }
