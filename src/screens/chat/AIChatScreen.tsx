@@ -110,9 +110,6 @@ export const AIChatScreen: React.FC = () => {
     }
   }, [inputText, isReplying, sendMessage]);
 
-  const handleSelectPrompt = useCallback((prompt: string) => {
-    setInputText(prompt);
-  }, []);
 
   // ---------------- SCHEDULE HANDLERS ----------------
   const handleEditSchedule = useCallback((sched: ScheduleItem) => {
@@ -565,7 +562,6 @@ export const AIChatScreen: React.FC = () => {
             ListEmptyComponent={
               <EmptyChatWelcome
                 userName={user?.name || 'there'}
-                onSelectPrompt={handleSelectPrompt}
               />
             }
             ListFooterComponent={isReplying ? <TypingIndicator /> : undefined}
