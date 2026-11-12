@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import dayjs from 'dayjs';
 import { colors } from '../../../utils/colors';
 
 interface HomeHeaderProps {
@@ -17,54 +18,17 @@ const getGreeting = (): string => {
 };
 
 export const HomeHeader: React.FC<HomeHeaderProps> = ({
-  userName = 'Hitesh',
+  userName = 'Ansif',
   avatarUrl,
   onMenuPress,
   onProfilePress,
 }) => {
   const greeting = getGreeting();
-  const initial = userName ? userName.trim().charAt(0).toUpperCase() : 'H';
+  const initial = userName ? userName.trim().charAt(0).toUpperCase() : 'A';
+  const todayFormatted = dayjs().format('dddd, MMM D');
 
   return (
     <View style={styles.container}>
-      {/* Top Action Row: 4-square Grid Launcher (Left) + Profile Avatar (Right) */}
-      <View style={styles.topRow}>
-        <TouchableOpacity
-          style={styles.gridButton}
-          onPress={onMenuPress}
-          activeOpacity={0.75}
-          accessibilityRole="button"
-          accessibilityLabel="Workspace Menu"
-        >
-          {/* Exact 2x2 rounded square dots matching the reference image */}
-          <View style={styles.gridIconContainer}>
-            <View style={styles.gridIconRow}>
-              <View style={styles.gridDot} />
-              <View style={styles.gridDot} />
-            </View>
-            <View style={styles.gridIconRow}>
-              <View style={styles.gridDot} />
-              <View style={styles.gridDot} />
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.avatarButton}
-          onPress={onProfilePress}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="User Profile"
-        >
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarInitial}>{initial}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
 
       {/* Greeting Title */}
       <View style={styles.greetingContainer}>
@@ -73,6 +37,23 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
           {userName} <Text style={styles.waveEmoji}>👋</Text>
         </Text>
       </View>
+      <TouchableOpacity
+        style={styles.avatarButton}
+        onPress={onProfilePress}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="User Profile"
+      >
+        {avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+        ) : (
+          <View style={styles.avatarPlaceholder}>
+            <Text style={styles.avatarInitial}>{initial}</Text>
+          </View>
+        )}
+        {/* Active status indicator dot */}
+        <View style={styles.activeStatusDot} />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -82,14 +63,10 @@ export default HomeHeader;
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
-    paddingTop: 4,
-    paddingBottom: 18,
-  },
-  topRow: {
+    paddingTop: 6,
+    paddingBottom: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
   },
   gridButton: {
     width: 44,
@@ -99,11 +76,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#ECEEF5',
-    shadowColor: '#000',
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
     elevation: 2,
   },
   gridIconContainer: {
@@ -117,51 +94,77 @@ const styles = StyleSheet.create({
     width: 6.8,
     height: 6.8,
     borderRadius: 2.2,
-    backgroundColor: '#18181B',
+    backgroundColor: '#0F172A',
+  },
+  datePill: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 5.5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  datePillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+    letterSpacing: -0.1,
   },
   avatarButton: {
-    shadowColor: '#000',
+    position: 'relative',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 3,
   },
   avatarImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     borderWidth: 2,
     borderColor: colors.white,
   },
   avatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F3F4F6',
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#E0F2FE',
     borderWidth: 2,
     borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarInitial: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#374151',
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#0369A1',
+  },
+  activeStatusDot: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 13,
+    height: 13,
+    borderRadius: 6.5,
+    backgroundColor: '#10B981',
+    borderWidth: 2,
+    borderColor: colors.white,
   },
   greetingContainer: {
-    gap: 3,
+    gap: 2,
   },
   greetingSub: {
-    fontSize: 16.5,
-    color: '#6B7280',
-    fontWeight: '400',
+    fontSize: 16,
+    color: '#64748B',
+    fontWeight: '500',
     letterSpacing: -0.2,
   },
   greetingTitle: {
-    fontSize: 28,
+    fontSize: 29,
     fontWeight: '800',
-    color: '#18181B',
-    letterSpacing: -0.5,
+    color: '#0F172A',
+    letterSpacing: -0.6,
   },
   waveEmoji: {
     fontSize: 26,
