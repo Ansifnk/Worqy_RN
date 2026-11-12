@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import dayjs from 'dayjs';
 import { colors } from '../../utils/colors';
 import { LoadingView } from '../../components/LoadingView';
@@ -23,6 +23,7 @@ import ScheduleTimelineItem, {
   ScheduleEmptyTimelineSlot,
 } from './components/ScheduleTimelineItem';
 import ScheduleFormModal from './components/ScheduleFormModal';
+import { GlobalQuickSwitcher } from '../../components/GlobalQuickSwitcher';
 
 const DEFAULT_TIMELINE_HOURS = [
   '09:00 AM',
@@ -38,6 +39,7 @@ interface ScheduleScreenProps {
 
 export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({ embedded = false }) => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const initialParamDate = route.params?.date;
 
@@ -163,7 +165,11 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({ embedded = false
       <StatusBar barStyle="dark-content" />
 
       {/* Screen Header */}
-      <ScheduleHeader onAddPress={handleAddPress} />
+      <ScheduleHeader
+        onAddPress={handleAddPress}
+        onBackPress={() => navigation.goBack()}
+        showBack={navigation.canGoBack()}
+      />
 
       {/* Horizontal Date Picker Strip */}
       <ScheduleDateStrip
@@ -191,7 +197,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({ embedded = false
         )}
         contentContainerStyle={[
           styles.listContent,
-          { paddingBottom: Math.max(insets.bottom + 80, 100) },
+          { paddingBottom: Math.max(insets.bottom + 24, 40) },
         ]}
         showsVerticalScrollIndicator={false}
         refreshing={refreshing}
@@ -228,6 +234,8 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({ embedded = false
         defaultDate={selectedDate}
         defaultStartTime={selectedSlotTime}
       />
+
+      <GlobalQuickSwitcher currentRoute="Schedule" />
     </View>
   );
 };

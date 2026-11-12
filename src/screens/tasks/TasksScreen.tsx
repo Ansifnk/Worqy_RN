@@ -20,6 +20,7 @@ import TaskSearchBar from './components/TaskSearchBar';
 import TaskFilterTabs, { FilterStatus } from './components/TaskFilterTabs';
 import TaskItemCard from './components/TaskItemCard';
 import { CheckCircle2 } from 'lucide-react-native';
+import { GlobalQuickSwitcher } from '../../components/GlobalQuickSwitcher';
 
 interface TasksScreenProps {
   embedded?: boolean;
@@ -160,11 +161,15 @@ export const TasksScreen: React.FC<TasksScreenProps> = ({ embedded = false }) =>
   );
 
   return (
-    <View style={[styles.container, { paddingTop: embedded ? 0 : insets.top }]}>
+    <View style={[styles.container, { paddingTop: embedded ? 0 : Math.max(insets.top, 12) }]}>
       <StatusBar barStyle="dark-content" />
 
       {/* Header */}
-      <TasksHeader onAddTask={handleAddTask} />
+      <TasksHeader
+        onAddTask={handleAddTask}
+        onBackPress={() => navigation.goBack()}
+        showBack={navigation.canGoBack()}
+      />
 
       {/* Search Bar */}
       <TaskSearchBar
@@ -236,6 +241,8 @@ export const TasksScreen: React.FC<TasksScreenProps> = ({ embedded = false }) =>
           }
         />
       )}
+
+      <GlobalQuickSwitcher currentRoute="Tasks" />
     </View>
   );
 };
@@ -246,7 +253,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   listContent: {
-    paddingBottom: 90,
+    paddingBottom: 40,
   },
   emptyListContent: {
     flexGrow: 1,

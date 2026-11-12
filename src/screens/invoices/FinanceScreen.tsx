@@ -22,6 +22,7 @@ import {
   FileSpreadsheet,
   FileQuestion,
   ArrowRight,
+  ArrowLeft,
 } from 'lucide-react-native';
 import { colors } from '../../utils/colors';
 import { useInvoice } from '../../hooks/useInvoice';
@@ -30,6 +31,7 @@ import InvoiceSearchBar from './components/InvoiceSearchBar';
 import InvoiceFilterTabs from './components/InvoiceFilterTabs';
 import InvoiceItemCard from './components/InvoiceItemCard';
 import { QuotationItem, QuoteStatus } from './QuotationsScreen';
+import { GlobalQuickSwitcher } from '../../components/GlobalQuickSwitcher';
 
 type FinanceSectionItem =
   | { type: 'controls'; id: string }
@@ -385,18 +387,31 @@ export const FinanceScreen: React.FC = () => {
         }
         contentContainerStyle={[
           styles.listContent,
-          { paddingBottom: insets.bottom + 90 },
+          { paddingBottom: Math.max(insets.bottom + 24, 40) },
         ]}
         /* 1. Finance Header & 2. Statistics Banner scroll up together */
         ListHeaderComponent={
           <View style={styles.headerAndBannerContainer}>
             {/* Finance Header */}
             <View style={styles.financeHeaderRow}>
-              <View>
-                <Text style={styles.screenTitle}>Finance</Text>
-                <Text style={styles.screenSubtitle}>
-                  {invoices.length} invoices • {quotes.length} quotations
-                </Text>
+              <View style={styles.headerTitleGroup}>
+                {navigation.canGoBack() && (
+                  <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => navigation.goBack()}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Go back"
+                  >
+                    <ArrowLeft size={20} color={colors.text} strokeWidth={2.4} />
+                  </TouchableOpacity>
+                )}
+                <View>
+                  <Text style={styles.screenTitle}>Finance</Text>
+                  <Text style={styles.screenSubtitle}>
+                    {invoices.length} invoices • {quotes.length} quotations
+                  </Text>
+                </View>
               </View>
 
               <TouchableOpacity
@@ -737,6 +752,8 @@ export const FinanceScreen: React.FC = () => {
           return null;
         }}
       />
+
+      <GlobalQuickSwitcher currentRoute="Finance" />
     </View>
   );
 };
@@ -749,7 +766,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
   },
   listContent: {
-    paddingBottom: 90,
+    paddingBottom: 40,
   },
   headerAndBannerContainer: {
     paddingHorizontal: 20,
@@ -762,6 +779,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 4,
     paddingBottom: 12,
+  },
+  headerTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   screenTitle: {
     fontSize: 28,

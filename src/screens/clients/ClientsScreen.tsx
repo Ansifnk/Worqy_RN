@@ -19,6 +19,7 @@ import ClientFormModal from './components/ClientFormModal';
 import { ClientItem, ClientFormData } from './types';
 import { useClient } from '../../hooks/useClient';
 import { LoadingView } from '../../components/LoadingView';
+import { GlobalQuickSwitcher } from '../../components/GlobalQuickSwitcher';
 
 interface ClientsScreenProps {
   embedded?: boolean;
@@ -151,7 +152,11 @@ export const ClientsScreen: React.FC<ClientsScreenProps> = ({ embedded = false }
       <StatusBar barStyle="dark-content" />
 
       {/* Header with Title and Add Button */}
-      <ClientsHeader onAddPress={handleAddClientPress} />
+      <ClientsHeader
+        onAddPress={handleAddClientPress}
+        onBackPress={() => navigation.goBack()}
+        showBack={navigation.canGoBack()}
+      />
 
       {/* Search Input Bar */}
       <ClientSearchBar
@@ -180,7 +185,7 @@ export const ClientsScreen: React.FC<ClientsScreenProps> = ({ embedded = false }
         )}
         contentContainerStyle={[
           styles.listContent,
-          { paddingBottom: Math.max(insets.bottom + 80, 100) },
+          { paddingBottom: Math.max(insets.bottom + 24, 40) },
         ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -215,6 +220,8 @@ export const ClientsScreen: React.FC<ClientsScreenProps> = ({ embedded = false }
         onSubmit={handleFormSubmit}
         initialData={editingClient}
       />
+
+      <GlobalQuickSwitcher currentRoute="Clients" />
     </View>
   );
 };

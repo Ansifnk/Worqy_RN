@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { Plus, FileQuestion } from 'lucide-react-native';
+import { Plus, FileQuestion, ArrowLeft } from 'lucide-react-native';
 import { colors } from '../../utils/colors';
 import { useInvoice } from '../../hooks/useInvoice';
 import { Invoice, InvoiceFilterStatus, InvoiceStatus } from './types';
@@ -20,6 +20,7 @@ import InvoiceFilterTabs from './components/InvoiceFilterTabs';
 import InvoiceItemCard from './components/InvoiceItemCard';
 import { LoadingView } from '../../components/LoadingView';
 import { ActionMenuItem } from '../../components/ThreeDotsMenu';
+import { GlobalQuickSwitcher } from '../../components/GlobalQuickSwitcher';
 
 interface InvoicesScreenProps {
   embedded?: boolean;
@@ -204,7 +205,21 @@ export const InvoicesScreen: React.FC<InvoicesScreenProps> = ({ embedded = false
 
       {/* Top Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Invoices</Text>
+        <View style={styles.titleGroup}>
+          {navigation.canGoBack() && (
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <ArrowLeft size={20} color={colors.text} strokeWidth={2.4} />
+            </TouchableOpacity>
+          )}
+          <Text style={styles.headerTitle}>Invoices</Text>
+        </View>
+
         <TouchableOpacity
           style={styles.addButton}
           onPress={handleAddInvoice}
@@ -261,6 +276,8 @@ export const InvoicesScreen: React.FC<InvoicesScreenProps> = ({ embedded = false
           </View>
         }
       />
+
+      <GlobalQuickSwitcher currentRoute="Invoices" />
     </View>
   );
 };
@@ -277,6 +294,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 8,
+  },
+  titleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 28,

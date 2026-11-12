@@ -2,11 +2,19 @@ import React, { useEffect, useRef } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import {
   NavigationContainer,
-  NavigatorScreenParams,
   createNavigationContainerRef,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import BottomTabNav, { BottomTabParamList } from './BottomTabNav';
+import HomeScreen from '../screens/home/HomeScreen';
+import { ProjectsScreen } from '../screens/projects/ProjectsScreen';
+import { ClientsScreen } from '../screens/clients/ClientsScreen';
+import { TasksScreen } from '../screens/tasks/TasksScreen';
+import { ScheduleScreen } from '../screens/schedule/ScheduleScreen';
+import { InvoicesScreen } from '../screens/invoices/InvoicesScreen';
+import { QuotationsScreen } from '../screens/invoices/QuotationsScreen';
+import { ProjectsAndClientsScreen } from '../screens/projects/ProjectsAndClientsScreen';
+import { TasksAndScheduleScreen } from '../screens/tasks/TasksAndScheduleScreen';
+import { FinanceScreen } from '../screens/invoices/FinanceScreen';
 import AIChatScreen from '../screens/chat/AIChatScreen';
 import LoginScreen from '../screens/login/LoginScreen';
 import SignupScreen from '../screens/signup/SignupScreen';
@@ -17,7 +25,6 @@ import AddEditInvoiceScreen from '../screens/invoices/AddEditInvoiceScreen';
 import ClientDetailScreen from '../screens/clients/ClientDetailScreen';
 import { ProjectDetailScreen } from '../screens/projects/ProjectDetailScreen';
 import { AddEditProjectScreen } from '../screens/projects/AddEditProjectScreen';
-import ScheduleScreen from '../screens/schedule/ScheduleScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import SubscriptionPlansScreen from '../screens/subscription/SubscriptionPlansScreen';
 import SubscriptionDetailScreen from '../screens/subscription/SubscriptionDetailScreen';
@@ -28,15 +35,24 @@ export type RootStackParamList = {
   Welcome: undefined;
   Login: undefined;
   Signup: undefined;
-  Main: NavigatorScreenParams<BottomTabParamList> | undefined;
+  Main: undefined;
+  Home: undefined;
+  Projects: undefined;
+  Clients: undefined;
+  Tasks: undefined;
+  Schedule: { date?: string; scheduleId?: string } | undefined;
+  Invoices: undefined;
+  Quotations: undefined;
+  Work: { initialTab?: 'projects' | 'clients' } | undefined;
+  Planner: { initialTab?: 'tasks' | 'schedule' } | undefined;
+  Finance: { initialTab?: 'invoices' | 'quotations' } | undefined;
   AIChat: undefined;
-  TaskDetail: { taskId?: string; isNew?: boolean } | undefined;
+  TaskDetail: { taskId?: string; isNew?: boolean; prefillProject?: string; prefillProjectId?: string } | undefined;
   InvoiceDetail: { invoiceId: string } | undefined;
-  AddEditInvoice: { invoiceId?: string; isEdit?: boolean } | undefined;
+  AddEditInvoice: { invoiceId?: string; isEdit?: boolean; prefillClientId?: string; prefillClientName?: string } | undefined;
   ClientDetail: { clientId: string };
   ProjectDetail: { projectId: string };
   AddEditProject: { projectId?: string; isEdit?: boolean; initialData?: any } | undefined;
-  Schedule: { date?: string; scheduleId?: string } | undefined;
   Profile: undefined;
   SubscriptionPlans: { isMandatory?: boolean } | undefined;
   SubscriptionDetail: undefined;
@@ -104,7 +120,17 @@ export const AppNav: React.FC = () => {
       >
         {user ? (
           <>
-            <Stack.Screen name="Main" component={BottomTabNav} />
+            <Stack.Screen name="Main" component={HomeScreen} />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Projects" component={ProjectsScreen} />
+            <Stack.Screen name="Clients" component={ClientsScreen} />
+            <Stack.Screen name="Tasks" component={TasksScreen} />
+            <Stack.Screen name="Schedule" component={ScheduleScreen} />
+            <Stack.Screen name="Invoices" component={InvoicesScreen} />
+            <Stack.Screen name="Quotations" component={QuotationsScreen} />
+            <Stack.Screen name="Work" component={ProjectsAndClientsScreen} />
+            <Stack.Screen name="Planner" component={TasksAndScheduleScreen} />
+            <Stack.Screen name="Finance" component={FinanceScreen} />
             <Stack.Screen
               name="SubscriptionPlans"
               component={SubscriptionPlansScreen}
@@ -124,7 +150,6 @@ export const AppNav: React.FC = () => {
             <Stack.Screen name="ClientDetail" component={ClientDetailScreen} />
             <Stack.Screen name="ProjectDetail" component={ProjectDetailScreen} />
             <Stack.Screen name="AddEditProject" component={AddEditProjectScreen} />
-            <Stack.Screen name="Schedule" component={ScheduleScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
           </>
         ) : (

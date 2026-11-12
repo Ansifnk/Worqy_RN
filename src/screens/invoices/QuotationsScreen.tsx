@@ -24,8 +24,10 @@ import {
   Calendar,
   Building2,
   FileQuestion,
+  ArrowLeft,
 } from 'lucide-react-native';
 import { colors } from '../../utils/colors';
+import { GlobalQuickSwitcher } from '../../components/GlobalQuickSwitcher';
 
 export type QuoteStatus = 'All' | 'Draft' | 'Sent' | 'Accepted' | 'Declined';
 
@@ -205,16 +207,29 @@ export const QuotationsScreen: React.FC<QuotationsScreenProps> = ({ embedded = f
 
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Quotations</Text>
-          <Text style={styles.headerSubtitle}>
-            {counts.all} estimates • ₹
-            {quotes
-              .filter((q) => q.status === 'Accepted' || q.status === 'Sent')
-              .reduce((sum, q) => sum + q.amount, 0)
-              .toLocaleString()}{' '}
-            pipeline
-          </Text>
+        <View style={styles.headerTitleGroup}>
+          {navigation.canGoBack() && (
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <ArrowLeft size={20} color={colors.text} strokeWidth={2.4} />
+            </TouchableOpacity>
+          )}
+          <View>
+            <Text style={styles.headerTitle}>Quotations</Text>
+            <Text style={styles.headerSubtitle}>
+              {counts.all} estimates • ₹
+              {quotes
+                .filter((q) => q.status === 'Accepted' || q.status === 'Sent')
+                .reduce((sum, q) => sum + q.amount, 0)
+                .toLocaleString()}{' '}
+              pipeline
+            </Text>
+          </View>
         </View>
 
         <TouchableOpacity
@@ -276,7 +291,7 @@ export const QuotationsScreen: React.FC<QuotationsScreenProps> = ({ embedded = f
       <FlatList
         data={filteredQuotes}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 90 }]}
+        contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom + 24, 40) }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -366,6 +381,8 @@ export const QuotationsScreen: React.FC<QuotationsScreenProps> = ({ embedded = f
           </View>
         }
       />
+
+      <GlobalQuickSwitcher currentRoute="Quotations" />
     </View>
   );
 };
@@ -384,6 +401,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
     paddingBottom: 12,
+  },
+  headerTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 26,

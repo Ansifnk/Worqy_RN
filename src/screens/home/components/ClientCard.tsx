@@ -123,8 +123,18 @@ const styles = StyleSheet.create({
   rowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    marginBottom: 6,
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#EFF1F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
   },
   clickableContent: {
     flex: 1,
@@ -137,7 +147,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   badgeWrapper: {
-    marginRight: 16,
+    marginRight: 14,
   },
   textContainer: {
     flex: 1,
@@ -149,9 +159,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   nameText: {
-    fontSize: 16,
+    fontSize: 15.5,
     fontWeight: '700',
-    color: colors.text,
+    color: colors.darkText,
     letterSpacing: -0.2,
     flexShrink: 1,
   },
