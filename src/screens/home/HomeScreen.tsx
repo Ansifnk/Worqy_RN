@@ -18,7 +18,7 @@ import { useTask } from '../../hooks/useTask';
 import { useProject } from '../../hooks/useProject';
 import { useInvoice } from '../../hooks/useInvoice';
 import HomeHeader from './components/HomeHeader';
-import HeroDailyPulse from './components/HeroDailyPulse';
+import TaskAnalyticsHero from './components/TaskAnalyticsHero';
 import QuickActionsStrip from './components/QuickActionsStrip';
 import HomeBentoGridModern from './components/HomeBentoGridModern';
 import ClientFormModal from '../clients/components/ClientFormModal';
@@ -98,49 +98,40 @@ export const HomeScreen: React.FC = () => {
     return activeTasks.filter((t) => t.priority === 'High');
   }, [activeTasks]);
 
-  // Top focus task (highest priority active task, or first active task)
-  const topFocusTask = useMemo(() => {
-    if (activeTasks.length === 0) return null;
-    if (highPriorityTasks.length > 0) return highPriorityTasks[0];
-    return activeTasks[0];
-  }, [activeTasks, highPriorityTasks]);
+  // Task Analytics calculations
+  const inProgressTasks = useMemo(() => {
+    return tasks.filter((t) => t.status === 'In Progress');
+  }, [tasks]);
 
-  const hasFocusTask = Boolean(topFocusTask);
-  const focusTaskTitle = topFocusTask?.title || 'UI/UX Portfolio Design';
-  const focusTaskProject = topFocusTask?.projectName || topFocusTask?.project;
-  const focusTaskPriority = topFocusTask?.priority || 'High';
+  const todoTasks = useMemo(() => {
+    return tasks.filter((t) => t.status === 'To Do' || (!t.status && t.status !== 'Done'));
+  }, [tasks]);
 
-  const focusTaskProgress = useMemo(() => {
-    if (!topFocusTask) return 0;
-    if (topFocusTask.checklist && topFocusTask.checklist.length > 0) {
-      const completed = topFocusTask.checklist.filter((c) => c.completed).length;
-      return Math.round((completed / topFocusTask.checklist.length) * 100);
-    }
-    if (tasks.length > 0) {
-      return Math.round((completedTasks.length / tasks.length) * 100);
-    }
-    return 75; // aesthetic fallback if active
-  }, [topFocusTask, tasks, completedTasks]);
+  const highPriorityTotal = useMemo(() => {
+    return tasks.filter((t) => t.priority === 'High').length;
+  }, [tasks]);
 
-  const focusTaskChecklistSummary = useMemo(() => {
-    if (!topFocusTask?.checklist || topFocusTask.checklist.length === 0) return undefined;
-    const completed = topFocusTask.checklist.filter((c) => c.completed).length;
-    return `${completed} of ${topFocusTask.checklist.length} subtasks done`;
-  }, [topFocusTask]);
+  const mediumPriorityTotal = useMemo(() => {
+    return tasks.filter((t) => t.priority === 'Medium').length;
+  }, [tasks]);
 
-  const focusTaskDueText = useMemo(() => {
-    if (!topFocusTask?.dueDate) return 'Due today';
-    const due = dayjs(topFocusTask.dueDate);
+  const lowPriorityTotal = useMemo(() => {
+    return tasks.filter((t) => t.priority === 'Low' || !t.priority).length;
+  }, [tasks]);
+
+  const overdueTasksCount = useMemo(() => {
+    const today = dayjs().startOf('day');
+    return tasks.filter(
+      (t) => t.status !== 'Done' && t.dueDate && dayjs(t.dueDate).isBefore(today)
+    ).length;
+  }, [tasks]);
+
+  const dueTodayTasksCount = useMemo(() => {
     const now = dayjs();
-    const diffHours = due.diff(now, 'hour');
-    if (diffHours > 0 && diffHours < 24) {
-      const diffMins = due.diff(now, 'minute') % 60;
-      return `Due in ${diffHours}h ${diffMins > 0 ? `${diffMins}m` : ''}`;
-    }
-    if (due.isSame(now, 'day')) return 'Due Today';
-    if (due.isBefore(now)) return 'Overdue';
-    return `Due ${due.format('MMM D')}`;
-  }, [topFocusTask]);
+    return tasks.filter(
+      (t) => t.status !== 'Done' && t.dueDate && dayjs(t.dueDate).isSame(now, 'day')
+    ).length;
+  }, [tasks]);
 
   // Clients calculations
   const activeClientsCount = useMemo(() => {
@@ -242,22 +233,18 @@ export const HomeScreen: React.FC = () => {
           onProfilePress={() => navigation.navigate('Profile')}
         />
 
-        {/* Hero Card: Executive Daily Pulse */}
-        <HeroDailyPulse
-          hasTask={hasFocusTask}
-          title={focusTaskTitle}
-          projectName={focusTaskProject}
-          priority={focusTaskPriority}
-          progressPercentage={focusTaskProgress}
-          dueText={focusTaskDueText}
-          checklistSummary={focusTaskChecklistSummary}
-          onPress={() => {
-            if (topFocusTask) {
-              navigation.navigate('TaskDetail', { taskId: topFocusTask.id });
-            } else {
-              navigation.navigate('Tasks');
-            }
-          }}
+        {/* Task Analytics & Productivity Hero Card */}
+        <TaskAnalyticsHero
+          totalTasks={tasks.length}
+          completedCount={completedTasks.length}
+          inProgressCount={inProgressTasks.length}
+          todoCount={todoTasks.length}
+          highPriorityCount={highPriorityTotal}
+          mediumPriorityCount={mediumPriorityTotal}
+          lowPriorityCount={lowPriorityTotal}
+          overdueCount={overdueTasksCount}
+          dueTodayCount={dueTodayTasksCount}
+          onPress={() => navigation.navigate('Tasks')}
           onCreateTask={handleAddTask}
         />
 

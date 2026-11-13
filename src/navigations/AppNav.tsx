@@ -21,6 +21,7 @@ import SignupScreen from '../screens/signup/SignupScreen';
 import OtpVerificationScreen from '../screens/signup/OtpVerificationScreen';
 import WelcomeScreen from '../screens/welcome/WelcomeScreen';
 import TaskDetailScreen from '../screens/tasks/TaskDetailScreen';
+import AddEditTaskScreen from '../screens/tasks/AddEditTaskScreen';
 import InvoiceDetailScreen from '../screens/invoices/InvoiceDetailScreen';
 import AddEditInvoiceScreen from '../screens/invoices/AddEditInvoiceScreen';
 import ClientDetailScreen from '../screens/clients/ClientDetailScreen';
@@ -55,7 +56,9 @@ export type RootStackParamList = {
   Planner: { initialTab?: 'tasks' | 'schedule' } | undefined;
   Finance: { initialTab?: 'invoices' | 'quotations' } | undefined;
   AIChat: undefined;
-  TaskDetail: { taskId?: string; isNew?: boolean; prefillProject?: string; prefillProjectId?: string } | undefined;
+  TaskDetail: { taskId?: string; isNew?: boolean; prefillProject?: string; prefillProjectId?: string; prefillClientId?: string; prefillClientName?: string } | undefined;
+  AddEditTask: { taskId?: string; isEdit?: boolean; initialData?: any; prefillProject?: string; prefillProjectId?: string; prefillClientId?: string; prefillClientName?: string } | undefined;
+  AddTask: { prefillProject?: string; prefillProjectId?: string; prefillClientId?: string; prefillClientName?: string } | undefined;
   InvoiceDetail: { invoiceId: string } | undefined;
   AddEditInvoice: { invoiceId?: string; isEdit?: boolean; prefillClientId?: string; prefillClientName?: string } | undefined;
   ClientDetail: { clientId: string };
@@ -155,6 +158,8 @@ export const AppNav: React.FC = () => {
               }}
             />
             <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
+            <Stack.Screen name="AddEditTask" component={AddEditTaskScreen} />
+            <Stack.Screen name="AddTask" component={AddEditTaskScreen} />
             <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} />
             <Stack.Screen name="AddEditInvoice" component={AddEditInvoiceScreen} />
             <Stack.Screen name="ClientDetail" component={ClientDetailScreen} />
