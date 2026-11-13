@@ -18,6 +18,7 @@ import { FinanceScreen } from '../screens/invoices/FinanceScreen';
 import AIChatScreen from '../screens/chat/AIChatScreen';
 import LoginScreen from '../screens/login/LoginScreen';
 import SignupScreen from '../screens/signup/SignupScreen';
+import OtpVerificationScreen from '../screens/signup/OtpVerificationScreen';
 import WelcomeScreen from '../screens/welcome/WelcomeScreen';
 import TaskDetailScreen from '../screens/tasks/TaskDetailScreen';
 import InvoiceDetailScreen from '../screens/invoices/InvoiceDetailScreen';
@@ -35,6 +36,12 @@ export type RootStackParamList = {
   Welcome: undefined;
   Login: undefined;
   Signup: undefined;
+  OtpVerification: {
+    email: string;
+    name: string;
+    password: string;
+    source?: 'mobile';
+  };
   Main: undefined;
   Home: undefined;
   Projects: undefined;
@@ -157,6 +164,7 @@ export const AppNav: React.FC = () => {
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Signup" component={SignupScreen} />
+            <Stack.Screen name="OtpVerification" component={OtpVerificationScreen} />
           </>
         )}
       </Stack.Navigator>

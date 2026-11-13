@@ -14,11 +14,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useForm, Controller } from 'react-hook-form';
 import { User as UserIcon, Mail, Lock } from 'lucide-react-native';
-import { navigationRef, type RootStackParamList } from '../../navigations/AppNav';
+import { type RootStackParamList } from '../../navigations/AppNav';
 import { colors } from '../../utils/colors';
-import { useAppContext, User } from '../../context/AppContext';
 import { http } from '../../utils/http';
-import { saveAuthSession } from '../../utils/authStorage';
 import AuthHeader from '../../components/AuthHeader';
 import TextInput from '../../components/TextInput';
 import Button from '../../components/Button';
@@ -33,7 +31,6 @@ interface SignupFormValues {
 
 const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const { setUser } = useAppContext();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -69,50 +66,24 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
     try {
       setLoading(true);
 
-      const res = await http.post<{
-        accessToken: string;
-        refreshToken?: string;
-        account: {
-          userId: string;
-          email: string;
-          name: string;
-          role?: string;
-        };
-      }>('/auth/user/register', {
+      // Request email verification OTP before creating user account
+      await http.post('/auth/user/otp-send-email', {
+        name: trimmedName,
+        email: trimmedEmail,
+      });
+
+      // Navigate to OTP verification screen with signup credentials
+      navigation.navigate('OtpVerification', {
         name: trimmedName,
         email: trimmedEmail,
         password,
         source: 'mobile',
       });
-
-      const accessToken = res?.data?.accessToken;
-      const refreshToken = res?.data?.refreshToken;
-      const account = res?.data?.account;
-
-      if (accessToken && account) {
-        const userData: User = {
-          id: account.userId || (account as any).id,
-          name: account.name || trimmedName,
-          email: account.email || trimmedEmail,
-        };
-
-        await saveAuthSession(accessToken, userData, refreshToken);
-        setUser(userData);
-
-        if (navigationRef.isReady()) {
-          navigationRef.reset({
-            index: 0,
-            routes: [{ name: 'Main' }],
-          });
-        } else {
-          navigation.replace('Main');
-        }
-      } else {
-        throw new Error(res?.msg || 'Failed to register');
-      }
     } catch (error: any) {
       const errorMessage =
-        error?.msg || error?.message || 'Failed to create account. Please try again.';
+        error?.msg ||
+        error?.message ||
+        'Unable to send verification code. Please check your email and try again.';
       Alert.alert('Sign Up Failed', errorMessage);
     } finally {
       setLoading(false);
