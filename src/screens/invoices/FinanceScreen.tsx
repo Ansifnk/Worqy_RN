@@ -23,6 +23,7 @@ import {
   FileQuestion,
   ArrowRight,
   ArrowLeft,
+  Clock,
 } from 'lucide-react-native';
 import { colors } from '../../utils/colors';
 import { useInvoice } from '../../hooks/useInvoice';
@@ -41,6 +42,9 @@ type FinanceSectionItem =
 
 
 
+// Feature flag: set to true when Quotations is ready to be re-enabled
+const SHOW_QUOTATIONS = false;
+
 export const FinanceScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
@@ -48,7 +52,7 @@ export const FinanceScreen: React.FC = () => {
 
   // Active sub-tab
   const [topTab, setTopTab] = useState<'invoices' | 'quotations'>(
-    route.params?.initialTab === 'quotations' ? 'quotations' : 'invoices'
+    SHOW_QUOTATIONS && route.params?.initialTab === 'quotations' ? 'quotations' : 'invoices'
   );
 
   // Invoices state
@@ -101,6 +105,13 @@ export const FinanceScreen: React.FC = () => {
     () => invoices.reduce((sum, inv) => sum + (Number(inv.total) || 0), 0),
     [invoices]
   );
+  const totalPendingAmount = useMemo(
+    () =>
+      invoices
+        .filter((inv) => inv.status !== 'Paid')
+        .reduce((sum, inv) => sum + (Number(inv.total) || 0), 0),
+    [invoices]
+  );
   const totalPipelineAmount = useMemo(
     () =>
       quotes
@@ -145,7 +156,7 @@ export const FinanceScreen: React.FC = () => {
 
   // Section data mapping for SectionList
   const sections = useMemo(() => {
-    if (topTab === 'invoices') {
+    if (!SHOW_QUOTATIONS || topTab === 'invoices') {
       const items: FinanceSectionItem[] = [
         { type: 'controls', id: '__controls_invoices__' },
       ];
@@ -338,10 +349,10 @@ export const FinanceScreen: React.FC = () => {
   };
 
   const handleTopAddPress = () => {
-    if (topTab === 'invoices') {
-      navigation.navigate('AddEditInvoice', { isEdit: false });
-    } else {
+    if (SHOW_QUOTATIONS && topTab === 'quotations') {
       handleAddQuotation();
+    } else {
+      navigation.navigate('AddEditInvoice', { isEdit: false });
     }
   };
 
@@ -409,7 +420,9 @@ export const FinanceScreen: React.FC = () => {
                 <View>
                   <Text style={styles.screenTitle}>Finance</Text>
                   <Text style={styles.screenSubtitle}>
-                    {invoices.length} invoices • {quotes.length} quotations
+                    {SHOW_QUOTATIONS
+                      ? `${invoices.length} invoices • ${quotes.length} quotations`
+                      : `${invoices.length} invoices`}
                   </Text>
                 </View>
               </View>
@@ -419,7 +432,7 @@ export const FinanceScreen: React.FC = () => {
                 onPress={handleTopAddPress}
                 activeOpacity={0.8}
                 accessibilityRole="button"
-                accessibilityLabel="Add invoice or quotation"
+                accessibilityLabel={SHOW_QUOTATIONS ? "Add invoice or quotation" : "Add invoice"}
               >
                 <Plus size={22} color={colors.white} strokeWidth={2.4} />
               </TouchableOpacity>
@@ -458,94 +471,121 @@ export const FinanceScreen: React.FC = () => {
                   <Text style={styles.statTitle}>Invoiced Total</Text>
                 </TouchableOpacity>
 
-                {/* Quotations Card */}
-                <TouchableOpacity
-                  style={[
-                    styles.statCard,
-                    topTab === 'quotations' && styles.statCardSelected,
-                  ]}
-                  onPress={() => setTopTab('quotations')}
-                  activeOpacity={0.85}
-                >
-                  <View style={styles.statCardHeader}>
-                    <View style={[styles.statIconBadge, { backgroundColor: '#EEF2FF' }]}>
-                      <FileSpreadsheet size={16} color="#4F46E5" />
+                {/* Quotations / Pending Card */}
+                {SHOW_QUOTATIONS ? (
+                  <TouchableOpacity
+                    style={[
+                      styles.statCard,
+                      topTab === 'quotations' && styles.statCardSelected,
+                    ]}
+                    onPress={() => setTopTab('quotations')}
+                    activeOpacity={0.85}
+                  >
+                    <View style={styles.statCardHeader}>
+                      <View style={[styles.statIconBadge, { backgroundColor: '#EEF2FF' }]}>
+                        <FileSpreadsheet size={16} color="#4F46E5" />
+                      </View>
+                      <View style={styles.statPill}>
+                        <Text style={styles.statPillText}>
+                          {quoteCounts.accepted} Accepted
+                        </Text>
+                      </View>
                     </View>
-                    <View style={styles.statPill}>
-                      <Text style={styles.statPillText}>
-                        {quoteCounts.accepted} Accepted
-                      </Text>
+                    <Text style={styles.statNumber}>
+                      ₹{totalPipelineAmount >= 1000 ? `${(totalPipelineAmount / 1000).toFixed(0)}k` : totalPipelineAmount}
+                    </Text>
+                    <Text style={styles.statTitle}>Pipeline Value</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.statCard}>
+                    <View style={styles.statCardHeader}>
+                      <View style={[styles.statIconBadge, { backgroundColor: '#FFFBEB' }]}>
+                        <Clock size={16} color="#D97706" />
+                      </View>
+                      <View
+                        style={[
+                          styles.statPill,
+                          { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
+                        ]}
+                      >
+                        <Text style={[styles.statPillText, { color: '#D97706' }]}>
+                          {invoiceCounts.all - invoiceCounts.paid} Pending
+                        </Text>
+                      </View>
                     </View>
+                    <Text style={styles.statNumber}>
+                      ₹{totalPendingAmount >= 1000 ? `${(totalPendingAmount / 1000).toFixed(0)}k` : totalPendingAmount}
+                    </Text>
+                    <Text style={styles.statTitle}>Pending / Due</Text>
                   </View>
-                  <Text style={styles.statNumber}>
-                    ₹{totalPipelineAmount >= 1000 ? `${(totalPipelineAmount / 1000).toFixed(0)}k` : totalPipelineAmount}
-                  </Text>
-                  <Text style={styles.statTitle}>Pipeline Value</Text>
-                </TouchableOpacity>
+                )}
               </View>
             </View>
           </View>
         }
         /* 3. Sticky Tab Switch: Invoices vs Quotations */
-        renderSectionHeader={() => (
-          <View style={styles.stickyTabsWrapper}>
-            <View style={styles.segmentedControl}>
-              <TouchableOpacity
-                style={[
-                  styles.segmentBtn,
-                  topTab === 'invoices' && styles.segmentBtnActive,
-                ]}
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setTopTab('invoices');
-                }}
-                activeOpacity={0.8}
-              >
-                <Wallet
-                  size={16}
-                  color={
-                    topTab === 'invoices' ? colors.primary : colors.textSecondary
-                  }
-                />
-                <Text
+        renderSectionHeader={() => {
+          if (!SHOW_QUOTATIONS) return null;
+          return (
+            <View style={styles.stickyTabsWrapper}>
+              <View style={styles.segmentedControl}>
+                <TouchableOpacity
                   style={[
-                    styles.segmentBtnText,
-                    topTab === 'invoices' && styles.segmentBtnTextActive,
+                    styles.segmentBtn,
+                    topTab === 'invoices' && styles.segmentBtnActive,
                   ]}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setTopTab('invoices');
+                  }}
+                  activeOpacity={0.8}
                 >
-                  Invoices ({invoices.length})
-                </Text>
-              </TouchableOpacity>
+                  <Wallet
+                    size={16}
+                    color={
+                      topTab === 'invoices' ? colors.primary : colors.textSecondary
+                    }
+                  />
+                  <Text
+                    style={[
+                      styles.segmentBtnText,
+                      topTab === 'invoices' && styles.segmentBtnTextActive,
+                    ]}
+                  >
+                    Invoices ({invoices.length})
+                  </Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[
-                  styles.segmentBtn,
-                  topTab === 'quotations' && styles.segmentBtnActive,
-                ]}
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setTopTab('quotations');
-                }}
-                activeOpacity={0.8}
-              >
-                <FileSpreadsheet
-                  size={16}
-                  color={
-                    topTab === 'quotations' ? colors.primary : colors.textSecondary
-                  }
-                />
-                <Text
+                <TouchableOpacity
                   style={[
-                    styles.segmentBtnText,
-                    topTab === 'quotations' && styles.segmentBtnTextActive,
+                    styles.segmentBtn,
+                    topTab === 'quotations' && styles.segmentBtnActive,
                   ]}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setTopTab('quotations');
+                  }}
+                  activeOpacity={0.8}
                 >
-                  Quotations ({quotes.length})
-                </Text>
-              </TouchableOpacity>
+                  <FileSpreadsheet
+                    size={16}
+                    color={
+                      topTab === 'quotations' ? colors.primary : colors.textSecondary
+                    }
+                  />
+                  <Text
+                    style={[
+                      styles.segmentBtnText,
+                      topTab === 'quotations' && styles.segmentBtnTextActive,
+                    ]}
+                  >
+                    Quotations ({quotes.length})
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        )}
+          );
+        }}
         /* 4. Selected Tab's Data */
         renderItem={({ item }) => {
           if (item.type === 'controls') {

@@ -28,6 +28,9 @@ interface GlobalQuickSwitcherProps {
   hideFloatingTrigger?: boolean;
 }
 
+// Feature flag: Quotations hidden for now, can be re-enabled later
+const SHOW_QUOTATIONS = false;
+
 export const GlobalQuickSwitcher: React.FC<GlobalQuickSwitcherProps> = ({
   currentRoute,
   isOpen: controlledIsOpen,
@@ -134,15 +137,19 @@ export const GlobalQuickSwitcher: React.FC<GlobalQuickSwitcherProps> = ({
       color: '#D97706',
       bg: '#FFFBEB',
     },
-    {
-      id: 'quotations',
-      label: 'Quotes',
-      subtext: 'Estimates & offers',
-      icon: FileText,
-      route: 'Quotations',
-      color: '#EA580C',
-      bg: '#FFF7ED',
-    },
+    ...(SHOW_QUOTATIONS
+      ? [
+        {
+          id: 'quotations',
+          label: 'Quotes',
+          subtext: 'Estimates & offers',
+          icon: FileText,
+          route: 'Quotations',
+          color: '#EA580C',
+          bg: '#FFF7ED',
+        },
+      ]
+      : []),
     {
       id: 'ai',
       label: 'AI Copilot',
@@ -152,6 +159,7 @@ export const GlobalQuickSwitcher: React.FC<GlobalQuickSwitcherProps> = ({
       color: colors.accent,
       bg: '#134E4A',
       isDark: true,
+      fullWidth: !SHOW_QUOTATIONS,
     },
   ];
 
@@ -228,6 +236,7 @@ export const GlobalQuickSwitcher: React.FC<GlobalQuickSwitcherProps> = ({
                   key={item.id}
                   style={[
                     styles.navCard,
+                    item.fullWidth && styles.navCardFullWidth,
                     isActive && styles.navCardActive,
                     item.isDark && styles.navCardDark,
                   ]}
@@ -329,7 +338,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   sheetContainer: {
-    paddingTop: 8,
+    padding: 8,
     paddingBottom: 20,
   },
   groupHeading: {
@@ -355,6 +364,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     gap: 10,
     position: 'relative',
+  },
+  navCardFullWidth: {
+    width: '80%',
   },
   navCardDark: {
     backgroundColor: colors.primaryDark,

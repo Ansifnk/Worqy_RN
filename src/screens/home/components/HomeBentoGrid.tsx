@@ -26,7 +26,7 @@ interface HomeBentoGridProps {
   onNavigateTasks: () => void;
   onNavigateSchedule: () => void;
   onNavigateInvoices: () => void;
-  onNavigateQuotations: () => void;
+  onNavigateQuotations?: () => void;
   onOpenAI: () => void;
 }
 
@@ -160,25 +160,27 @@ export const HomeBentoGrid: React.FC<HomeBentoGridProps> = ({
           <Text style={styles.cardMetric}>{invoicesCount} invoices</Text>
         </TouchableOpacity>
 
-        {/* 6. Quotations */}
-        <TouchableOpacity
-          style={[styles.featureCard, { borderColor: '#FFEDD5' }]}
-          onPress={onNavigateQuotations}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="Open Quotations"
-        >
-          <View style={styles.cardTopRow}>
-            <View style={[styles.iconBox, { backgroundColor: '#FFF7ED' }]}>
-              <FileText size={20} color="#EA580C" strokeWidth={2.2} />
+        {/* 6. Quotations (hidden unless enabled) */}
+        {Boolean(onNavigateQuotations) && (
+          <TouchableOpacity
+            style={[styles.featureCard, { borderColor: '#FFEDD5' }]}
+            onPress={onNavigateQuotations}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Open Quotations"
+          >
+            <View style={styles.cardTopRow}>
+              <View style={[styles.iconBox, { backgroundColor: '#FFF7ED' }]}>
+                <FileText size={20} color="#EA580C" strokeWidth={2.2} />
+              </View>
+              <View style={styles.arrowCircle}>
+                <ArrowUpRight size={14} color="#EA580C" strokeWidth={2.4} />
+              </View>
             </View>
-            <View style={styles.arrowCircle}>
-              <ArrowUpRight size={14} color="#EA580C" strokeWidth={2.4} />
-            </View>
-          </View>
-          <Text style={styles.cardTitle}>Quotations</Text>
-          <Text style={styles.cardMetric}>Estimates & proposals</Text>
-        </TouchableOpacity>
+            <Text style={styles.cardTitle}>Quotations</Text>
+            <Text style={styles.cardMetric}>Estimates & proposals</Text>
+          </TouchableOpacity>
+        )}
 
         {/* 7. AI Copilot (Wide Banner) */}
         <TouchableOpacity
