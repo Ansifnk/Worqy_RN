@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { http, setOnUnauthorized, setOnTokenRefreshed, getAuthToken } from '../utils/http';
 import { loadAuthSession, saveAuthSession, saveTokens, clearAuthSession } from '../utils/authStorage';
 import { queryClient } from '../utils/queryClient';
+import { subscriptionKeys, isPlanNotExpired } from '../utils/subscriptionUtils';
 
 export interface User {
   id: string;
@@ -15,6 +16,7 @@ export interface User {
   trialEndsAt?: string | null;
   hasUsedTrial?: boolean;
   subscriptionPlan?: any | null;
+  daysRemaining?: number | null;
   isSubscribed?: boolean;
 }
 
@@ -51,29 +53,119 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const { token, refreshToken, user: storedUser } = await loadAuthSession();
 
         if (token && storedUser) {
+          // Check if cached user profile already has an unexpired subscription
+          const isStoredPlanValid = isPlanNotExpired(storedUser);
+          const initialUser: User = {
+            ...storedUser,
+            isSubscribed: isStoredPlanValid,
+          };
           if (isMounted) {
-            setUser(storedUser);
+            setUser(initialUser);
           }
 
-          // Validate and refresh profile with backend server
-          // (if access token has expired, http automatically uses refreshToken)
+          // Validate and refresh profile & subscription status in parallel on app startup
           try {
-            const res = await http.get('/auth/me');
-            const account = res?.data?.account;
-            if (account && isMounted) {
-              const freshUser: User = {
-                id: account.userId || account.id || storedUser.id,
-                name: account.name || storedUser.name,
-                email: account.email || storedUser.email,
-                subscriptionPlanId: account.subscriptionPlanId ?? storedUser.subscriptionPlanId ?? null,
-                subscriptionStatus: account.subscriptionStatus ?? storedUser.subscriptionStatus ?? null,
-                subscriptionStartsAt: account.subscriptionStartsAt ?? storedUser.subscriptionStartsAt ?? null,
-                subscriptionEndsAt: account.subscriptionEndsAt ?? storedUser.subscriptionEndsAt ?? null,
-                trialEndsAt: account.trialEndsAt ?? storedUser.trialEndsAt ?? null,
-                hasUsedTrial: account.hasUsedTrial ?? storedUser.hasUsedTrial ?? false,
-                subscriptionPlan: account.subscriptionPlan ?? storedUser.subscriptionPlan ?? null,
-                isSubscribed: Boolean(account.isSubscribed),
+            const [meResResult, subResResult] = await Promise.allSettled([
+              http.get('/auth/me'),
+              http.get('/subscription-plans/my-subscription'),
+            ]);
+
+            const account =
+              meResResult.status === 'fulfilled'
+                ? meResResult.value?.data?.account
+                : null;
+
+            const subData =
+              subResResult.status === 'fulfilled'
+                ? subResResult.value?.data
+                : null;
+
+            const targetUserId =
+              account?.userId || account?.id || storedUser.id;
+
+            if (subData) {
+              queryClient.setQueryData(
+                subscriptionKeys.current(targetUserId),
+                subData
+              );
+            }
+
+            if ((account || subData) && isMounted) {
+              const mergedPlanId =
+                subData?.subscriptionPlanId ??
+                account?.subscriptionPlanId ??
+                storedUser.subscriptionPlanId ??
+                null;
+              const mergedStatus =
+                subData?.subscriptionStatus ??
+                account?.subscriptionStatus ??
+                storedUser.subscriptionStatus ??
+                null;
+              const mergedStartsAt =
+                subData?.subscriptionStartsAt ??
+                account?.subscriptionStartsAt ??
+                storedUser.subscriptionStartsAt ??
+                null;
+              const mergedEndsAt =
+                subData?.subscriptionEndsAt ??
+                account?.subscriptionEndsAt ??
+                storedUser.subscriptionEndsAt ??
+                null;
+              const mergedTrialEndsAt =
+                subData?.trialEndsAt ??
+                account?.trialEndsAt ??
+                storedUser.trialEndsAt ??
+                null;
+              const mergedPlan =
+                subData?.plan ??
+                account?.subscriptionPlan ??
+                storedUser.subscriptionPlan ??
+                null;
+              const mergedDaysRemaining =
+                subData?.daysRemaining ??
+                storedUser.daysRemaining ??
+                null;
+
+              const candidate = {
+                isSubscribed:
+                  subData?.isSubscribed ??
+                  account?.isSubscribed ??
+                  storedUser.isSubscribed,
+                subscriptionPlanId: mergedPlanId,
+                subscriptionStatus: mergedStatus,
+                subscriptionStartsAt: mergedStartsAt,
+                subscriptionEndsAt: mergedEndsAt,
+                trialEndsAt: mergedTrialEndsAt,
+                daysRemaining: mergedDaysRemaining,
+                plan: mergedPlan,
               };
+
+              const hasNotExpired = isPlanNotExpired(candidate);
+
+              const freshUser: User = {
+                id: targetUserId,
+                name: account?.name || storedUser.name,
+                email: account?.email || storedUser.email,
+                mobile:
+                  account?.mobile ||
+                  account?.phone ||
+                  storedUser.mobile ||
+                  null,
+                subscriptionPlanId: mergedPlanId,
+                subscriptionStatus: mergedStatus,
+                subscriptionStartsAt: mergedStartsAt,
+                subscriptionEndsAt: mergedEndsAt,
+                trialEndsAt: mergedTrialEndsAt,
+                hasUsedTrial:
+                  subData?.hasUsedTrial ??
+                  account?.hasUsedTrial ??
+                  storedUser.hasUsedTrial ??
+                  false,
+                subscriptionPlan: mergedPlan,
+                daysRemaining: mergedDaysRemaining,
+                isSubscribed: hasNotExpired,
+              };
+
               setUser(freshUser);
               const currentToken = getAuthToken() || token;
               await saveAuthSession(currentToken, freshUser, refreshToken);
@@ -149,25 +241,115 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       const token = getAuthToken();
       if (!token) return;
 
-      const res = await http.get('/auth/me');
-      const account = res?.data?.account;
-      if (account) {
-        const updatedUser: User = {
-          id: account.userId || account.id || '',
-          name: account.name || 'User',
-          email: account.email || '',
-          subscriptionPlanId: account.subscriptionPlanId ?? null,
-          subscriptionStatus: account.subscriptionStatus ?? null,
-          subscriptionStartsAt: account.subscriptionStartsAt ?? null,
-          subscriptionEndsAt: account.subscriptionEndsAt ?? null,
-          trialEndsAt: account.trialEndsAt ?? null,
-          hasUsedTrial: account.hasUsedTrial ?? false,
-          subscriptionPlan: account.subscriptionPlan ?? null,
-          isSubscribed: Boolean(account.isSubscribed),
+      const [meResResult, subResResult] = await Promise.allSettled([
+        http.get('/auth/me'),
+        http.get('/subscription-plans/my-subscription'),
+      ]);
+
+      const account =
+        meResResult.status === 'fulfilled'
+          ? meResResult.value?.data?.account
+          : null;
+
+      const subData =
+        subResResult.status === 'fulfilled'
+          ? subResResult.value?.data
+          : null;
+
+      if (!account && !subData) return;
+
+      setUser((prevUser) => {
+        const targetUserId =
+          account?.userId || account?.id || prevUser?.id || '';
+
+        if (subData) {
+          queryClient.setQueryData(
+            subscriptionKeys.current(targetUserId),
+            subData
+          );
+        }
+
+        const mergedPlanId =
+          subData?.subscriptionPlanId ??
+          account?.subscriptionPlanId ??
+          prevUser?.subscriptionPlanId ??
+          null;
+        const mergedStatus =
+          subData?.subscriptionStatus ??
+          account?.subscriptionStatus ??
+          prevUser?.subscriptionStatus ??
+          null;
+        const mergedStartsAt =
+          subData?.subscriptionStartsAt ??
+          account?.subscriptionStartsAt ??
+          prevUser?.subscriptionStartsAt ??
+          null;
+        const mergedEndsAt =
+          subData?.subscriptionEndsAt ??
+          account?.subscriptionEndsAt ??
+          prevUser?.subscriptionEndsAt ??
+          null;
+        const mergedTrialEndsAt =
+          subData?.trialEndsAt ??
+          account?.trialEndsAt ??
+          prevUser?.trialEndsAt ??
+          null;
+        const mergedPlan =
+          subData?.plan ??
+          account?.subscriptionPlan ??
+          prevUser?.subscriptionPlan ??
+          null;
+        const mergedDaysRemaining =
+          subData?.daysRemaining ??
+          prevUser?.daysRemaining ??
+          null;
+
+        const candidate = {
+          isSubscribed:
+            subData?.isSubscribed ??
+            account?.isSubscribed ??
+            prevUser?.isSubscribed,
+          subscriptionPlanId: mergedPlanId,
+          subscriptionStatus: mergedStatus,
+          subscriptionStartsAt: mergedStartsAt,
+          subscriptionEndsAt: mergedEndsAt,
+          trialEndsAt: mergedTrialEndsAt,
+          daysRemaining: mergedDaysRemaining,
+          plan: mergedPlan,
         };
-        setUser(updatedUser);
-        await saveAuthSession(token, updatedUser);
-      }
+
+        const hasNotExpired = isPlanNotExpired(candidate);
+
+        const updatedUser: User = {
+          id: targetUserId,
+          name: account?.name || prevUser?.name || 'User',
+          email: account?.email || prevUser?.email || '',
+          mobile:
+            account?.mobile ||
+            account?.phone ||
+            prevUser?.mobile ||
+            null,
+          subscriptionPlanId: mergedPlanId,
+          subscriptionStatus: mergedStatus,
+          subscriptionStartsAt: mergedStartsAt,
+          subscriptionEndsAt: mergedEndsAt,
+          trialEndsAt: mergedTrialEndsAt,
+          hasUsedTrial:
+            subData?.hasUsedTrial ??
+            account?.hasUsedTrial ??
+            prevUser?.hasUsedTrial ??
+            false,
+          subscriptionPlan: mergedPlan,
+          daysRemaining: mergedDaysRemaining,
+          isSubscribed: hasNotExpired,
+        };
+
+        saveAuthSession(token, updatedUser).catch((err) =>
+          console.warn('Failed saving updated user session:', err)
+        );
+
+        return updatedUser;
+      });
     } catch (error) {
       console.warn('Failed to refresh user profile:', error);
     }

@@ -18,8 +18,10 @@ import { Mail, RefreshCw, Edit3 } from 'lucide-react-native';
 import { navigationRef, type RootStackParamList } from '../../navigations/AppNav';
 import { colors } from '../../utils/colors';
 import { useAppContext, User } from '../../context/AppContext';
-import { http } from '../../utils/http';
+import { http, setAuthToken } from '../../utils/http';
 import { saveAuthSession } from '../../utils/authStorage';
+import { queryClient } from '../../utils/queryClient';
+import { subscriptionKeys, isPlanNotExpired } from '../../utils/subscriptionUtils';
 import AuthHeader from '../../components/AuthHeader';
 import Button from '../../components/Button';
 
@@ -99,22 +101,73 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
       const account = res?.data?.account;
 
       if (accessToken && account) {
+        setAuthToken(accessToken);
+
+        let subData: any = null;
+        try {
+          const subRes = await http.get('/subscription-plans/my-subscription');
+          subData = subRes?.data ?? null;
+        } catch {
+          // ignore error if subscription endpoint fails
+        }
+
+        const rawAccount = account as any;
+        const targetUserId = rawAccount.userId || rawAccount.id;
+
+        if (subData) {
+          queryClient.setQueryData(subscriptionKeys.current(targetUserId), subData);
+        }
+
+        const mergedPlanId = subData?.subscriptionPlanId ?? rawAccount.subscriptionPlanId ?? null;
+        const mergedStatus = subData?.subscriptionStatus ?? rawAccount.subscriptionStatus ?? null;
+        const mergedStartsAt = subData?.subscriptionStartsAt ?? rawAccount.subscriptionStartsAt ?? null;
+        const mergedEndsAt = subData?.subscriptionEndsAt ?? rawAccount.subscriptionEndsAt ?? null;
+        const mergedTrialEndsAt = subData?.trialEndsAt ?? rawAccount.trialEndsAt ?? null;
+        const mergedPlan = subData?.plan ?? rawAccount.subscriptionPlan ?? null;
+        const mergedDaysRemaining = subData?.daysRemaining ?? null;
+
+        const candidate = {
+          isSubscribed: subData?.isSubscribed ?? rawAccount.isSubscribed,
+          subscriptionPlanId: mergedPlanId,
+          subscriptionStatus: mergedStatus,
+          subscriptionStartsAt: mergedStartsAt,
+          subscriptionEndsAt: mergedEndsAt,
+          trialEndsAt: mergedTrialEndsAt,
+          daysRemaining: mergedDaysRemaining,
+          plan: mergedPlan,
+        };
+
+        const hasNotExpired = isPlanNotExpired(candidate);
+
         const userData: User = {
-          id: account.userId || (account as any).id,
-          name: account.name || name,
-          email: account.email || email,
+          id: targetUserId,
+          name: rawAccount.name || name,
+          email: rawAccount.email || email,
+          mobile: rawAccount.mobile || rawAccount.phone || null,
+          subscriptionPlanId: mergedPlanId,
+          subscriptionStatus: mergedStatus,
+          subscriptionStartsAt: mergedStartsAt,
+          subscriptionEndsAt: mergedEndsAt,
+          trialEndsAt: mergedTrialEndsAt,
+          hasUsedTrial: subData?.hasUsedTrial ?? rawAccount.hasUsedTrial ?? false,
+          subscriptionPlan: mergedPlan,
+          daysRemaining: mergedDaysRemaining,
+          isSubscribed: hasNotExpired,
         };
 
         await saveAuthSession(accessToken, userData, refreshToken);
         setUser(userData);
 
+        const targetRoute = hasNotExpired ? 'Main' : 'SubscriptionPlans';
+        const targetParams = hasNotExpired ? undefined : { isMandatory: true };
+
         if (navigationRef.isReady()) {
           navigationRef.reset({
             index: 0,
-            routes: [{ name: 'Main' }],
+            routes: [{ name: targetRoute as any, params: targetParams }],
           });
         } else {
-          navigation.replace('Main');
+          navigation.replace(targetRoute as any, targetParams);
         }
       } else {
         throw new Error(res?.msg || 'Failed to complete registration');

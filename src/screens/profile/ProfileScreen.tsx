@@ -23,6 +23,7 @@ import {
 } from 'lucide-react-native';
 import { useAppContext } from '../../context/AppContext';
 import { useSubscription } from '../../hooks/useSubscription';
+import { isPlanNotExpired } from '../../utils/subscriptionUtils';
 import { colors } from '../../utils/colors';
 import EditProfileModal from './components/EditProfileModal';
 import DeleteAccountModal from './components/DeleteAccountModal';
@@ -32,6 +33,8 @@ export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { user, signOutUser } = useAppContext();
   const { subscription } = useSubscription();
+
+  const isPlanActive = isPlanNotExpired(subscription) || isPlanNotExpired(user);
 
   const [isEditProfileVisible, setIsEditProfileVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -151,7 +154,7 @@ export const ProfileScreen: React.FC = () => {
           <TouchableOpacity
             style={styles.subscriptionBanner}
             onPress={() => {
-              if (subscription?.isSubscribed) {
+              if (isPlanActive) {
                 navigation.navigate('SubscriptionDetail');
               } else {
                 navigation.navigate('SubscriptionPlans', { isMandatory: false });
@@ -172,7 +175,7 @@ export const ProfileScreen: React.FC = () => {
                     style={[
                       styles.subStatusBadge,
                       {
-                        backgroundColor: subscription?.isSubscribed ? '#DCFCE7' : '#FEF3C7',
+                        backgroundColor: isPlanActive ? '#DCFCE7' : '#FEF3C7',
                       },
                     ]}
                   >
@@ -180,16 +183,16 @@ export const ProfileScreen: React.FC = () => {
                       style={[
                         styles.subStatusBadgeText,
                         {
-                          color: subscription?.isSubscribed ? '#15803D' : '#B45309',
+                          color: isPlanActive ? '#15803D' : '#B45309',
                         },
                       ]}
                     >
-                      {subscription?.subscriptionStatus || 'INACTIVE'}
+                      {subscription?.subscriptionStatus || (isPlanActive ? 'ACTIVE' : 'INACTIVE')}
                     </Text>
                   </View>
                 </View>
                 <Text style={styles.subPlanSubtitle}>
-                  {subscription?.isSubscribed
+                  {isPlanActive
                     ? subscription?.daysRemaining !== undefined && subscription.daysRemaining !== null
                       ? `${subscription.daysRemaining} days remaining · Tap to view details`
                       : 'Active subscription · Tap to manage'

@@ -30,6 +30,7 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 import SubscriptionPlansScreen from '../screens/subscription/SubscriptionPlansScreen';
 import SubscriptionDetailScreen from '../screens/subscription/SubscriptionDetailScreen';
 import { useAppContext } from '../context/AppContext';
+import { isPlanNotExpired } from '../utils/subscriptionUtils';
 import { colors } from '../utils/colors';
 
 export type RootStackParamList = {
@@ -73,6 +74,8 @@ export const AppNav: React.FC = () => {
   const { user, loading } = useAppContext();
   const isFirstRender = useRef(true);
 
+  const hasNotExpiredPlan = Boolean(user && isPlanNotExpired(user));
+
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -81,7 +84,7 @@ export const AppNav: React.FC = () => {
 
     if (!loading && navigationRef.isReady()) {
       if (user) {
-        if (!user.isSubscribed) {
+        if (!hasNotExpiredPlan) {
           navigationRef.reset({
             index: 0,
             routes: [{ name: 'SubscriptionPlans', params: { isMandatory: true } }],
@@ -99,7 +102,7 @@ export const AppNav: React.FC = () => {
         });
       }
     }
-  }, [user, loading]);
+  }, [user, loading, hasNotExpiredPlan]);
 
   if (loading) {
     return (
@@ -110,7 +113,7 @@ export const AppNav: React.FC = () => {
   }
 
   const initialRoute = user
-    ? user.isSubscribed
+    ? hasNotExpiredPlan
       ? 'Main'
       : 'SubscriptionPlans'
     : 'Welcome';
@@ -118,7 +121,7 @@ export const AppNav: React.FC = () => {
   return (
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
-        key={user ? `auth-${user.id}-${user.isSubscribed ? 'sub' : 'unsub'}` : 'unauthenticated'}
+        key={user ? `auth-${user.id}-${hasNotExpiredPlan ? 'sub' : 'unsub'}` : 'unauthenticated'}
         initialRouteName={initialRoute}
         screenOptions={{
           headerShown: false,
@@ -141,7 +144,7 @@ export const AppNav: React.FC = () => {
             <Stack.Screen
               name="SubscriptionPlans"
               component={SubscriptionPlansScreen}
-              initialParams={{ isMandatory: !user.isSubscribed }}
+              initialParams={{ isMandatory: !hasNotExpiredPlan }}
             />
             <Stack.Screen name="SubscriptionDetail" component={SubscriptionDetailScreen} />
             <Stack.Screen

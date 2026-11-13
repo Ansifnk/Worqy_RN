@@ -26,6 +26,7 @@ import {
 } from 'lucide-react-native';
 import dayjs from 'dayjs';
 import { useSubscription } from '../../hooks/useSubscription';
+import { isPlanNotExpired } from '../../utils/subscriptionUtils';
 import { colors } from '../../utils/colors';
 
 export const SubscriptionDetailScreen: React.FC = () => {
@@ -42,10 +43,10 @@ export const SubscriptionDetailScreen: React.FC = () => {
   };
 
   const plan = subscription?.plan;
-  const isSubscribed = Boolean(subscription?.isSubscribed);
-  const status = subscription?.subscriptionStatus || 'NONE';
+  const isSubscribed = isPlanNotExpired(subscription);
+  const status = subscription?.subscriptionStatus || (isSubscribed ? 'ACTIVE' : 'NONE');
   const isTrial = status === 'TRIALING';
-  const isExpired = status === 'EXPIRED';
+  const isExpired = status === 'EXPIRED' || (!isSubscribed && status !== 'NONE');
 
   const handleCancelSubscription = () => {
     Alert.alert(

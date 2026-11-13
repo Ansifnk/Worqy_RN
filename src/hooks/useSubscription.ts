@@ -4,12 +4,8 @@ import { useAppContext } from '../context/AppContext';
 import { http } from '../utils/http';
 import { SubscriptionPlan, UserSubscription } from '../screens/subscription/types';
 import { openRazorpayCheckout } from '../utils/razorpay';
+import { subscriptionKeys } from '../utils/subscriptionUtils';
 
-export const subscriptionKeys = {
-  all: ['subscription'] as const,
-  current: (userId?: string) => [...subscriptionKeys.all, 'current', userId] as const,
-  plans: () => [...subscriptionKeys.all, 'plans'] as const,
-};
 
 export interface SubscribeResult {
   success: boolean;
