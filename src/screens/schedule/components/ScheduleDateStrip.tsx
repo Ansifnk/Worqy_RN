@@ -9,9 +9,10 @@ import {
 import dayjs from 'dayjs';
 import { colors } from '../../../utils/colors';
 
-interface ScheduleDateStripProps {
+export interface ScheduleDateStripProps {
   selectedDate: string; // ISO string
   onSelectDate: (date: string) => void;
+  datesWithEvents?: string[] | Set<string>;
 }
 
 interface DateItem {
@@ -19,6 +20,7 @@ interface DateItem {
   dayName: string; // Mon, Tue...
   dayNumber: number; // 20, 21...
   isToday: boolean;
+  dateKey: string; // YYYY-MM-DD
 }
 
 // Format Date object or string to ISO string (local day start)
@@ -32,19 +34,31 @@ export const formatDisplayDate = (dateStr: string): string => {
   return dayjs(dateStr).format('dddd, D MMM YYYY');
 };
 
+const PILL_WIDTH = 58;
+const PILL_GAP = 10;
+const ITEM_TOTAL_WIDTH = PILL_WIDTH + PILL_GAP;
+
 export const ScheduleDateStrip: React.FC<ScheduleDateStripProps> = ({
   selectedDate,
   onSelectDate,
+  datesWithEvents,
 }) => {
   const scrollViewRef = useRef<any>(null);
 
-  // Generate 21 days: 7 days before selectedDate, today, and 13 days after
+  // Set of dates with events for quick O(1) lookup
+  const eventDateSet = useMemo<Set<string>>(() => {
+    if (!datesWithEvents) return new Set();
+    if (datesWithEvents instanceof Set) return datesWithEvents;
+    return new Set(datesWithEvents.map((d) => dayjs(d).format('YYYY-MM-DD')));
+  }, [datesWithEvents]);
+
+  // Generate 35 days: 14 days before selectedDate and 20 days after
   const dateList = useMemo<DateItem[]>(() => {
     const items: DateItem[] = [];
     const baseDate = selectedDate ? dayjs(selectedDate) : dayjs();
 
-    const startOffset = -7;
-    const totalDays = 21;
+    const startOffset = -14;
+    const totalDays = 35;
 
     for (let i = 0; i < totalDays; i++) {
       const d = baseDate.add(startOffset + i, 'day');
@@ -54,6 +68,7 @@ export const ScheduleDateStrip: React.FC<ScheduleDateStripProps> = ({
         dayName: d.format('ddd'),
         dayNumber: d.date(),
         isToday: d.isSame(dayjs(), 'day'),
+        dateKey: d.format('YYYY-MM-DD'),
       });
     }
     return items;
@@ -65,8 +80,7 @@ export const ScheduleDateStrip: React.FC<ScheduleDateStripProps> = ({
       dayjs(item.dateString).isSame(dayjs(selectedDate), 'day')
     );
     if (selectedIndex >= 0 && scrollViewRef.current) {
-      const itemWidth = 64; // width + margin
-      const scrollPosition = Math.max(0, selectedIndex * itemWidth - 100);
+      const scrollPosition = Math.max(0, selectedIndex * ITEM_TOTAL_WIDTH - 120);
       scrollViewRef.current.scrollTo({ x: scrollPosition, animated: true });
     }
   }, [selectedDate, dateList]);
@@ -81,35 +95,59 @@ export const ScheduleDateStrip: React.FC<ScheduleDateStripProps> = ({
       >
         {dateList.map((item) => {
           const isSelected = dayjs(item.dateString).isSame(dayjs(selectedDate), 'day');
+          const hasEvents = eventDateSet.has(item.dateKey);
+
           return (
             <TouchableOpacity
               key={item.dateString}
               style={[
                 styles.datePill,
                 isSelected ? styles.datePillActive : styles.datePillInactive,
+                item.isToday && !isSelected && styles.datePillToday,
               ]}
               onPress={() => onSelectDate(item.dateString)}
-              activeOpacity={0.7}
+              activeOpacity={0.75}
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`${item.dayName} ${item.dayNumber}`}
+              accessibilityLabel={`${item.dayName} ${item.dayNumber}${
+                item.isToday ? ', Today' : ''
+              }${hasEvents ? ', has events' : ''}`}
             >
               <Text
                 style={[
                   styles.dayName,
                   isSelected ? styles.dayNameActive : styles.dayNameInactive,
+                  item.isToday && !isSelected && styles.dayNameToday,
                 ]}
               >
-                {item.dayName}
+                {item.dayName.toUpperCase()}
               </Text>
+
               <Text
                 style={[
                   styles.dayNumber,
                   isSelected ? styles.dayNumberActive : styles.dayNumberInactive,
+                  item.isToday && !isSelected && styles.dayNumberToday,
                 ]}
               >
                 {item.dayNumber}
               </Text>
+
+              {/* Event indicator dot */}
+              <View style={styles.indicatorContainer}>
+                {hasEvents ? (
+                  <View
+                    style={[
+                      styles.eventDot,
+                      isSelected ? styles.eventDotActive : styles.eventDotInactive,
+                    ]}
+                  />
+                ) : item.isToday && !isSelected ? (
+                  <View style={styles.todaySmallDot} />
+                ) : (
+                  <View style={styles.emptyDot} />
+                )}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -122,18 +160,19 @@ export default ScheduleDateStrip;
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 8,
+    marginVertical: 4,
   },
   scrollContent: {
     paddingHorizontal: 20,
-    gap: 10,
+    gap: PILL_GAP,
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 4,
   },
   datePill: {
-    width: 56,
-    height: 74,
-    borderRadius: 8,
+    width: PILL_WIDTH,
+    height: 78,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
@@ -148,33 +187,72 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 1,
   },
+  datePillToday: {
+    borderColor: colors.primary,
+    backgroundColor: '#F3FAF8',
+  },
   datePillActive: {
     backgroundColor: colors.primary,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   dayName: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
     marginBottom: 4,
   },
   dayNameInactive: {
     color: colors.textSecondary,
   },
+  dayNameToday: {
+    color: colors.primary,
+  },
   dayNameActive: {
     color: 'rgba(255, 255, 255, 0.85)',
   },
   dayNumber: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 19,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   dayNumberInactive: {
     color: colors.text,
   },
+  dayNumberToday: {
+    color: colors.primary,
+  },
   dayNumberActive: {
     color: colors.white,
+  },
+  indicatorContainer: {
+    height: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  eventDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
+  eventDotInactive: {
+    backgroundColor: colors.primary,
+  },
+  eventDotActive: {
+    backgroundColor: '#A7F3D0',
+  },
+  todaySmallDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.primary,
+  },
+  emptyDot: {
+    width: 5,
+    height: 5,
   },
 });

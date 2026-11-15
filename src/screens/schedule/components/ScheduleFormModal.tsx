@@ -37,6 +37,7 @@ interface ScheduleFormModalProps {
   initialData?: ScheduleItem | null;
   defaultDate?: string; // ISO string
   defaultStartTime?: string;
+  defaultType?: ScheduleType;
 }
 
 const TYPE_OPTIONS: { label: string; value: ScheduleType; icon: any; color: string }[] = [
@@ -76,6 +77,7 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
   initialData,
   defaultDate,
   defaultStartTime,
+  defaultType,
 }) => {
   const isEditing = !!initialData;
   const { clients } = useClient();
@@ -93,14 +95,14 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
       date: defaultDate || fallbackIso,
       startTime: defaultStartTime || '09:00 AM',
       endTime: '10:00 AM',
-      type: 'Meeting',
+      type: defaultType || 'Meeting',
       clientId: '',
       clientName: '',
       projectId: '',
       projectName: '',
       notes: '',
     };
-  }, [defaultDate, defaultStartTime]);
+  }, [defaultDate, defaultStartTime, defaultType]);
 
   const {
     control,
@@ -144,7 +146,7 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
           date: defaultDate || formatDateToISOString(),
           startTime: defaultStartTime || '09:00 AM',
           endTime: '10:00 AM',
-          type: 'Meeting',
+          type: defaultType || 'Meeting',
           clientId: '',
           clientName: '',
           projectId: '',
@@ -153,7 +155,7 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
         });
       }
     }
-  }, [visible, initialData, defaultDate, defaultStartTime, reset]);
+  }, [visible, initialData, defaultDate, defaultStartTime, defaultType, reset]);
 
   // Build client options for dropdown
   const clientOptions = useMemo<SelectOption[]>(() => {
